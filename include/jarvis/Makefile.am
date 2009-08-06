@@ -1,1 +1,1 @@
-jarvis_HEADERS = xmpp.h	pubsub.h
+include_HEADERS = xmpp.h pubsub.h

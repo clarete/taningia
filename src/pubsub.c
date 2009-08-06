@@ -23,7 +23,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "pubsub.h"
+#include <jarvis/pubsub.h>
 
 #define NS_INFO "http://jabber.org/protocol/disco#info"
 #define NS_ITEM "http://jabber.org/protocol/disco#items"

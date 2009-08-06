@@ -20,7 +20,7 @@
 #include <glib.h>
 #include <iksemel.h>
 
-#include "xmpp.h"
+#include <jarvis/xmpp.h>
 
 /* Prototypes of some local functions */
 

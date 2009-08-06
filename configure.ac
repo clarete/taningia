@@ -9,7 +9,7 @@ AC_CONFIG_HEADERS([config.h])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_LIBTOOL
-AM_INIT_AUTOMAKE([-Wall])
+AM_INIT_AUTOMAKE(foreign)
 
 # Checks for libraries.
 
@@ -25,6 +25,10 @@ AC_TYPE_SIZE_T
 PKG_CHECK_MODULES([IKSEMEL], [iksemel])
 AC_SUBST([IKSEMEL_CFLAGS])
 AC_SUBST([IKSEMEL_LIBS])
+
+PKG_CHECK_MODULES([GLIB], [glib-2.0])
+AC_SUBST([GLIB_CFLAGS])
+AC_SUBST([GLIB_LIBS])
 
 AC_CONFIG_FILES([
   Makefile
