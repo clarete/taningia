@@ -8,4 +8,4 @@ Description: A true web 3.0 library!
 Version: @VERSION@
 Requres: glib-2.0 iksemel
 Libs: -L${libdir} -ljarvis
-Cflags: -I${includedir}/jarvis
+Cflags: -I${includedir}
