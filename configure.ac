@@ -35,6 +35,7 @@ AC_CONFIG_FILES([
   include/Makefile
   include/jarvis/Makefile
   src/Makefile
+  jarvis.pc
 ])
 
 AC_OUTPUT
