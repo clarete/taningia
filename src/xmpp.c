@@ -24,28 +24,28 @@
 
 /* Prototypes of some local functions */
 
-static int      _rb_xmpp_hook       (void *data, int type, iks *node);
+static int      _j_xmpp_hook       (void *data, int type, iks *node);
 
-static void     _rb_xmpp_do_run     (XmppContext *ctx);
+static void     _j_xmpp_do_run     (JXmppCtx *ctx);
 
 /**
  * Allocate memory and initialize stuff necessary to create a new
  * XmppContext.
  */
-XmppContext *
-rb_xmpp_new (const char *jid,
-             const char *password,
-             const char *pubsub)
+JXmppCtx *
+j_xmpp_new (const char *jid,
+            const char *password,
+            const char *pubsub)
 {
-  XmppContext *ctx;
+  JXmppCtx *ctx;
   g_return_val_if_fail (jid != NULL, NULL);
   g_return_val_if_fail (password != NULL, NULL);
   g_return_val_if_fail (pubsub != NULL, NULL);
-  ctx = g_slice_new (XmppContext);
+  ctx = g_slice_new (JXmppCtx);
   ctx->pubsub = g_strdup (pubsub);
   ctx->jid = g_strdup (jid);
   ctx->password = g_strdup (password);
-  ctx->parser = iks_stream_new (IKS_NS_CLIENT, ctx, _rb_xmpp_hook);
+  ctx->parser = iks_stream_new (IKS_NS_CLIENT, ctx, _j_xmpp_hook);
   ctx->id = iks_id_new (iks_parser_stack (ctx->parser), ctx->jid);
   return ctx;
 }
@@ -54,7 +54,7 @@ rb_xmpp_new (const char *jid,
  * Free the memory used by a XmppContext struct.
  */
 void
-rb_xmpp_free (XmppContext *ctx)
+j_xmpp_free (JXmppCtx *ctx)
 {
   g_return_if_fail (ctx != NULL);
   g_free (ctx->jid);
@@ -64,7 +64,7 @@ rb_xmpp_free (XmppContext *ctx)
   g_free (ctx->pubsub);
   ctx->pubsub = NULL;
   iks_parser_delete (ctx->parser);
-  g_slice_free (XmppContext, ctx);
+  g_slice_free (JXmppCtx, ctx);
 }
 
 /**
@@ -72,10 +72,10 @@ rb_xmpp_free (XmppContext *ctx)
  * thread. To avoid problems with our loved GMainLoop used by soup.
  */
 void
-rb_xmpp_run (XmppContext *ctx)
+j_xmpp_run (JXmppCtx *ctx)
 {
   g_return_if_fail (ctx != NULL);
-  g_thread_create ((GThreadFunc) _rb_xmpp_do_run, ctx, FALSE, NULL);
+  g_thread_create ((GThreadFunc) _j_xmpp_do_run, ctx, FALSE, NULL);
   g_message ("Running xmpp client");
 }
 
@@ -168,7 +168,7 @@ xmpp_id_hook (iksparser *parser, iks *node, char *id)
 }
 
 static int
-xmpp_features_hook (XmppContext *ctx, iks *node)
+xmpp_features_hook (JXmppCtx *ctx, iks *node)
 {
   iks *feat;
   char *ns;
@@ -199,7 +199,7 @@ xmpp_features_hook (XmppContext *ctx, iks *node)
 }
 
 int
-xmpp_other_hook (XmppContext *ctx, iks *node, char *ns)
+xmpp_other_hook (JXmppCtx *ctx, iks *node, char *ns)
 {
   if (!iks_strcmp (ns, "urn:ietf:params:xml:ns:xmpp-sasl"))
     {
@@ -214,15 +214,15 @@ xmpp_other_hook (XmppContext *ctx, iks *node, char *ns)
 }
 
 static int
-_rb_xmpp_hook (void *data, int type, iks *node)
+_j_xmpp_hook (void *data, int type, iks *node)
 {
   char *name;
   char *id;
   char *ns;
   iksparser *parser;
-  XmppContext *ctx;
+  JXmppCtx *ctx;
 
-  ctx = (XmppContext *) data;
+  ctx = (JXmppCtx *) data;
   parser = ctx->parser;
   name = iks_name (node);
   id = iks_find_attrib (node, "id");
@@ -268,7 +268,7 @@ _rb_xmpp_hook (void *data, int type, iks *node)
 
 /* The main loop of our xmpp client. */
 static void
-_rb_xmpp_do_run (XmppContext *ctx)
+_j_xmpp_do_run (JXmppCtx *ctx)
 {
   g_return_if_fail (ctx != NULL);
   iks_connect_tcp (ctx->parser, ctx->id->server, 5222);

@@ -17,26 +17,26 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef _RB_XMPP_H_
-#define _RB_XMPP_H_
+#ifndef _JARVIS_XMPP_H_
+#define _JARVIS_XMPP_H_
 
 #include <glib.h>
 #include <iksemel.h>
 
-typedef struct _XmppContext {
+typedef struct _JXmppCtx {
   iksparser *parser;
   iksid *id;
   char *pubsub;
   char *jid;
   char *password;
-} XmppContext;
+} JXmppCtx;
 
-XmppContext       *rb_xmpp_new                      (const char          *jid,
-                                                     const char          *password,
-                                                     const char          *pubsub);
+JXmppCtx          *j_xmpp_new                      (const char          *jid,
+                                                    const char          *password,
+                                                    const char          *pubsub);
 
-void               rb_xmpp_free                     (XmppContext         *ctx);
+void               j_xmpp_free                     (JXmppCtx            *ctx);
 
-void               rb_xmpp_run                      (XmppContext         *ctx);
+void               j_xmpp_run                      (JXmppCtx            *ctx);
 
-#endif /* _RB_XMPP_H_ */
+#endif /* _JARVIS_XMPP_H_ */

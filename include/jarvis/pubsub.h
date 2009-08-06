@@ -17,58 +17,58 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef _PUBSUB_H
-#define _PUBSUB_H
+#ifndef _JARVIS_PUBSUB_H
+#define _JARVIS_PUBSUB_H
 
 #include <iksemel.h>
 
 #define PUBSUB_NS "http://jabber.org/protocol/pubsub"
 
-typedef struct _ps_ctx ps_ctx;
+typedef struct _JPsCtx JPsCtx;
 
-ps_ctx *ps_ctx_new                      (const char   *from,
+JPsCtx *j_ps_new                        (const char   *from,
                                          const char   *to);
 
-void    ps_ctx_free                     (ps_ctx       *ctx);
+void    j_ps_free                       (JPsCtx       *ctx);
 
-iks    *ps_query_features               (ps_ctx       *ctx);
+iks    *j_ps_query_features             (JPsCtx       *ctx);
 
-iks    *ps_query_node_info              (ps_ctx       *ctx,
+iks    *j_ps_query_node_info            (JPsCtx       *ctx,
                                          const char   *node);
 
-iks    *ps_query_node_items             (ps_ctx       *ctx,
+iks    *j_ps_query_node_items           (JPsCtx       *ctx,
                                          const char   *node);
 
-iks    *ps_query_node_subscriptions     (ps_ctx       *ctx,
+iks    *j_ps_query_node_subscriptions   (JPsCtx       *ctx,
                                          const char   *node);
 
-iks    *ps_query_node_affiliations      (ps_ctx       *ctx);
+iks    *j_ps_query_node_affiliations    (JPsCtx       *ctx);
 
-iks    *ps_node_subscribe               (ps_ctx       *ctx,
+iks    *j_ps_node_subscribe             (JPsCtx       *ctx,
                                          const char   *node,
                                          const char   *jid);
 
-iks    *ps_node_unsubscribe             (ps_ctx       *ctx,
+iks    *j_ps_node_unsubscribe           (JPsCtx       *ctx,
                                          const char   *node,
                                          const char   *jid);
 
-iks    *ps_node_retrieve_items          (ps_ctx       *ctx,
+iks    *j_ps_node_retrieve_items        (JPsCtx       *ctx,
                                          const char   *node,
                                          int           max_items);
 
-iks    *ps_publish_item_text            (ps_ctx       *ctx,
+iks    *j_ps_publish_item_text          (JPsCtx       *ctx,
                                          const char   *node,
                                          const char   *id,
                                          const char   *body,
                                          int           len);
 
-iks    *ps_delete_item                  (ps_ctx       *ctx,
+iks    *j_ps_delete_item                (JPsCtx       *ctx,
                                          const char   *node,
                                          const char   *id);
 
-iks    *ps_node_create                  (ps_ctx       *ctx,
+iks    *j_ps_node_create                (JPsCtx       *ctx,
                                          const char   *node,
                                          int           bare,
                                          ...);
 
-#endif /* _PUBSUB_H */
+#endif /* _JARVIS_PUBSUB_H */
