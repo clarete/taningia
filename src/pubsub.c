@@ -218,6 +218,24 @@ j_ps_publish_item_text (JPsCtx     *ctx,
 }
 
 iks *
+j_ps_publish_item_iks (JPsCtx     *ctx,
+                       const char *node,
+                       const char *id,
+                       iks        *child)
+{
+  iks *iq, *publish, *item;
+  iq = createiqps (ctx, IKS_TYPE_SET);
+  publish = iks_insert (iks_child (iq), "publish");
+  iks_insert_attrib (publish, "node", node);
+  item = iks_insert (publish, "item");
+  if (id)
+    iks_insert_attrib (item, "id", id);
+  iks_insert_node (item, child);
+  debugiq (iq);
+  return iq;
+}
+
+iks *
 j_ps_delete_item (JPsCtx     *ctx,
                 const char *node,
                 const char *id)

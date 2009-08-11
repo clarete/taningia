@@ -62,6 +62,11 @@ iks    *j_ps_publish_item_text          (JPsCtx       *ctx,
                                          const char   *body,
                                          int           len);
 
+iks    *j_ps_publish_item_iks           (JPsCtx       *ctx,
+                                         const char   *node,
+                                         const char   *id,
+                                         iks          *child);
+
 iks    *j_ps_delete_item                (JPsCtx       *ctx,
                                          const char   *node,
                                          const char   *id);
