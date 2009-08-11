@@ -22,6 +22,7 @@
 
 #include <glib.h>
 #include <iksemel.h>
+#include <jarvis/filter.h>
 
 typedef struct _JXmppCtx {
   iksparser *parser;
@@ -29,6 +30,8 @@ typedef struct _JXmppCtx {
   char *pubsub;
   char *jid;
   char *password;
+  JFilter *events;
+  JFilter *ids;
 } JXmppCtx;
 
 JXmppCtx          *j_xmpp_new                      (const char          *jid,
