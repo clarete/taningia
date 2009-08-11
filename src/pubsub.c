@@ -28,7 +28,7 @@
 #define NS_INFO "http://jabber.org/protocol/disco#info"
 #define NS_ITEM "http://jabber.org/protocol/disco#items"
 #define NS_PS_CONFIG "http://jabber.org/protocol/pubsub#node_config"
-#define debugiq(x) g_message (iks_string (iks_stack (x), x))
+#define debugiq(x) fprintf (stderr, "[ps] %s\n", iks_string (iks_stack (x), x))
 
 struct _JPsCtx {
   char *from;
@@ -200,10 +200,10 @@ j_ps_node_retrieve_items (JPsCtx     *ctx,
 
 iks *
 j_ps_publish_item_text (JPsCtx     *ctx,
-                      const char *node,
-                      const char *id,
-                      const char *body,
-                      int         len)
+                        const char *node,
+                        const char *id,
+                        const char *body,
+                        int         len)
 {
   iks *iq, *publish, *item;
   iq = createiqps (ctx, IKS_TYPE_SET);
