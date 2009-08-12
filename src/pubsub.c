@@ -30,33 +30,33 @@
 #define NS_PS_CONFIG "http://jabber.org/protocol/pubsub#node_config"
 #define debugiq(x) fprintf (stderr, "[ps] %s\n", iks_string (iks_stack (x), x))
 
-struct _JPsCtx {
+struct _JPubsub {
   char *from;
   char *to;
 };
 
-JPsCtx *
-j_ps_new (const char *from, const char *to)
+JPubsub *
+j_pubsub_new (const char *from, const char *to)
 {
-  JPsCtx *ctx;
-  ctx = g_slice_new (JPsCtx);
+  JPubsub *ctx;
+  ctx = g_slice_new (JPubsub);
   ctx->from = g_strdup (from);
   ctx->to = g_strdup (to);
   return ctx;
 }
 
 void
-j_ps_free (JPsCtx *ctx)
+j_pubsub_free (JPubsub *ctx)
 {
   g_free (ctx->from);
   ctx->from = NULL;
   g_free (ctx->to);
   ctx->to = NULL;
-  g_slice_free (JPsCtx, ctx);
+  g_slice_free (JPubsub, ctx);
 }
 
 static iks *
-createiq (JPsCtx *ctx, enum iksubtype type, const char *ns)
+createiq (JPubsub *ctx, enum iksubtype type, const char *ns)
 {
   iks *iq;
   char sid[32];
@@ -70,7 +70,7 @@ createiq (JPsCtx *ctx, enum iksubtype type, const char *ns)
 }
 
 static iks *
-createiqps (JPsCtx *ctx, enum iksubtype type)
+createiqps (JPubsub *ctx, enum iksubtype type)
 {
   iks *iq;
   char sid[32];
@@ -94,7 +94,7 @@ createiqps (JPsCtx *ctx, enum iksubtype type)
 }
 
 iks *
-j_ps_query_features (JPsCtx *ctx)
+j_pubsub_query_features (JPubsub *ctx)
 {
   iks *iq = createiq (ctx, IKS_TYPE_GET, NS_INFO);
   debugiq (iq);
@@ -102,8 +102,8 @@ j_ps_query_features (JPsCtx *ctx)
 }
 
 iks *
-j_ps_query_node_info (JPsCtx     *ctx,
-                    const char *node)
+j_pubsub_query_node_info (JPubsub    *ctx,
+                          const char *node)
 {
   iks *iq = createiq (ctx, IKS_TYPE_GET, NS_INFO);
   iks_insert_attrib (iks_child (iq), "node", node);
@@ -112,8 +112,8 @@ j_ps_query_node_info (JPsCtx     *ctx,
 }
 
 iks *
-j_ps_query_node_items (JPsCtx     *ctx,
-                     const char *node)
+j_pubsub_query_node_items (JPubsub    *ctx,
+                           const char *node)
 {
   iks *iq = createiq (ctx, IKS_TYPE_GET, NS_ITEM);
   if (node != NULL)
@@ -123,8 +123,8 @@ j_ps_query_node_items (JPsCtx     *ctx,
 }
 
 iks *
-j_ps_query_node_subscriptions (JPsCtx     *ctx,
-                             const char *node)
+j_pubsub_query_node_subscriptions (JPubsub    *ctx,
+                                   const char *node)
 {
   iks *iq, *sub;
   iq = createiqps (ctx, IKS_TYPE_GET);
@@ -136,7 +136,7 @@ j_ps_query_node_subscriptions (JPsCtx     *ctx,
 }
 
 iks *
-j_ps_query_node_affiliations (JPsCtx *ctx)
+j_pubsub_query_node_affiliations (JPubsub *ctx)
 {
   iks *iq, *sub;
   iq = createiqps (ctx, IKS_TYPE_GET);
@@ -146,9 +146,9 @@ j_ps_query_node_affiliations (JPsCtx *ctx)
 }
 
 iks *
-j_ps_node_subscribe (JPsCtx     *ctx,
-                   const char *node,
-                   const char *jid)
+j_pubsub_node_subscribe (JPubsub    *ctx,
+                         const char *node,
+                         const char *jid)
 {
   iks *iq, *sub;
   iq = createiqps (ctx, IKS_TYPE_SET);
@@ -163,9 +163,9 @@ j_ps_node_subscribe (JPsCtx     *ctx,
 }
 
 iks *
-j_ps_node_unsubscribe (JPsCtx     *ctx,
-                     const char *node,
-                     const char *jid)
+j_pubsub_node_unsubscribe (JPubsub    *ctx,
+                           const char *node,
+                           const char *jid)
 {
   iks *iq, *unsub;
   iq = createiqps (ctx, IKS_TYPE_SET);
@@ -180,9 +180,9 @@ j_ps_node_unsubscribe (JPsCtx     *ctx,
 }
 
 iks *
-j_ps_node_retrieve_items (JPsCtx     *ctx,
-                        const char *node,
-                        int         max_items)
+j_pubsub_node_retrieve_items (JPubsub    *ctx,
+                              const char *node,
+                              int         max_items)
 {
   iks *iq, *items;
   char num[32];
@@ -199,11 +199,11 @@ j_ps_node_retrieve_items (JPsCtx     *ctx,
 }
 
 iks *
-j_ps_publish_item_text (JPsCtx     *ctx,
-                        const char *node,
-                        const char *id,
-                        const char *body,
-                        int         len)
+j_pubsub_publish_item_text (JPubsub    *ctx,
+                            const char *node,
+                            const char *id,
+                            const char *body,
+                            int         len)
 {
   iks *iq, *publish, *item;
   iq = createiqps (ctx, IKS_TYPE_SET);
@@ -218,10 +218,10 @@ j_ps_publish_item_text (JPsCtx     *ctx,
 }
 
 iks *
-j_ps_publish_item_iks (JPsCtx     *ctx,
-                       const char *node,
-                       const char *id,
-                       iks        *child)
+j_pubsub_publish_item_iks (JPubsub    *ctx,
+                           const char *node,
+                           const char *id,
+                           iks        *child)
 {
   iks *iq, *publish, *item;
   iq = createiqps (ctx, IKS_TYPE_SET);
@@ -236,9 +236,9 @@ j_ps_publish_item_iks (JPsCtx     *ctx,
 }
 
 iks *
-j_ps_delete_item (JPsCtx     *ctx,
-                const char *node,
-                const char *id)
+j_pubsub_delete_item (JPubsub    *ctx,
+                      const char *node,
+                      const char *id)
 {
   iks *iq, *retract;
   iq = createiqps (ctx, IKS_TYPE_SET);
@@ -250,10 +250,10 @@ j_ps_delete_item (JPsCtx     *ctx,
 }
 
 iks *
-j_ps_node_create (JPsCtx     *ctx,
-                const char *name,
-                int         bare,
-                ...)
+j_pubsub_node_create (JPubsub    *ctx,
+                      const char *name,
+                      int         bare,
+                      ...)
 {
   iks *iq, *create, *config, *form;
   va_list args;

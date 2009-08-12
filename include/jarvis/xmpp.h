@@ -24,7 +24,9 @@
 #include <iksemel.h>
 #include <jarvis/filter.h>
 
-typedef struct _JXmppCtx {
+typedef struct _JXmpp JXmpp;
+
+struct _JXmpp {
   iksparser *parser;
   iksid *id;
   char *pubsub;
@@ -32,14 +34,14 @@ typedef struct _JXmppCtx {
   char *password;
   JFilter *events;
   JFilter *ids;
-} JXmppCtx;
+};
 
-JXmppCtx          *j_xmpp_new                      (const char          *jid,
+JXmpp             *j_xmpp_new                      (const char          *jid,
                                                     const char          *password,
                                                     const char          *pubsub);
 
-void               j_xmpp_free                     (JXmppCtx            *ctx);
+void               j_xmpp_free                     (JXmpp               *ctx);
 
-void               j_xmpp_run                      (JXmppCtx            *ctx);
+void               j_xmpp_run                      (JXmpp               *ctx);
 
 #endif /* _JARVIS_XMPP_H_ */

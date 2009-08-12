@@ -24,56 +24,56 @@
 
 #define PUBSUB_NS "http://jabber.org/protocol/pubsub"
 
-typedef struct _JPsCtx JPsCtx;
+typedef struct _JPubsub JPubsub;
 
-JPsCtx *j_ps_new                        (const char   *from,
-                                         const char   *to);
+JPubsub *j_pubsub_new                        (const char   *from,
+                                              const char   *to);
 
-void    j_ps_free                       (JPsCtx       *ctx);
+void     j_pubsub_free                       (JPubsub      *ctx);
 
-iks    *j_ps_query_features             (JPsCtx       *ctx);
+iks     *j_pubsub_query_features             (JPubsub      *ctx);
 
-iks    *j_ps_query_node_info            (JPsCtx       *ctx,
-                                         const char   *node);
+iks     *j_pubsub_query_node_info            (JPubsub      *ctx,
+                                              const char   *node);
 
-iks    *j_ps_query_node_items           (JPsCtx       *ctx,
-                                         const char   *node);
+iks     *j_pubsub_query_node_items           (JPubsub      *ctx,
+                                              const char   *node);
 
-iks    *j_ps_query_node_subscriptions   (JPsCtx       *ctx,
-                                         const char   *node);
+iks     *j_pubsub_query_node_subscriptions   (JPubsub      *ctx,
+                                              const char   *node);
 
-iks    *j_ps_query_node_affiliations    (JPsCtx       *ctx);
+iks     *j_pubsub_query_node_affiliations    (JPubsub      *ctx);
 
-iks    *j_ps_node_subscribe             (JPsCtx       *ctx,
-                                         const char   *node,
-                                         const char   *jid);
+iks     *j_pubsub_node_subscribe             (JPubsub      *ctx,
+                                              const char   *node,
+                                              const char   *jid);
 
-iks    *j_ps_node_unsubscribe           (JPsCtx       *ctx,
-                                         const char   *node,
-                                         const char   *jid);
+iks     *j_pubsub_node_unsubscribe           (JPubsub      *ctx,
+                                              const char   *node,
+                                              const char   *jid);
 
-iks    *j_ps_node_retrieve_items        (JPsCtx       *ctx,
-                                         const char   *node,
-                                         int           max_items);
+iks     *j_pubsub_node_retrieve_items        (JPubsub      *ctx,
+                                              const char   *node,
+                                              int           max_items);
 
-iks    *j_ps_publish_item_text          (JPsCtx       *ctx,
-                                         const char   *node,
-                                         const char   *id,
-                                         const char   *body,
-                                         int           len);
+iks     *j_pubsub_publish_item_text          (JPubsub      *ctx,
+                                              const char   *node,
+                                              const char   *id,
+                                              const char   *body,
+                                              int           len);
 
-iks    *j_ps_publish_item_iks           (JPsCtx       *ctx,
-                                         const char   *node,
-                                         const char   *id,
-                                         iks          *child);
+iks     *j_pubsub_publish_item_iks           (JPubsub      *ctx,
+                                              const char   *node,
+                                              const char   *id,
+                                              iks          *child);
 
-iks    *j_ps_delete_item                (JPsCtx       *ctx,
-                                         const char   *node,
-                                         const char   *id);
+iks     *j_pubsub_delete_item                (JPubsub      *ctx,
+                                              const char   *node,
+                                              const char   *id);
 
-iks    *j_ps_node_create                (JPsCtx       *ctx,
-                                         const char   *node,
-                                         int           bare,
-                                         ...);
+iks     *j_pubsub_node_create                (JPubsub      *ctx,
+                                              const char   *node,
+                                              int           bare,
+                                              ...);
 
 #endif /* _JARVIS_PUBSUB_H */
