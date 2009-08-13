@@ -25,7 +25,6 @@
 
 #define J_ATOM_NS "http://www.w3.org/2005/Atom"
 
-typedef struct _JAtomFeed     JAtomFeed;
 typedef struct _JAtomEntry    JAtomEntry;
 typedef struct _JAtomCategory JAtomCategory;
 typedef struct _JAtomAuthor   JAtomAuthor;
