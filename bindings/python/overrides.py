@@ -26,9 +26,17 @@ AtomEntry_set_updated (AtomEntry *self,
   PyObject *date;
   time_t cdate;
   int sec, min, hour, day, month, year;
+  PyDateTime_IMPORT;
 
   if (!PyArg_ParseTuple (args, "O", &date))
     return NULL;
+
+  if (!PyDateTime_Check (date))
+    {
+      PyErr_SetString(PyExc_ValueError,
+		      "param 1 must be a datetime.datetime instance.");
+      return NULL;
+    }
 
   sec = PyDateTime_DATE_GET_SECOND (date);
   min = PyDateTime_DATE_GET_MINUTE (date);
@@ -50,10 +58,11 @@ static PyObject *
 AtomEntry_get_updated (AtomEntry *self,
                        PyObject  *args)
 {
-  PyDateTime_IMPORT;
   PyObject *date;
   time_t cdate;
   struct tm *ctm;
+  PyDateTime_IMPORT;
+
   cdate = j_atom_entry_get_updated (self->inner);
   ctm = gmtime (&cdate);
   date = PyDateTime_FromDateAndTime (1900 + ctm->tm_year, ctm->tm_mon + 1,
