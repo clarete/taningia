@@ -36,14 +36,8 @@ TYPE_MAP = {
 
 TEMPLATE_HEAD = '''#include <%(header_dir)s/%(lib)s.h>'''
 
-TEMPLATE_TYPES = '''typedef struct {
-  PyObject_HEAD
-  %(cname)s *inner;
-} %(type_name)s;
-'''
-
 TEMPLATE_METHOD_HEAD = '''static PyObject *
-%(obj_name)s_%(method_name)s (%(obj_name)s *self, PyObject *args)
+%(obj_name)s_%(method_name)s (Py%(obj_name)sObject *self, PyObject *args)
 {
 %(params)s
   %(ret_var)s%(cname)s (self->inner%(param_names)s);
@@ -69,9 +63,9 @@ static PyMethodDef %(type_name)s_methods[] = {
 '''
 
 TEMPLATE_CONSTRUCTOR = '''static int
-%(type_name)s_init (%(type_name)s *self,
-                    PyObject      *args,
-                    PyObject      *kwargs)
+%(type_name)s_init (Py%(type_name)sObject *self,
+                    PyObject              *args,
+                    PyObject              *kwargs)
 {
 %(params)s
   self->inner = %(constructor_name)s (%(param_names)s);
@@ -80,7 +74,7 @@ TEMPLATE_CONSTRUCTOR = '''static int
 '''
 
 TEMPLATE_DESTRUCTOR = '''static void
-%(type_name)s_dealloc (%(type_name)s *self)
+%(type_name)s_dealloc (Py%(type_name)sObject *self)
 {
   if (self->inner)
     %(destructor_name)s (self->inner);
@@ -92,7 +86,7 @@ static PyTypeObject %(type_name)sType = {
   PyObject_HEAD_INIT(NULL)
   0,                                        /* ob_size */
   "%(module_name)s.%(type_name)s",          /* tp_name */
-  sizeof (%(type_name)s),                   /* tp_basicsize */
+  sizeof (Py%(type_name)sObject),           /* tp_basicsize */
   0,                                        /* tp_itemsize */
   (destructor) %(type_name)s_dealloc,       /* tp_dealloc */
   0,                                        /* tp_print */
@@ -131,6 +125,23 @@ static PyTypeObject %(type_name)sType = {
 };
 '''
 
+TEMPLATE_NEW_FUNC = '''static PyObject *
+new_%(name)s (%(cname)s *ctype, PyTypeObject *type)
+{
+  Py%(name)sObject *self;
+  self = (Py%(name)sObject *) (type->tp_alloc (type, 0));
+  if (self != NULL)
+    self->inner = ctype;
+  return (PyObject *) self;
+}
+'''
+
+TEMPLATE_CAPI = '''/* C API definition */
+static Py%(module_camel)s_CAPI CAPI = {
+%(definitions)s
+};
+'''
+
 TEMPLATE_MODULE = '''
 #ifndef PyMODINIT_FUNC
 #define PyMODINIT_FUNC void
@@ -140,11 +151,63 @@ PyMODINIT_FUNC
 init%(mname)s (void)
 {
   PyObject *m;
+  PyObject *capi;
+  PyIks_IMPORT;                 /* To use iksemel bindings */
   m = Py_InitModule3 ("%(mname)s", NULL, "%(doc)s");
+
+  capi = PyCObject_FromVoidPtr (&CAPI, NULL);
+  if (capi == NULL)
+    return;
+  PyModule_AddObject (m, "%(mname)s_CAPI", capi);
 
 %(modules)s
 }
 '''
+
+TEMPLATE_H_FILE_HEADER = '''
+#ifndef _PY_%(module_upper)s_H_
+#define _PY_%(module_upper)s_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+#include <Python.h>
+%(includes)s
+
+#define Py%(module_camel)s_IMPORT \\
+  Py%(module_camel)sAPI = \\
+    (Py%(module_camel)s_CAPI*) PyCObject_Import ("%(module)s", "%(module)s_CAPI")
+'''
+
+TEMPLATE_H_MACROS = '''#define Py%(type)s_AS_%(type_upper)s(op) \\
+  (((Py%(type)sObject *) op)->inner)
+
+#define Py%(type)s_From%(type)s(o) \\
+  Py%(module_camel)sAPI->Py%(type)s_From%(type)s(o, Py%(module_camel)sAPI->%(type)sType)
+'''
+
+TEMPLATE_H_TYPES = '''typedef struct {
+  PyObject_HEAD
+  %(cname)s *inner;
+} Py%(type_name)sObject;
+'''
+
+TEMPLATE_H_CAPI = '''/* Define struct for the C API. */
+typedef struct {
+%(types)s
+} Py%(module_camel)s_CAPI;
+'''
+
+TEMPLATE_H_FILE_FOOTER = '''static Py%(module_camel)s_CAPI *Py%(module_camel)sAPI;
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* _PY_%(module_upper)s_H_ */
+'''
+
 def parse_return(obj, method):
     if method['rtype'] != 'void':
         return '%(rtype)s _ret = (%(rtype)s) ' % method
@@ -206,7 +269,7 @@ def parse_args(obj, method):
             app('    return NULL;')
     return '\n'.join(args)
 
-def write_header(objs):
+def write_header(modname, objs):
     ret = []
     app = ret.append
     # FIXME: Hardcoded includes
@@ -215,16 +278,26 @@ def write_header(objs):
     app('#include <glib.h>')
     app('#include <iksemel.h>')
     app('#include <iksemelmodule.h>')
+    app('#include "%s.h"' % (modname+'module'))
     libs = set()
     for obj in objs:
         libs.add(obj['lib'])
     for i in libs:
         app(TEMPLATE_HEAD % {'header_dir': HEADER_DIR, 'lib': i})
     app('')
-    for obj in objs:
-        app(TEMPLATE_TYPES % {
-                'type_name': obj['name'],
-                'cname': obj['cname']})
+
+    # Useful macros for creating new pyobjects from our binded types.
+    for i in objs:
+        app('#define py_%(name)s_from_%(name)s(o) '
+            'new_%(name)s (o, &%(name)sType)' % i)
+    app('')
+
+    # Forward declarations
+    for i in objs:
+        app('static PyTypeObject %(name)sType;' % i)
+        app('static PyObject *new_%(name)s (%(cname)s *ctype, PyTypeObject *type);' % i)
+    app('')
+
     return '\n'.join(ret)
 
 def write_module_init(mname, objs):
@@ -242,6 +315,9 @@ def write_module_init(mname, objs):
 
 def write_constructor(obj):
     if 'constructor' in obj.keys():
+        cname = obj['constructor']['cname']
+        if cname in OVERRIDES:
+            return OVERRIDES[cname]()
         return TEMPLATE_CONSTRUCTOR % {
             'type_name': obj['name'],
             'constructor_name': obj['constructor']['cname'],
@@ -252,11 +328,27 @@ def write_constructor(obj):
 
 def write_destructor(obj):
     if 'destructor' in obj.keys():
+        cname = obj['destructor']['cname']
+        if cname in OVERRIDES:
+            return OVERRIDES[cname]()
         return TEMPLATE_DESTRUCTOR % {
             'type_name': obj['name'],
             'destructor_name': obj['destructor']['cname'],
             }
     return''
+
+def write_newfuncs(obj):
+    return TEMPLATE_NEW_FUNC % obj
+
+def write_capi(modname, types):
+    definitions = []
+    for i in types:
+        definitions.append('  &%sType' % i['name'])
+        definitions.append('  new_%s' % i['name'])
+    ctx = {'module_camel': modname.capitalize(),
+           'definitions': ',\n'.join(definitions)
+           }
+    return TEMPLATE_CAPI % ctx
 
 def write_type(obj):
     return TEMPLATE_TYPE % {'type_name': obj['name'],
@@ -298,20 +390,78 @@ def write_module(obj):
         app(TEMPLATE_METHOD_HEAD % mapping)
     return '\n'.join(ret)
 
-def main(files):
-    types = scanner.scan(files)
-    print write_header(types)
+def write_hfile(modname, types):
+    ret = []
+    app = ret.append
+
+    libs = set()
+    headers = []
+    for obj in types:
+        libs.add(obj['lib'])
+    for i in libs:
+        headers.append(TEMPLATE_HEAD % {'header_dir': HEADER_DIR, 'lib': i})
+    ctx = {
+        'module': modname,
+        'module_upper': modname.upper(),
+        'module_camel': modname.capitalize(),
+        'includes': '\n'.join(headers)
+    }
+
+    app(TEMPLATE_H_FILE_HEADER % ctx)
+
+    for obj in types:
+        app(TEMPLATE_H_MACROS % {
+                'type': obj['name'],
+                'type_upper': obj['name'].upper(),
+                'module_camel': modname.capitalize(),
+                })
+
+    for obj in types:
+        app(TEMPLATE_H_TYPES % {
+                'type_name': obj['name'],
+                'cname': obj['cname'],
+                })
+
+    pytypes = []
     for i in types:
-        print write_module(i)
-        print write_constructor(i)
-        print write_destructor(i)
-        print write_methods(i)
-        print write_type(i)
-    print write_module_init('jarvis', types)
+        pytypes.append('  PyTypeObject *%sType;' % i['name'])
+        pytypes.append('  PyObject *(*Py%(type)s_From%(type)s) '
+                       '(%(ctype)s *, PyTypeObject *);' %
+                       {'type': i['name'], 'ctype': i['cname']})
+
+    app(TEMPLATE_H_CAPI % {
+            'module_camel': modname.capitalize(),
+            'types': '\n'.join(pytypes),
+            })
+
+    app(TEMPLATE_H_FILE_FOOTER % ctx)
+    return '\n'.join(ret)
+
+def write_cfile(modname, types):
+    ret = []
+    app = ret.append
+    app(write_header(modname, types))
+    for i in types:
+        app(write_module(i))
+        app(write_constructor(i))
+        app(write_destructor(i))
+        app(write_methods(i))
+        app(write_type(i))
+        app(write_newfuncs(i))
+    app(write_capi(modname, types))
+    app(write_module_init(modname, types))
+    return '\n'.join(ret)
+
+def main(modname, files):
+    types = scanner.scan(files)
+    open(modname+'module.c', 'w').write(write_cfile(modname, types))
+    open(modname+'module.h', 'w').write(write_hfile(modname, types))
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         exit(usage())
     if sys.argv[1] in ('-h', '--help'):
         exit(usage())
-    exit(main(sys.argv[1:]))
+    if len(sys.argv) < 3:
+        exit(usage())
+    exit(main(sys.argv[1], sys.argv[2:]))
