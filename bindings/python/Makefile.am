@@ -2,9 +2,9 @@ DEFSDIR = $(top_srcdir)/bindings/defs
 DEFSFILE = $(DEFSDIR)/$(PACKAGE).json
 
 pyexecdir = $(pythondir)
-pyexec_LTLIBRARIES = jarvismodule.la
+pyexec_LTLIBRARIES = jarvis.la
 
-jarvismodule_la_SOURCES = \
+jarvis_la_SOURCES = \
 	jarvismodule.c \
 	jarvismodule.h
 
@@ -24,8 +24,9 @@ AM_LDFLAGS = \
 	$(GLIB_LIBS) \
 	$(IKSEMEL_LIBS) \
 	$(PYTHON_LIBS) \
-	$(PYIKSEMEL_LIBS)
+	$(PYIKSEMEL_LIBS) \
+	$(top_builddir)/src/libjarvis.la
 
-EXTRA_DIST = $(jarvismodule_la_SOURCES)
+EXTRA_DIST = $(jarvis_la_SOURCES)
 
-DISTCLEANFILES = $(jarvismodule_la_SOURCES)
+DISTCLEANFILES = $(jarvis_la_SOURCES)
