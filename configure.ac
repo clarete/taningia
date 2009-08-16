@@ -33,6 +33,13 @@ AC_ARG_WITH([python],
   [with_python_bindings=yes], [with_python_bindings=no])
 AM_CONDITIONAL([PYTHON_BINDINGS], [test "x$with_python_bindings" != "xno"])
 
+AS_IF([test "x$with_python_bindings" != "xno"],
+  [PKG_CHECK_MODULES([PYIKSEMEL], [python-iksemel],
+    [with_pyiksemel=yes],
+    [AC_MSG_ERROR([coudn't find python-iksemel])])])
+AC_SUBST([PYIKSEMEL_CFLAGS])
+AC_SUBST([PYIKSEMEL_LIBS])
+
 # Checks for .pc packages
 PKG_CHECK_MODULES([IKSEMEL], [iksemel])
 AC_SUBST([IKSEMEL_CFLAGS])
