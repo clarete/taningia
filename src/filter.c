@@ -31,7 +31,7 @@ j_filter_new (void *data)
 {
   JFilter *filter;
   filter = g_slice_new (JFilter);
-  filter->data = data;
+  filter->data = data ? data : NULL;
   filter->hash =
     g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
   return filter;
@@ -42,6 +42,12 @@ j_filter_free (JFilter *filter)
 {
   g_hash_table_unref (filter->hash);
   g_slice_free (JFilter, filter);
+}
+
+void *
+j_filter_get_data (JFilter *filter)
+{
+  return filter->data;
 }
 
 void

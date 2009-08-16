@@ -26,9 +26,11 @@ typedef struct _JFilter JFilter;
 
 typedef int (*JFilterCallback) (void *, void *, void *);
 
-JFilter            *j_filter_new                   (void                *data);
+JFilter            *j_filter_new                   (void                *data _optional_);
 
 void                j_filter_free                  (JFilter             *filter);
+
+void               *j_filter_get_data              (JFilter             *filter);
 
 void                j_filter_add                   (JFilter             *filter,
                                                     const char          *name,
