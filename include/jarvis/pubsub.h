@@ -21,6 +21,7 @@
 #define _JARVIS_PUBSUB_H
 
 #include <iksemel.h>
+#include <jarvis/jarvis.h>
 
 #define PUBSUB_NS "http://jabber.org/protocol/pubsub"
 
@@ -46,11 +47,11 @@ iks     *j_pubsub_query_node_affiliations    (JPubsub      *ctx);
 
 iks     *j_pubsub_node_subscribe             (JPubsub      *ctx,
                                               const char   *node,
-                                              const char   *jid);
+                                              const char   *jid _optional_);
 
 iks     *j_pubsub_node_unsubscribe           (JPubsub      *ctx,
                                               const char   *node,
-                                              const char   *jid);
+                                              const char   *jid _optional_);
 
 iks     *j_pubsub_node_retrieve_items        (JPubsub      *ctx,
                                               const char   *node,
@@ -58,13 +59,13 @@ iks     *j_pubsub_node_retrieve_items        (JPubsub      *ctx,
 
 iks     *j_pubsub_publish_item_text          (JPubsub      *ctx,
                                               const char   *node,
-                                              const char   *id,
+                                              const char   *id _optional_,
                                               const char   *body,
-                                              int           len);
+                                              int           len _len_);
 
 iks     *j_pubsub_publish_item_iks           (JPubsub      *ctx,
                                               const char   *node,
-                                              const char   *id,
+                                              const char   *id _optional_,
                                               iks          *child);
 
 iks     *j_pubsub_delete_item                (JPubsub      *ctx,

@@ -21,6 +21,7 @@
 #define _JARVIS_XMPP_H_
 
 #include <iksemel.h>
+#include <jarvis/jarvis.h>
 #include <jarvis/filter.h>
 #include <jarvis/log.h>
 

@@ -20,6 +20,8 @@
 #ifndef _JARVIS_FILTER_H_
 #define _JARVIS_FILTER_H_
 
+#include <jarvis/jarvis.h>
+
 typedef struct _JFilter JFilter;
 
 typedef int (*JFilterCallback) (void *, void *, void *);
@@ -31,10 +33,10 @@ void                j_filter_free                  (JFilter             *filter)
 void                j_filter_add                   (JFilter             *filter,
                                                     const char          *name,
                                                     JFilterCallback      cb,
-                                                    void                *data);
+                                                    void                *data _optional_);
 
 int                 j_filter_call                  (JFilter             *filter,
                                                     const char          *name,
-                                                    void                *data);
+                                                    void                *data _optional_);
 
 #endif /* _JARVIS_FILTER_H_ */

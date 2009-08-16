@@ -20,6 +20,7 @@
 #ifndef _JARVIS_ATOM_H_
 #define _JARVIS_ATOM_H_
 
+#include <jarvis/jarvis.h>
 #include <time.h>
 #include <iksemel.h>
 
@@ -34,7 +35,7 @@ typedef struct _JAtomContent  JAtomContent;
 
 JAtomContent       *j_atom_content_new             (const char     *type,
                                                     const char     *content,
-                                                    int             len);
+                                                    int             len _len_);
 void                j_atom_content_free            (JAtomContent   *content);
 iks                *j_atom_content_to_iks          (JAtomContent   *content);
 char               *j_atom_content_to_string       (JAtomContent   *entry);
@@ -45,8 +46,8 @@ void                j_atom_content_set_src         (JAtomContent   *content,
 /* JAtomAuthor */
 
 JAtomAuthor        *j_atom_author_new              (const char     *name,
-                                                    const char     *email,
-                                                    const char     *iri);
+                                                    const char     *email _optional_,
+                                                    const char     *iri _optional_);
 void                j_atom_author_free             (JAtomAuthor    *author);
 iks                *j_atom_author_to_iks           (JAtomAuthor    *author);
 char               *j_atom_author_to_string        (JAtomAuthor    *author);
@@ -63,8 +64,8 @@ void                j_atom_author_set_iri          (JAtomAuthor    *author,
 /* JAtomCategory */
 
 JAtomCategory      *j_atom_category_new            (const char     *term,
-                                                    const char     *label,
-                                                    const char     *scheme);
+                                                    const char     *label _optional_,
+                                                    const char     *scheme _optional_);
 void                j_atom_category_free           (JAtomCategory  *category);
 iks                *j_atom_category_to_iks         (JAtomCategory  *category);
 char               *j_atom_category_to_string      (JAtomCategory  *category);
@@ -91,14 +92,14 @@ time_t              j_atom_entry_get_updated       (JAtomEntry       *entry);
 void                j_atom_entry_set_updated       (JAtomEntry       *entry,
                                                     time_t            updated);
 void                j_atom_entry_get_authors       (JAtomEntry       *entry,
-                                                    JAtomAuthor    ***authors,
-                                                    int              *len);
+                                                    JAtomAuthor    ***authors _out_,
+                                                    int              *len _out_);
 void                j_atom_entry_add_author        (JAtomEntry       *entry,
                                                     JAtomAuthor      *author);
 void                j_atom_entry_del_authors       (JAtomEntry       *entry);
 void                j_atom_entry_get_categories    (JAtomEntry       *entry,
-                                                    JAtomCategory  ***categories,
-                                                    int              *len);
+                                                    JAtomCategory  ***categories _out_,
+                                                    int              *len _out_);
 
 void                j_atom_entry_add_category      (JAtomEntry       *entry,
                                                     JAtomCategory    *category);

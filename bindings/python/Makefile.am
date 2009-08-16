@@ -15,7 +15,8 @@ AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(IKSEMEL_CFLAGS) \
 	$(PYTHON_CFLAGS) \
-	$(PYIKSEMEL_CFLAGS)
+	$(PYIKSEMEL_CFLAGS) \
+	-I$(top_srcdir)/include
 
 AM_LDFLAGS = \
 	-module -avoid-version \
