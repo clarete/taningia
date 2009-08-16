@@ -20,6 +20,7 @@
 import simplejson
 import sys
 import scanner
+from overrides import OVERRIDES
 
 # ---- Some definitions ----
 
@@ -516,6 +517,9 @@ class CFile(Helper):
         return '\n'.join(parts)
 
     def constructor(self, ctype):
+        cname = ctype['constructor']['cname']
+        if cname in OVERRIDES:
+            return OVERRIDES[cname]()
         ctx = {'pyname': pyname(ctype['name']),
                'name': ctype['constructor']['cname'],
                'params': self.parse_args(ctype, ctype['constructor']),
@@ -524,12 +528,18 @@ class CFile(Helper):
         return TEMPLATE_C_CONSTRUCTOR % ctx
 
     def destructor(self, ctype):
+        cname = ctype['destructor']['cname']
+        if cname in OVERRIDES:
+            return OVERRIDES[cname]()
         ctx = {'pyname': pyname(ctype['name']),
                'name': ctype['destructor']['cname'],
                }
         return TEMPLATE_C_DESTRUCTOR % ctx
 
     def method(self, ctype, method):
+        cname = method['cname']
+        if cname in OVERRIDES:
+            return OVERRIDES[cname]()
         ctx = {'pyname': pyname(ctype['name']),
                'name': method['name'],
                'cname': method['cname'],
