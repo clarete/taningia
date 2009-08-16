@@ -1,8 +1,10 @@
 *~
 *.[oa]
 *.l[oa]
+*.pyc
 .deps
 .libs
+core
 aclocal.m4
 autom4te.cache
 Makefile
@@ -23,3 +25,5 @@ stamp-h1
 /jarvis.pc
 /app
 /conf.[ch]
+/bindings/defs/jarvis.json
+/bindings/python/jarvismodule.[ch]
