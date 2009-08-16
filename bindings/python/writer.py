@@ -216,7 +216,10 @@ init%(mname)s (void)
 {
   PyObject *m;
   PyObject *capi;
+
   PyIks_IMPORT;                 /* To use iksemel bindings */
+  PyDateTime_IMPORT;
+
   m = Py_InitModule3 ("%(mname)s", NULL, "%(doc)s");
 
   capi = PyCObject_FromVoidPtr (&CAPI, NULL);

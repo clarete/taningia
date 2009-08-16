@@ -195,7 +195,7 @@ def get_defs(libname, files):
     # Dependencies. Today they are hardcoded, maybe some day we could
     # do something more generic.
     public_deps = []
-    priv_deps = ['glib.h', 'iksemel.h', 'iksemelmodule.h']
+    priv_deps = ['glib.h', 'iksemel.h', 'iksemelmodule.h', 'datetime.h']
 
     # This is our final answer. A dict containing all collected and
     # (un)useful info about our library.
