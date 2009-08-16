@@ -36,6 +36,7 @@ TYPE_MAP = {
 }
 
 RETURN_MAP = {
+    'void *':        'Py_BuildValue ("O", ret ? (PyObject *) ret : Py_None)',
     'char *':        'Py_BuildValue ("s", ret)',
     'const char *':  'Py_BuildValue ("s", ret)',
     'int':           'Py_BuildValue ("i", ret)',
@@ -313,9 +314,13 @@ class HFile(Helper):
         app = ret.append
         for module in self.defs['modules']:
             for ctype in module['types']:
+                pname = pyname(ctype['name'])
+                if pname in OVERRIDES:
+                    app(OVERRIDES[pname]())
+                    continue
                 app(TEMPLATE_H_TYPES % self.uctx({
                             'cname': ctype['cname'],
-                            'pytype': pyname(ctype['name']),
+                            'pytype': pname,
                             }))
         return '\n'.join(ret)
 
