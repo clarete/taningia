@@ -377,10 +377,15 @@ class CFile(Helper):
                 continue
 
             if nopointer in self.alltypes:
-                app('  %s * %s;' % (pyname(self.name_from_cname(ptype)), name))
+                app('  %s * %s = NULL;' % (pyname(self.name_from_cname(ptype)), name))
                 increfs.append(name)
             else:
-                app('  %s %s;' % (ptype, name))
+                # it is a pointer... so it should be initialized
+                # before used.
+                if ptype.endswith('*'):
+                    app('  %s %s = NULL;' % (ptype, name))
+                else:
+                    app('  %s %s;' % (ptype, name))
             svars.append('&%s' % name)
 
             # Here we're discovering which params should be passed to
