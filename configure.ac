@@ -11,7 +11,14 @@ AC_PROG_CC
 AC_PROG_LIBTOOL
 AM_INIT_AUTOMAKE(foreign)
 
-# Checks for libraries.
+# Python stuff
+AM_PATH_PYTHON(2.5.0)
+PY_PREFIX=`$PYTHON -c 'import sys ; print sys.prefix'`
+PYTHON_LIBS="-lpython$PYTHON_VERSION"
+PYTHON_CFLAGS="-I$PY_PREFIX/include/python$PYTHON_VERSION"
+AC_SUBST([PYTHON])
+AC_SUBST([PYTHON_LIBS])
+AC_SUBST([PYTHON_CFLAGS])
 
 # Checks for header files.
 AC_CHECK_HEADERS([string.h])
@@ -19,9 +26,14 @@ AC_CHECK_HEADERS([string.h])
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
 
-# Checks for library functions.
+# Checking for optional bindings
 
-# Check for .pc packages
+AC_ARG_WITH([python],
+  [AS_HELP_STRING([--with-python], [Build python bindings. @<:@default=no@:>@])],
+  [with_python_bindings=yes], [with_python_bindings=no])
+AM_CONDITIONAL([PYTHON_BINDINGS], [test "x$with_python_bindings" != "xno"])
+
+# Checks for .pc packages
 PKG_CHECK_MODULES([IKSEMEL], [iksemel])
 AC_SUBST([IKSEMEL_CFLAGS])
 AC_SUBST([IKSEMEL_LIBS])
@@ -35,6 +47,9 @@ AC_CONFIG_FILES([
   include/Makefile
   include/jarvis/Makefile
   src/Makefile
+  bindings/Makefile
+  bindings/defs/Makefile
+  bindings/python/Makefile
   jarvis.pc
 ])
 

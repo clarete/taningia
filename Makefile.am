@@ -1,4 +1,4 @@
-SUBDIRS = include src
+SUBDIRS = include src bindings
 
 EXTRA_DIST = jarvis.pc.in
 
