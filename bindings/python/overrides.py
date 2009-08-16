@@ -127,9 +127,119 @@ PyAtomEntryObject_get_categories (PyAtomEntryObject *self,
 }
 '''
 
+def pyfilterobject():
+    return '''typedef struct {
+  PyObject_HEAD
+  JFilter *inner;
+  PyObject *callback;
+  PyObject *param;
+} PyFilterObject;
+'''
+
+def j_filter_add():
+    return '''
+static int
+call_filter_callback (void *data1, void *data2, void *data3)
+{
+  PyObject *retval;
+  PyObject *ptuple;
+  PyObject *p1 = NULL, *p2 = NULL, *p3 = NULL;
+  PyFilterObject *filter;
+
+  /* Getting params to pass to the callback */
+  filter = (PyFilterObject *) data2;
+  p1 = (PyObject *) j_filter_get_data (filter->inner);
+  p2 = (PyObject *) filter->param;
+  p3 = (PyObject *) data3;
+
+  if (!p1)
+    {
+      Py_INCREF (Py_None);
+      p1 = Py_None;
+    }
+  if (!p2)
+    {
+      Py_INCREF (Py_None);
+      p2 = Py_None;
+    }
+  if (!p3)
+    {
+      Py_INCREF (Py_None);
+      p3 = Py_None;
+    }
+
+  /* Packing all params in a tuple */
+  ptuple = PyTuple_New (3);
+  PyTuple_SetItem (ptuple, 0, p1);
+  PyTuple_SetItem (ptuple, 1, p2);
+  PyTuple_SetItem (ptuple, 2, p3);
+
+  retval = PyObject_CallObject (filter->callback, ptuple);
+  if (!retval)
+    PyErr_Print ();
+  else
+    Py_DECREF (retval);
+
+  return 1;
+}
+
+static PyObject *
+PyFilterObject_add (PyFilterObject *self,
+                    PyObject       *args)
+{
+  const char *name = NULL;
+  PyObject *callback = NULL;
+  PyObject *extra = NULL;
+  if (!PyArg_ParseTuple (args, "sO|O", &name, &callback, &extra))
+    return NULL;
+
+  if (!PyCallable_Check (callback))
+    {
+      PyErr_SetString (PyExc_ValueError,
+                       "Param 2 must be callable.");
+      return NULL;
+    }
+  Py_INCREF (callback);
+  self->callback = callback;
+  if (extra)
+    {
+      Py_INCREF (extra);
+      self->param = extra;
+    }
+  j_filter_add (self->inner,
+                name,
+                (JFilterCallback) call_filter_callback,
+                self);
+
+  Py_INCREF (Py_None);
+  return Py_None;
+}
+'''
+
+def j_filter_call():
+    return '''
+static PyObject *
+PyFilterObject_call (PyFilterObject *self,
+                     PyObject       *args)
+{
+  const char *name = NULL;
+  PyObject *extra = NULL;
+  if (!PyArg_ParseTuple (args, "s|O", &name, &extra))
+    return NULL;
+
+  j_filter_call (self->inner, name, extra);
+
+  Py_INCREF (Py_None);
+  return Py_None;
+}
+'''
+
 OVERRIDES = {
+    'PyFilterObject': pyfilterobject,
     'j_atom_entry_set_updated': j_atom_entry_set_updated,
     'j_atom_entry_get_updated': j_atom_entry_get_updated,
     'j_atom_entry_get_authors': j_atom_entry_get_authors,
     'j_atom_entry_get_categories': j_atom_entry_get_categories,
+    'j_filter_add': j_filter_add,
+    'j_filter_call': j_filter_call,
 }
