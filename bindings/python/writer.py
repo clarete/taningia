@@ -56,9 +56,13 @@ extern "C" {
 #include <Python.h>
 %(includes)s
 
+#ifndef Py%(libcamel)sBUILD_CORE
+
 #define Py%(libcamel)s_IMPORT \\
   Py%(libcamel)sAPI = \\
     (Py%(libcamel)s_CAPI*) PyCObject_Import ("%(lib)s", "%(lib)s_CAPI")
+
+#endif /* Py%(libcamel)sBUILD_CORE*/
 '''
 
 TEMPLATE_H_MACROS = '''#define Py%(type)s_AS_%(type_upper)s(op) \\
@@ -80,7 +84,9 @@ typedef struct {
 } Py%(libcamel)s_CAPI;
 '''
 
-TEMPLATE_H_FILE_FOOTER = '''static Py%(libcamel)s_CAPI *Py%(libcamel)sAPI;
+TEMPLATE_H_FILE_FOOTER = '''#ifndef Py%(libcamel)sBUILD_CORE
+static Py%(libcamel)s_CAPI *Py%(libcamel)sAPI;
+#endif /* Py%(libcamel)sBUILD_CORE*/
 
 #ifdef __cplusplus
 }

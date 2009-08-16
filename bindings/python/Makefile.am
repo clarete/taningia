@@ -16,7 +16,8 @@ AM_CPPFLAGS = \
 	$(IKSEMEL_CFLAGS) \
 	$(PYTHON_CFLAGS) \
 	$(PYIKSEMEL_CFLAGS) \
-	-I$(top_srcdir)/include
+	-I$(top_srcdir)/include \
+	-DPyJarvisBUILD_CORE
 
 AM_LDFLAGS = \
 	-module -avoid-version \
