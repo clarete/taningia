@@ -366,6 +366,7 @@ class CFile(Helper):
         # Here we're declaring variables that actually holds values
         # that will be passed to the method.
         types = ''
+        increfs = []
         for param in params:
             name = param['name']
             ptype = param['type']
@@ -376,6 +377,7 @@ class CFile(Helper):
 
             if nopointer in self.alltypes:
                 app('  %s * %s;' % (pyname(self.name_from_cname(ptype)), name))
+                increfs.append(name)
             else:
                 app('  %s %s;' % (ptype, name))
             svars.append('&%s' % name)
@@ -400,6 +402,10 @@ class CFile(Helper):
                 app('    return -1;')
             else:
                 app('    return NULL;')
+
+        for i in increfs:
+            app('  Py_INCREF (%s);' % i)
+
         return '\n'.join(args)
 
     def parse_arg_names(self, obj, method):
