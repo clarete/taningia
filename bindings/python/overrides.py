@@ -71,7 +71,65 @@ PyAtomEntryObject_get_updated (PyAtomEntryObject *self,
 }
 '''
 
+def j_atom_entry_get_authors():
+    return '''
+static PyObject *
+PyAtomEntryObject_get_authors (PyAtomEntryObject *self,
+                               PyObject          *args)
+{
+  PyObject *alist;
+  JAtomAuthor **authors;
+  int len, i;
+  j_atom_entry_get_authors (self->inner, &authors, &len);
+
+  alist = PyList_New (len);
+  if (!alist)
+    return NULL;
+
+  for (i = 0; i < len; i++)
+    {
+      PyObject *author;
+      author = Py_AtomAuthor_FromAtomAuthor (authors[i]);
+      Py_INCREF (author);
+      PyList_SetItem (alist, i, author);
+    }
+
+  Py_INCREF (alist);
+  return alist;
+}
+'''
+
+def j_atom_entry_get_categories():
+    return '''
+static PyObject *
+PyAtomEntryObject_get_categories (PyAtomEntryObject *self,
+                                  PyObject          *args)
+{
+  PyObject *alist;
+  JAtomCategory **categories;
+  int len, i;
+  j_atom_entry_get_categories (self->inner, &categories, &len);
+
+  alist = PyList_New (len);
+  if (!alist)
+    return NULL;
+
+  for (i = 0; i < len; i++)
+    {
+      PyObject *category;
+      category = Py_AtomCategory_FromAtomCategory (categories[i]);
+      Py_INCREF (category);
+      PyList_SetItem (alist, i, category);
+    }
+
+  Py_INCREF (alist);
+  return alist;
+}
+'''
+
 OVERRIDES = {
     'j_atom_entry_set_updated': j_atom_entry_set_updated,
     'j_atom_entry_get_updated': j_atom_entry_get_updated,
+    'j_atom_entry_get_authors': j_atom_entry_get_authors,
+    'j_atom_entry_get_categories': j_atom_entry_get_categories,
 }
