@@ -390,6 +390,11 @@ class CFile(Helper):
             if nopointer in self.alltypes:
                 app('  %s * %s = NULL;' % (pyname(self.name_from_cname(ptype)), name))
                 increfs.append(name)
+
+            # FIXME: hardcoded things should be avoided..
+            elif nopointer == 'iks':
+                app('  PyIksObject * %s = NULL;' % name)
+                increfs.append(name)
             else:
                 # it is a pointer... so it should be initialized
                 # before used.
@@ -442,6 +447,8 @@ class CFile(Helper):
             if ptype == 'varargs':
                 continue
             if nopointer in self.alltypes:
+                newparams.append('%s->inner' % name)
+            elif nopointer == 'iks':
                 newparams.append('%s->inner' % name)
             else:
                 newparams.append('%s' % name)
