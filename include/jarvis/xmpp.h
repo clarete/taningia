@@ -20,28 +20,50 @@
 #ifndef _JARVIS_XMPP_H_
 #define _JARVIS_XMPP_H_
 
-#include <glib.h>
 #include <iksemel.h>
 #include <jarvis/filter.h>
 
 typedef struct _JXmpp JXmpp;
 
-struct _JXmpp {
-  iksparser *parser;
-  iksid *id;
-  char *pubsub;
-  char *jid;
-  char *password;
-  JFilter *events;
-  JFilter *ids;
-};
-
 JXmpp             *j_xmpp_new                      (const char          *jid,
                                                     const char          *password,
-                                                    const char          *pubsub);
-
+                                                    const char          *host,
+                                                    int                  port);
+ 
 void               j_xmpp_free                     (JXmpp               *ctx);
+ 
+int                j_xmpp_run                      (JXmpp               *ctx);
 
-void               j_xmpp_run                      (JXmpp               *ctx);
+const char        *j_xmpp_get_jid                  (JXmpp               *ctx);
+
+void               j_xmpp_set_jid                  (JXmpp               *ctx,
+                                                    const char          *jid);
+
+const char        *j_xmpp_get_password             (JXmpp               *ctx);
+
+void               j_xmpp_set_password             (JXmpp               *ctx,
+                                                    const char          *password);
+
+const char        *j_xmpp_get_host                 (JXmpp               *ctx);
+
+void               j_xmpp_set_host                 (JXmpp               *ctx,
+                                                    const char          *host);
+
+int                j_xmpp_get_port                 (JXmpp               *ctx);
+
+void               j_xmpp_set_port                 (JXmpp               *ctx,
+                                                    int                  port);
+
+JFilter           *j_xmpp_get_filter_events        (JXmpp               *ctx);
+
+JFilter           *j_xmpp_get_filter_ids           (JXmpp               *ctx);
+
+int                j_xmpp_run                      (JXmpp               *ctx);
+
+void               j_xmpp_stop                     (JXmpp               *ctx);
+
+int                j_xmpp_reconnect                (JXmpp               *ctx);
+
+int                j_xmpp_is_running               (JXmpp               *ctx);
 
 #endif /* _JARVIS_XMPP_H_ */
