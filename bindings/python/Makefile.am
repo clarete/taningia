@@ -29,4 +29,4 @@ AM_LDFLAGS = \
 
 EXTRA_DIST = $(jarvis_la_SOURCES)
 
-DISTCLEANFILES = $(jarvis_la_SOURCES)
+CLEANFILES = $(jarvis_la_SOURCES)
