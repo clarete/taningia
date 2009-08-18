@@ -125,11 +125,11 @@ j_log_info (JLog *log, const char *fmt, ...)
     if (log->handler (log, JLOG_INFO, msg))
       return;
 
-  if (log->use_colors)
+  if (!log->use_colors)
+    fprintf (stderr, "[  INFO] %s\n", msg);
+  else
     /* Cyan */
     fprintf (stderr, "\033[;36m[  INFO]\033[;0m \033[;0m%s\033[;0m\n", msg);
-  else
-    fprintf (stderr, "%s\n", msg);
 }
 
 void
@@ -147,7 +147,7 @@ j_log_warn (JLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "%s\n", msg);
+    fprintf (stderr, "[  WARN] %s\n", msg);
   else
     /* Yellow */
     fprintf (stderr, "\033[;33m[  WARN]\033[;0m \033[;0m%s\033[;0m\n", msg);
@@ -168,7 +168,7 @@ j_log_debug (JLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "%s\n", msg);
+    fprintf (stderr, "[ DEBUG] %s\n", msg);
   else
     /* Blue */
     fprintf (stderr, "\033[;34m[ DEBUG]\033[;0m \033[0;0m%s\033[;0m\n", msg);
@@ -189,7 +189,7 @@ j_log_critical (JLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "%s\n", msg);
+    fprintf (stderr, "[ CRITI] %s\n", msg);
   else
     /* Red with no bold */
     fprintf (stderr, "\033[;31m[ CRITI]\033[;0m \033[;0m%s\033[;0m\n", msg);
@@ -210,7 +210,7 @@ j_log_error (JLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "%s\n", msg);
+    fprintf (stderr, "[ ERROR] %s\n", msg);
   else
     /* Red foreground */
     fprintf (stderr, "\033[1;31m[ ERROR]\033[1;0m \033[1;1m%s\033[1;0m\n", msg);
