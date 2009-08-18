@@ -33,8 +33,6 @@ JXmpp             *j_xmpp_new                      (const char          *jid,
  
 void               j_xmpp_free                     (JXmpp               *ctx);
  
-int                j_xmpp_run                      (JXmpp               *ctx);
-
 const char        *j_xmpp_get_jid                  (JXmpp               *ctx);
 
 void               j_xmpp_set_jid                  (JXmpp               *ctx,
