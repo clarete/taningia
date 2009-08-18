@@ -22,6 +22,7 @@
 
 #include <iksemel.h>
 #include <jarvis/filter.h>
+#include <jarvis/log.h>
 
 typedef struct _JXmpp JXmpp;
 
@@ -57,6 +58,8 @@ void               j_xmpp_set_port                 (JXmpp               *ctx,
 JFilter           *j_xmpp_get_filter_events        (JXmpp               *ctx);
 
 JFilter           *j_xmpp_get_filter_ids           (JXmpp               *ctx);
+
+JLog              *j_xmpp_get_logger               (JXmpp               *ctx);
 
 int                j_xmpp_run                      (JXmpp               *ctx);
 

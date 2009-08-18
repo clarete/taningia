@@ -25,6 +25,7 @@
 
 #include <jarvis/xmpp.h>
 #include <jarvis/filter.h>
+#include <jarvis/log.h>
 
 struct _JXmpp {
   iksparser *parser;
@@ -35,6 +36,7 @@ struct _JXmpp {
   int port;
   JFilter *events;
   JFilter *ids;
+  JLog *log;
   int running;
 };
 
@@ -68,6 +70,7 @@ j_xmpp_new (const char *jid,
   ctx->id = iks_id_new (iks_parser_stack (ctx->parser), ctx->jid);
   ctx->events = j_filter_new (ctx);
   ctx->ids = j_filter_new (ctx);
+  ctx->log = j_log_new ("xmpp-client");
   ctx->running = 0;
 
   /* Handling optional arguments */
@@ -95,15 +98,11 @@ void
 j_xmpp_free (JXmpp *ctx)
 {
   free (ctx->jid);
-  ctx->jid = NULL;
   free (ctx->password);
-  ctx->password = NULL;
   iks_parser_delete (ctx->parser);
-  ctx->parser = NULL;
   j_filter_free (ctx->events);
-  ctx->events = NULL;
   j_filter_free (ctx->ids);
-  ctx->ids = NULL;
+  j_log_free (ctx->log);
   free (ctx);
 }
 
@@ -173,6 +172,12 @@ j_xmpp_get_filter_ids (JXmpp *ctx)
   return ctx->ids;
 }
 
+JLog *
+j_xmpp_get_logger (JXmpp *ctx)
+{
+  return ctx->log;
+}
+
 int
 j_xmpp_is_running (JXmpp *ctx)
 {
@@ -196,12 +201,15 @@ j_xmpp_run (JXmpp *ctx)
        * the error and send some useful result to the user. */
       return err;
     }
+  j_log_info (ctx->log, "Connected to xmpp:%s:%d", ctx->host, ctx->port);
 
   ctx->running = 1;
 
   /* Detaching our main loop thread */
   pthread_create (&th, NULL, _j_xmpp_do_run, (void *) ctx);
   pthread_detach (th);
+  j_log_info (ctx->log, "Detaching the main loop thread");
+
   return IKS_OK;
 }
 
@@ -210,6 +218,7 @@ j_xmpp_stop (JXmpp *ctx)
 {
   iks_disconnect (ctx->parser);
   ctx->running = 0;
+  j_log_info (ctx->log, "Disconnected");
 }
 
 int
@@ -315,24 +324,42 @@ xmpp_features_hook (JXmpp *ctx, iks *node)
       if (!iks_strcmp (ns, "urn:ietf:params:xml:ns:xmpp-tls"))
         {
           if (iks_start_tls (ctx->parser) != IKS_OK)
-            return 1;
+            {
+              j_log_warn (ctx->log, "TLS negotiation failed");
+              return 1;
+            }
           else
-            return 0;
+            {
+              j_log_info (ctx->log, "TLS negotiation done");
+              return 0;
+            }
         }
       else if (!iks_strcmp (ns, "urn:ietf:params:xml:ns:xmpp-sasl"))
         {
           if (iks_start_sasl (ctx->parser, IKS_SASL_DIGEST_MD5,
                               ctx->id->user, ctx->password) != IKS_OK)
-            return 1;
+            {
+              j_log_warn (ctx->log, "SASL negotiation failed");
+              return 1;
+            }
           else
-            return 0;
+            {
+              j_log_info (ctx->log, "SASL started");
+              return 0;
+            }
         }
       else if (!iks_strcmp (ns, "urn:ietf:params:xml:ns:xmpp-bind"))
         {
-          if (xmpp_bind_hook (ctx->parser, node) != 0)
-            return 1;
+          if (xmpp_bind_hook (ctx->parser, node) == 0)
+            {
+              j_log_info (ctx->log, "Bind hook sent");
+              return 0;
+            }
           else
-            return 0;
+            {
+              j_log_warn (ctx->log, "Bind hook failed");
+              return 1;
+            }
         }
     }
   return 1;
@@ -346,8 +373,7 @@ xmpp_other_hook (JXmpp *ctx, iks *node, char *ns)
       if (!iks_strcmp (iks_name (node), "success"))
         iks_send_header (ctx->parser, ctx->id->server);
       else if (!iks_strcmp (iks_name (node), "failure"))
-        fprintf (stderr, "failture to authenticate: %s\n",
-                 iks_string (iks_stack (node), node));
+        j_log_warn (ctx->log, "Authentication failed");
       return 0;
     }
   return 1;
@@ -384,7 +410,7 @@ _j_xmpp_hook (void *data, int type, iks *node)
       char *from;
       from = iks_find_attrib (node, "from");
       j_filter_call (ctx->events, "presence", node);
-      fprintf (stderr, "I sense a disturbance in the force: %s!\n", from);
+      j_log_info (ctx->log, "I sense a disturbance in the force: %s!", from);
     }
   else if (!iks_strcmp (name, "message"))
     {
@@ -393,7 +419,7 @@ _j_xmpp_hook (void *data, int type, iks *node)
       from = iks_find_attrib (node, "from");
       body = iks_find_cdata (node, "body");
       j_filter_call (ctx->events, "message", node);
-      fprintf (stderr, "Xmpp message from '%s':\n%s\n", from, body);
+      j_log_info (ctx->log, "Xmpp message from '%s':\n%s", from, body);
     }
   else if (!iks_strcmp (name, "stream:features"))
     {
@@ -408,8 +434,8 @@ _j_xmpp_hook (void *data, int type, iks *node)
         }
       else
         {
-          fprintf (stderr, "Something wrong has happened:\n%s\n",
-                   iks_string (iks_stack (node), node));
+          j_log_critical (ctx->log, "Something wrong has happened:\n%s",
+                          iks_string (iks_stack (node), node));
         }
     }
   else if (!iks_strcmp (name, "stream:error"))
@@ -428,20 +454,19 @@ _j_xmpp_hook (void *data, int type, iks *node)
       if (!iks_strcmp (inner_name, "host-unknown"))
         {
           j_xmpp_stop (ctx);
-          fprintf (stderr, "Unknown Host, aborting\n");
+          j_log_critical (ctx->log, "Unknown Host, aborting main loop");
         }
       else
         {
-          fprintf (stderr, "streamerror: %s\n",
-                   iks_string (iks_stack (node), node));
+          j_log_warn (ctx->log, "streamerror: %s",
+                      iks_string (iks_stack (node), node));
         }
     }
   else
     {
       if (xmpp_other_hook (ctx, node, ns) == 0)
         return IKS_OK;
-      fprintf (stderr, "Unhandled hook: \"%s\"\n%s\n", name,
-               iks_string (iks_stack (node), node));
+      j_log_warn (ctx->log, "Unhandled hook: \"%s\"", name);
     }
   return IKS_OK;
 }
@@ -460,19 +485,20 @@ _j_xmpp_do_run (void *user_data)
           switch (err)
             {
             case IKS_NET_NOCONN:
-              fprintf (stderr, "iks_recv: IKS_NET_NOCONN\n");
+              j_log_critical (ctx->log, "iks_recv: IKS_NET_NOCONN.");
               break;
 
             case IKS_NET_RWERR:
-              fprintf (stderr, "iks_recv: IKS_NET_RWERR\n");
+              j_log_critical (ctx->log, "iks_recv: IKS_NET_RWERR.");
               break;
 
             default:
-              fprintf (stderr, "iks_recv: Unknown error\n");
+              j_log_critical (ctx->log, "iks_recv: Unhandled error.");
               break;
             }
         }
     }
+  j_log_info (ctx->log, "Main loop finished, calling disconnect.");
   iks_disconnect (ctx->parser);
   return NULL;
 }
