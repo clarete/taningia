@@ -1,1 +1,1 @@
-pkginclude_HEADERS = xmpp.h pubsub.h filter.h atom.h
+pkginclude_HEADERS = xmpp.h pubsub.h filter.h atom.h log.h
