@@ -40,7 +40,7 @@ def clear_spaces(buf):
     """
     while buf.find('  ') != -1:
         buf = buf.replace('  ', ' ')
-    return buf
+    return buf.strip()
 
 def clear_params(params):
     """Scan the `params' string and return a dict with parsed
@@ -112,6 +112,27 @@ def scan_file(libprefix, fname):
     # Looking for types
     pat = re.compile('typedef struct _.+ ([^;]+)')
     type_names = pat.findall(ccont)
+
+    # Looking for enums
+    pat = re.compile('(?:typedef\s)?enum {([^}]*)} ([^;]+)')
+    module['enums'] = []
+    for i in pat.findall(ccont):
+        econt, name = i
+        econt = clear_spaces(econt.replace('\n', ''))
+        vals = [x for x in econt.split(',') if x]
+        isflags = '<<' in econt
+        if isflags:
+            entries = []
+            for i in vals:
+                entry = i.split('=')[0].strip()
+                entries.append(entry)
+        else:
+            entries = vals
+        module['enums'].append({
+                'name': name,
+                'isflags': isflags,
+                'entries': entries
+        })
 
     # Looking for functions / methods in the whole file
     pat = re.compile('((?:const\s+)?\w+\s*\**)\s*([a-z0-9\_]+)\s*\(([^\)]+)\)')
