@@ -59,6 +59,9 @@ JFilter           *j_xmpp_get_filter_ids           (JXmpp               *ctx);
 
 JLog              *j_xmpp_get_logger               (JXmpp               *ctx);
 
+int                j_xmpp_send                     (JXmpp               *ctx,
+                                                    iks                 *node);
+
 int                j_xmpp_run                      (JXmpp               *ctx);
 
 void               j_xmpp_stop                     (JXmpp               *ctx);

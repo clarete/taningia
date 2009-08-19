@@ -184,6 +184,15 @@ j_xmpp_is_running (JXmpp *ctx)
   return ctx->running;
 }
 
+int
+j_xmpp_send (JXmpp *ctx, iks *node)
+{
+  int err;
+  if ((err = iks_send (ctx->parser, node)) != IKS_OK)
+    j_log_warn (ctx->log, "Fail to send packet through j_xmpp_send");
+  return err;
+}
+
 /**
  * This function starts the main xmpp (iksemel) loop in another
  * thread. To avoid problems with our loved GMainLoop used by soup.
