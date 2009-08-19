@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <glib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
@@ -39,20 +39,18 @@ JPubsub *
 j_pubsub_new (const char *from, const char *to)
 {
   JPubsub *ctx;
-  ctx = g_slice_new (JPubsub);
-  ctx->from = g_strdup (from);
-  ctx->to = g_strdup (to);
+  ctx = malloc (sizeof (JPubsub));
+  ctx->from = strdup (from);
+  ctx->to = strdup (to);
   return ctx;
 }
 
 void
 j_pubsub_free (JPubsub *ctx)
 {
-  g_free (ctx->from);
-  ctx->from = NULL;
-  g_free (ctx->to);
-  ctx->to = NULL;
-  g_slice_free (JPubsub, ctx);
+  free (ctx->from);
+  free (ctx->to);
+  free (ctx);
 }
 
 static iks *
