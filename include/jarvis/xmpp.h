@@ -29,8 +29,8 @@ typedef struct _JXmpp JXmpp;
 
 JXmpp             *j_xmpp_new                      (const char          *jid,
                                                     const char          *password,
-                                                    const char          *host,
-                                                    int                  port);
+                                                    const char          *host _optional_,
+                                                    int                  port _optional_);
  
 void               j_xmpp_free                     (JXmpp               *ctx);
  
