@@ -23,9 +23,9 @@
 #include <time.h>
 #include <iksemel.h>
 #include <glib.h>               /* to g_time_val_to_iso8601 */
-#include <jarvis/atom.h>
+#include <taningia/atom.h>
 
-struct _JAtomContent
+struct _TAtomContent
 {
   char *type;
   char *content;
@@ -33,21 +33,21 @@ struct _JAtomContent
   int   len;
 };
 
-struct _JAtomAuthor
+struct _TAtomAuthor
 {
   char *name;
   char *email;
   char *iri;
 };
 
-struct _JAtomCategory
+struct _TAtomCategory
 {
   char *label;
   char *term;
   char *scheme;
 };
 
-struct _JAtomEntry
+struct _TAtomEntry
 {
   char         *id;
   char         *title;
@@ -55,18 +55,18 @@ struct _JAtomEntry
   GPtrArray    *authors;
   GPtrArray    *categories;
   char         *summary;
-  JAtomContent *content;
+  TAtomContent *content;
 };
 
-/* JAtomContent */
+/* TAtomContent */
 
-JAtomContent *
-j_atom_content_new (const char *type,
+TAtomContent *
+t_atom_content_new (const char *type,
                     const char *content,
                     int         len)
 {
-  JAtomContent *ct;
-  ct = malloc (sizeof (JAtomContent));
+  TAtomContent *ct;
+  ct = malloc (sizeof (TAtomContent));
   ct->type = strdup (type);
   ct->content = strndup (content, len);
   ct->src = NULL;
@@ -75,7 +75,7 @@ j_atom_content_new (const char *type,
 }
 
 void
-j_atom_content_free (JAtomContent *content)
+t_atom_content_free (TAtomContent *content)
 {
   if (content->type)
     free (content->type);
@@ -87,7 +87,7 @@ j_atom_content_free (JAtomContent *content)
 }
 
 iks *
-j_atom_content_to_iks (JAtomContent *content)
+t_atom_content_to_iks (TAtomContent *content)
 {
   iks *ct;
   ct = iks_new ("content");
@@ -100,20 +100,20 @@ j_atom_content_to_iks (JAtomContent *content)
 }
 
 char *
-j_atom_content_to_string (JAtomContent *content)
+t_atom_content_to_string (TAtomContent *content)
 {
-  iks *ik = j_atom_content_to_iks (content);
+  iks *ik = t_atom_content_to_iks (content);
   return iks_string (iks_stack (ik), ik);
 }
 
 const char *
-j_atom_content_get_src (JAtomContent *content)
+t_atom_content_get_src (TAtomContent *content)
 {
   return content->src;
 }
 
 void
-j_atom_content_set_src (JAtomContent *content,
+t_atom_content_set_src (TAtomContent *content,
                         const char   *src)
 {
   if (content->src)
@@ -124,15 +124,15 @@ j_atom_content_set_src (JAtomContent *content,
     content->src = NULL;
 }
 
-/* JAtomAuthor */
+/* TAtomAuthor */
 
-JAtomAuthor *
-j_atom_author_new (const char *name,
+TAtomAuthor *
+t_atom_author_new (const char *name,
                    const char *email,
                    const char *iri)
 {
-  JAtomAuthor *author;
-  author = malloc (sizeof (JAtomAuthor));
+  TAtomAuthor *author;
+  author = malloc (sizeof (TAtomAuthor));
   author->name = strdup (name);
   author->email = email ? strdup (email) : NULL;
   author->iri = iri ? strdup (iri) : NULL;
@@ -140,7 +140,7 @@ j_atom_author_new (const char *name,
 }
 
 void
-j_atom_author_free (JAtomAuthor *author)
+t_atom_author_free (TAtomAuthor *author)
 {
   if (author->name)
     free (author->name);
@@ -152,7 +152,7 @@ j_atom_author_free (JAtomAuthor *author)
 }
 
 iks *
-j_atom_author_to_iks (JAtomAuthor *author)
+t_atom_author_to_iks (TAtomAuthor *author)
 {
   iks *ik;
   ik = iks_new ("author");
@@ -165,20 +165,20 @@ j_atom_author_to_iks (JAtomAuthor *author)
 }
 
 char *
-j_atom_author_to_string (JAtomAuthor *author)
+t_atom_author_to_string (TAtomAuthor *author)
 {
-  iks *ik = j_atom_author_to_iks (author);
+  iks *ik = t_atom_author_to_iks (author);
   return iks_string (iks_stack (ik), ik);
 }
 
 const char *
-j_atom_author_get_name (JAtomAuthor *author)
+t_atom_author_get_name (TAtomAuthor *author)
 {
   return (const char *) author->name;
 }
 
 void
-j_atom_author_set_name (JAtomAuthor *author,
+t_atom_author_set_name (TAtomAuthor *author,
                         const char  *name)
 {
   if (author->name)
@@ -187,13 +187,13 @@ j_atom_author_set_name (JAtomAuthor *author,
 }
 
 const char *
-j_atom_author_get_email (JAtomAuthor *author)
+t_atom_author_get_email (TAtomAuthor *author)
 {
   return (const char *) author->email;
 }
 
 void
-j_atom_author_set_email (JAtomAuthor *author,
+t_atom_author_set_email (TAtomAuthor *author,
                          const char  *email)
 {
   if (author->email)
@@ -202,13 +202,13 @@ j_atom_author_set_email (JAtomAuthor *author,
 }
 
 const char *
-j_atom_author_get_iri (JAtomAuthor *author)
+t_atom_author_get_iri (TAtomAuthor *author)
 {
   return (const char *) author->iri;
 }
 
 void
-j_atom_author_set_iri (JAtomAuthor *author,
+t_atom_author_set_iri (TAtomAuthor *author,
                        const char  *iri)
 {
   if (author->iri)
@@ -216,15 +216,15 @@ j_atom_author_set_iri (JAtomAuthor *author,
   author->iri = strdup (iri);
 }
 
-/* JAtomCategory */
+/* TAtomCategory */
 
-JAtomCategory *
-j_atom_category_new (const char *term,
+TAtomCategory *
+t_atom_category_new (const char *term,
                      const char *label,
                      const char *scheme)
 {
-  JAtomCategory *cat;
-  cat = malloc (sizeof (JAtomCategory));
+  TAtomCategory *cat;
+  cat = malloc (sizeof (TAtomCategory));
   cat->term = strdup (term);
   cat->label = label ? strdup (label) : NULL;
   cat->scheme = scheme ? strdup (scheme) : NULL;
@@ -232,7 +232,7 @@ j_atom_category_new (const char *term,
 }
 
 void
-j_atom_category_free (JAtomCategory  *category)
+t_atom_category_free (TAtomCategory  *category)
 {
   if (category->term)
     free (category->term);
@@ -244,7 +244,7 @@ j_atom_category_free (JAtomCategory  *category)
 }
 
 iks *
-j_atom_category_to_iks (JAtomCategory *category)
+t_atom_category_to_iks (TAtomCategory *category)
 {
   iks *ik;
   ik = iks_new ("category");
@@ -257,20 +257,20 @@ j_atom_category_to_iks (JAtomCategory *category)
 }
 
 char *
-j_atom_category_to_string (JAtomCategory  *category)
+t_atom_category_to_string (TAtomCategory  *category)
 {
-  iks *ik = j_atom_category_to_iks (category);
+  iks *ik = t_atom_category_to_iks (category);
   return iks_string (iks_stack (ik), ik);
 }
 
 const char *
-j_atom_category_get_label (JAtomCategory *category)
+t_atom_category_get_label (TAtomCategory *category)
 {
   return (const char *) category->label;
 }
 
 void
-j_atom_category_set_label (JAtomCategory *category,
+t_atom_category_set_label (TAtomCategory *category,
                            const char    *label)
 {
   if (category->label)
@@ -282,13 +282,13 @@ j_atom_category_set_label (JAtomCategory *category,
 }
 
 const char *
-j_atom_category_get_term (JAtomCategory  *category)
+t_atom_category_get_term (TAtomCategory  *category)
 {
   return (const char *) category->term;
 }
 
 void
-j_atom_category_set_term (JAtomCategory *category,
+t_atom_category_set_term (TAtomCategory *category,
                           const char    *term)
 {
   if (category->term)
@@ -297,13 +297,13 @@ j_atom_category_set_term (JAtomCategory *category,
 }
 
 const char *
-j_atom_category_get_scheme (JAtomCategory *category)
+t_atom_category_get_scheme (TAtomCategory *category)
 {
   return (const char *) category->scheme;
 }
 
 void
-j_atom_category_set_scheme (JAtomCategory *category,
+t_atom_category_set_scheme (TAtomCategory *category,
                             const char    *scheme)
 {
   if (category->scheme)
@@ -314,13 +314,13 @@ j_atom_category_set_scheme (JAtomCategory *category,
     category->scheme = NULL;
 }
 
-/* JAtomEntry */
+/* TAtomEntry */
 
-JAtomEntry *
-j_atom_entry_new (const char *title)
+TAtomEntry *
+t_atom_entry_new (const char *title)
 {
-  JAtomEntry *entry;
-  entry = malloc (sizeof (JAtomEntry));
+  TAtomEntry *entry;
+  entry = malloc (sizeof (TAtomEntry));
   entry->title = strdup (title);
   entry->id = NULL;
   entry->updated = time (0);
@@ -332,20 +332,20 @@ j_atom_entry_new (const char *title)
 }
 
 void
-j_atom_entry_free (JAtomEntry *entry)
+t_atom_entry_free (TAtomEntry *entry)
 {
   if (entry->title)
     free (entry->title);
   if (entry->id)
     free (entry->id);
   if (entry->authors)
-    j_atom_entry_del_authors (entry);
+    t_atom_entry_del_authors (entry);
   if (entry->categories)
-    j_atom_entry_del_categories (entry);
+    t_atom_entry_del_categories (entry);
   if (entry->summary)
     free (entry->summary);
   if (entry->content)
-    j_atom_content_free (entry->content);
+    t_atom_content_free (entry->content);
   free (entry);
 }
 
@@ -359,7 +359,7 @@ time_to_iso8601 (time_t t)
 }
 
 iks *
-j_atom_entry_to_iks (JAtomEntry *entry)
+t_atom_entry_to_iks (TAtomEntry *entry)
 {
   iks *ik;
   char *updated;
@@ -374,38 +374,38 @@ j_atom_entry_to_iks (JAtomEntry *entry)
     for (i = 0; i < entry->authors->len; i++)
       {
         iks *authors =
-          j_atom_author_to_iks (g_ptr_array_index (entry->authors, i));
+          t_atom_author_to_iks (g_ptr_array_index (entry->authors, i));
         iks_insert_node (ik, authors);
       }
   if (entry->categories)
     for (i = 0; i < entry->categories->len; i++)
       {
         iks *categories =
-          j_atom_category_to_iks (g_ptr_array_index (entry->categories, i));
+          t_atom_category_to_iks (g_ptr_array_index (entry->categories, i));
         iks_insert_node (ik, categories);
       }
   if (entry->summary)
     iks_insert_cdata (iks_insert (ik, "summary"), entry->summary, 0);
   if (entry->content)
-    iks_insert_node (ik, j_atom_content_to_iks (entry->content));
+    iks_insert_node (ik, t_atom_content_to_iks (entry->content));
   return ik;
 }
 
 char *
-j_atom_entry_to_string (JAtomEntry *entry)
+t_atom_entry_to_string (TAtomEntry *entry)
 {
-  iks *ik = j_atom_entry_to_iks (entry);
+  iks *ik = t_atom_entry_to_iks (entry);
   return iks_string (iks_stack (ik), ik);
 }
 
 const char *
-j_atom_entry_get_title (JAtomEntry *entry)
+t_atom_entry_get_title (TAtomEntry *entry)
 {
   return (const char *) entry->title;
 }
 
 void
-j_atom_entry_set_title (JAtomEntry *entry,
+t_atom_entry_set_title (TAtomEntry *entry,
                         const char *title)
 {
   if (entry->title)
@@ -414,32 +414,32 @@ j_atom_entry_set_title (JAtomEntry *entry,
 }
 
 time_t
-j_atom_entry_get_updated (JAtomEntry *entry)
+t_atom_entry_get_updated (TAtomEntry *entry)
 {
   return entry->updated;
 }
 
 void
-j_atom_entry_set_updated (JAtomEntry *entry,
+t_atom_entry_set_updated (TAtomEntry *entry,
                           time_t      updated)
 {
   entry->updated = updated;
 }
 
 void
-j_atom_entry_get_authors (JAtomEntry    *entry,
-                          JAtomAuthor ***authors,
+t_atom_entry_get_authors (TAtomEntry    *entry,
+                          TAtomAuthor ***authors,
                           int           *len)
 {
   if (len)
     *len = entry->authors->len;
   if (authors)
-    *authors = (JAtomAuthor **) entry->authors->pdata;
+    *authors = (TAtomAuthor **) entry->authors->pdata;
 }
 
 void
-j_atom_entry_add_author (JAtomEntry  *entry,
-                         JAtomAuthor *author)
+t_atom_entry_add_author (TAtomEntry  *entry,
+                         TAtomAuthor *author)
 {
   if (entry->authors == NULL)
     entry->authors = g_ptr_array_new ();
@@ -447,28 +447,28 @@ j_atom_entry_add_author (JAtomEntry  *entry,
 }
 
 void
-j_atom_entry_del_authors (JAtomEntry *entry)
+t_atom_entry_del_authors (TAtomEntry *entry)
 {
   int i;
   for (i = 0; i < entry->authors->len; i++)
-    j_atom_author_free (g_ptr_array_index (entry->authors, i));
+    t_atom_author_free (g_ptr_array_index (entry->authors, i));
   g_ptr_array_free (entry->authors, TRUE);
 }
 
 void
-j_atom_entry_get_categories (JAtomEntry      *entry,
-                             JAtomCategory ***categories,
+t_atom_entry_get_categories (TAtomEntry      *entry,
+                             TAtomCategory ***categories,
                              int             *len)
 {
   if (len)
     *len = entry->categories->len;
   if (categories)
-    *categories = (JAtomCategory **) entry->categories->pdata;
+    *categories = (TAtomCategory **) entry->categories->pdata;
 }
 
 void
-j_atom_entry_add_category (JAtomEntry    *entry,
-                           JAtomCategory *category)
+t_atom_entry_add_category (TAtomEntry    *entry,
+                           TAtomCategory *category)
 {
   if (entry->categories == NULL)
     entry->categories = g_ptr_array_new ();
@@ -476,22 +476,22 @@ j_atom_entry_add_category (JAtomEntry    *entry,
 }
 
 void
-j_atom_entry_del_categories (JAtomEntry *entry)
+t_atom_entry_del_categories (TAtomEntry *entry)
 {
   int i;
   for (i = 0; i < entry->categories->len; i++)
-    j_atom_category_free (g_ptr_array_index (entry->categories, i));
+    t_atom_category_free (g_ptr_array_index (entry->categories, i));
   g_ptr_array_free (entry->categories, TRUE);
 }
 
 const char *
-j_atom_entry_get_summary (JAtomEntry *entry)
+t_atom_entry_get_summary (TAtomEntry *entry)
 {
   return (const char *) entry->summary;
 }
 
 void
-j_atom_entry_set_summary (JAtomEntry *entry,
+t_atom_entry_set_summary (TAtomEntry *entry,
                           const char *summary)
 {
   if (entry->summary)
@@ -502,17 +502,17 @@ j_atom_entry_set_summary (JAtomEntry *entry,
     entry->summary = NULL;
 }
 
-JAtomContent *
-j_atom_entry_get_content (JAtomEntry *entry)
+TAtomContent *
+t_atom_entry_get_content (TAtomEntry *entry)
 {
   return entry->content;
 }
 
 void
-j_atom_entry_set_content (JAtomEntry   *entry,
-                          JAtomContent *content)
+t_atom_entry_set_content (TAtomEntry   *entry,
+                          TAtomContent *content)
 {
   if (entry->content)
-    j_atom_content_free (entry->content);
+    t_atom_content_free (entry->content);
   entry->content = content;
 }

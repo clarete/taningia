@@ -23,30 +23,30 @@
 #include <string.h>
 #include <assert.h>
 
-#include <jarvis/pubsub.h>
+#include <taningia/pubsub.h>
 
 #define NS_INFO "http://jabber.org/protocol/disco#info"
 #define NS_ITEM "http://jabber.org/protocol/disco#items"
 #define NS_PS_CONFIG "http://jabber.org/protocol/pubsub#node_config"
 #define debugiq(x) fprintf (stderr, "[ps] %s\n", iks_string (iks_stack (x), x))
 
-struct _JPubsub {
+struct _TPubsub {
   char *from;
   char *to;
 };
 
-JPubsub *
-j_pubsub_new (const char *from, const char *to)
+TPubsub *
+t_pubsub_new (const char *from, const char *to)
 {
-  JPubsub *ctx;
-  ctx = malloc (sizeof (JPubsub));
+  TPubsub *ctx;
+  ctx = malloc (sizeof (TPubsub));
   ctx->from = strdup (from);
   ctx->to = strdup (to);
   return ctx;
 }
 
 void
-j_pubsub_free (JPubsub *ctx)
+t_pubsub_free (TPubsub *ctx)
 {
   free (ctx->from);
   free (ctx->to);
@@ -54,7 +54,7 @@ j_pubsub_free (JPubsub *ctx)
 }
 
 static iks *
-createiq (JPubsub *ctx, enum iksubtype type, const char *ns)
+createiq (TPubsub *ctx, enum iksubtype type, const char *ns)
 {
   iks *iq;
   char sid[32];
@@ -68,7 +68,7 @@ createiq (JPubsub *ctx, enum iksubtype type, const char *ns)
 }
 
 static iks *
-createiqps (JPubsub *ctx, enum iksubtype type)
+createiqps (TPubsub *ctx, enum iksubtype type)
 {
   iks *iq;
   char sid[32];
@@ -92,7 +92,7 @@ createiqps (JPubsub *ctx, enum iksubtype type)
 }
 
 iks *
-j_pubsub_query_features (JPubsub *ctx)
+t_pubsub_query_features (TPubsub *ctx)
 {
   iks *iq = createiq (ctx, IKS_TYPE_GET, NS_INFO);
   debugiq (iq);
@@ -100,7 +100,7 @@ j_pubsub_query_features (JPubsub *ctx)
 }
 
 iks *
-j_pubsub_query_node_info (JPubsub    *ctx,
+t_pubsub_query_node_info (TPubsub    *ctx,
                           const char *node)
 {
   iks *iq = createiq (ctx, IKS_TYPE_GET, NS_INFO);
@@ -110,7 +110,7 @@ j_pubsub_query_node_info (JPubsub    *ctx,
 }
 
 iks *
-j_pubsub_query_node_items (JPubsub    *ctx,
+t_pubsub_query_node_items (TPubsub    *ctx,
                            const char *node)
 {
   iks *iq = createiq (ctx, IKS_TYPE_GET, NS_ITEM);
@@ -121,7 +121,7 @@ j_pubsub_query_node_items (JPubsub    *ctx,
 }
 
 iks *
-j_pubsub_query_node_subscriptions (JPubsub    *ctx,
+t_pubsub_query_node_subscriptions (TPubsub    *ctx,
                                    const char *node)
 {
   iks *iq, *sub;
@@ -134,7 +134,7 @@ j_pubsub_query_node_subscriptions (JPubsub    *ctx,
 }
 
 iks *
-j_pubsub_query_node_affiliations (JPubsub *ctx)
+t_pubsub_query_node_affiliations (TPubsub *ctx)
 {
   iks *iq, *sub;
   iq = createiqps (ctx, IKS_TYPE_GET);
@@ -144,7 +144,7 @@ j_pubsub_query_node_affiliations (JPubsub *ctx)
 }
 
 iks *
-j_pubsub_node_subscribe (JPubsub    *ctx,
+t_pubsub_node_subscribe (TPubsub    *ctx,
                          const char *node,
                          const char *jid)
 {
@@ -161,7 +161,7 @@ j_pubsub_node_subscribe (JPubsub    *ctx,
 }
 
 iks *
-j_pubsub_node_unsubscribe (JPubsub    *ctx,
+t_pubsub_node_unsubscribe (TPubsub    *ctx,
                            const char *node,
                            const char *jid)
 {
@@ -178,7 +178,7 @@ j_pubsub_node_unsubscribe (JPubsub    *ctx,
 }
 
 iks *
-j_pubsub_node_retrieve_items (JPubsub    *ctx,
+t_pubsub_node_retrieve_items (TPubsub    *ctx,
                               const char *node,
                               int         max_items)
 {
@@ -197,7 +197,7 @@ j_pubsub_node_retrieve_items (JPubsub    *ctx,
 }
 
 iks *
-j_pubsub_publish_item_text (JPubsub    *ctx,
+t_pubsub_publish_item_text (TPubsub    *ctx,
                             const char *node,
                             const char *id,
                             const char *body,
@@ -216,7 +216,7 @@ j_pubsub_publish_item_text (JPubsub    *ctx,
 }
 
 iks *
-j_pubsub_publish_item_iks (JPubsub    *ctx,
+t_pubsub_publish_item_iks (TPubsub    *ctx,
                            const char *node,
                            const char *id,
                            iks        *child)
@@ -234,7 +234,7 @@ j_pubsub_publish_item_iks (JPubsub    *ctx,
 }
 
 iks *
-j_pubsub_delete_item (JPubsub    *ctx,
+t_pubsub_delete_item (TPubsub    *ctx,
                       const char *node,
                       const char *id)
 {
@@ -248,7 +248,7 @@ j_pubsub_delete_item (JPubsub    *ctx,
 }
 
 iks *
-j_pubsub_node_create (JPubsub    *ctx,
+t_pubsub_node_create (TPubsub    *ctx,
                       const char *name,
                       int         bare,
                       ...)

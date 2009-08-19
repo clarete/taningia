@@ -1,6 +1,6 @@
 SUBDIRS = include src bindings
 
-EXTRA_DIST = jarvis.pc.in
+EXTRA_DIST = taningia.pc.in
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = jarvis.pc
+pkgconfig_DATA = taningia.pc

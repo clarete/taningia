@@ -2,13 +2,13 @@ DEFSDIR = $(top_srcdir)/bindings/defs
 DEFSFILE = $(DEFSDIR)/$(PACKAGE).json
 
 pyexecdir = $(pythondir)
-pyexec_LTLIBRARIES = jarvis.la
+pyexec_LTLIBRARIES = taningia.la
 
-jarvis_la_SOURCES = \
-	jarvismodule.c \
-	jarvismodule.h
+taningia_la_SOURCES = \
+	taningiamodule.c \
+	taningiamodule.h
 
-jarvismodule.c:
+taningiamodule.c:
 	PYTHONPATH=$(DEFSDIR) $(PYTHON) writer.py $(DEFSFILE)
 
 AM_CPPFLAGS = \
@@ -17,7 +17,7 @@ AM_CPPFLAGS = \
 	$(PYTHON_CFLAGS) \
 	$(PYIKSEMEL_CFLAGS) \
 	-I$(top_srcdir)/include \
-	-DPyJarvisBUILD_CORE
+	-DPyTaningiaBUILD_CORE
 
 AM_LDFLAGS = \
 	-module -avoid-version \
@@ -25,8 +25,8 @@ AM_LDFLAGS = \
 	$(IKSEMEL_LIBS) \
 	$(PYTHON_LIBS) \
 	$(PYIKSEMEL_LIBS) \
-	$(top_builddir)/src/libjarvis.la
+	$(top_builddir)/src/libtaningia.la
 
-EXTRA_DIST = $(jarvis_la_SOURCES)
+EXTRA_DIST = $(taningia_la_SOURCES)
 
-CLEANFILES = $(jarvis_la_SOURCES)
+CLEANFILES = $(taningia_la_SOURCES)

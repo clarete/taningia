@@ -17,7 +17,7 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
-def j_atom_entry_set_updated():
+def t_atom_entry_set_updated():
     return '''
 static PyObject *
 PyAtomEntryObject_set_updated (PyAtomEntryObject *self,
@@ -46,12 +46,12 @@ PyAtomEntryObject_set_updated (PyAtomEntryObject *self,
   struct tm mytime = { sec, min, hour, day, month, year };
   cdate = mktime (&mytime);
   
-  j_atom_entry_set_updated (self->inner, cdate);
+  t_atom_entry_set_updated (self->inner, cdate);
   return Py_BuildValue ("");
 }
 '''
 
-def j_atom_entry_get_updated():
+def t_atom_entry_get_updated():
     return '''
 static PyObject *
 PyAtomEntryObject_get_updated (PyAtomEntryObject *self,
@@ -61,7 +61,7 @@ PyAtomEntryObject_get_updated (PyAtomEntryObject *self,
   time_t cdate;
   struct tm *ctm;
 
-  cdate = j_atom_entry_get_updated (self->inner);
+  cdate = t_atom_entry_get_updated (self->inner);
   ctm = gmtime (&cdate);
   date = PyDateTime_FromDateAndTime (1900 + ctm->tm_year, ctm->tm_mon + 1,
                                      ctm->tm_mday, ctm->tm_hour,
@@ -71,16 +71,16 @@ PyAtomEntryObject_get_updated (PyAtomEntryObject *self,
 }
 '''
 
-def j_atom_entry_get_authors():
+def t_atom_entry_get_authors():
     return '''
 static PyObject *
 PyAtomEntryObject_get_authors (PyAtomEntryObject *self,
                                PyObject          *args)
 {
   PyObject *alist;
-  JAtomAuthor **authors;
+  TAtomAuthor **authors;
   int len, i;
-  j_atom_entry_get_authors (self->inner, &authors, &len);
+  t_atom_entry_get_authors (self->inner, &authors, &len);
 
   alist = PyList_New (len);
   if (!alist)
@@ -99,16 +99,16 @@ PyAtomEntryObject_get_authors (PyAtomEntryObject *self,
 }
 '''
 
-def j_atom_entry_get_categories():
+def t_atom_entry_get_categories():
     return '''
 static PyObject *
 PyAtomEntryObject_get_categories (PyAtomEntryObject *self,
                                   PyObject          *args)
 {
   PyObject *alist;
-  JAtomCategory **categories;
+  TAtomCategory **categories;
   int len, i;
-  j_atom_entry_get_categories (self->inner, &categories, &len);
+  t_atom_entry_get_categories (self->inner, &categories, &len);
 
   alist = PyList_New (len);
   if (!alist)
@@ -130,13 +130,13 @@ PyAtomEntryObject_get_categories (PyAtomEntryObject *self,
 def pyfilterobject():
     return '''typedef struct {
   PyObject_HEAD
-  JFilter *inner;
+  TFilter *inner;
   PyObject *callback;
   PyObject *param;
 } PyFilterObject;
 '''
 
-def j_filter_add():
+def t_filter_add():
     return '''
 static int
 call_filter_callback (void *data1, void *data2, void *data3)
@@ -148,7 +148,7 @@ call_filter_callback (void *data1, void *data2, void *data3)
 
   /* Getting params to pass to the callback */
   filter = (PyFilterObject *) data2;
-  p1 = (PyObject *) j_filter_get_data (filter->inner);
+  p1 = (PyObject *) t_filter_get_data (filter->inner);
   p2 = (PyObject *) filter->param;
   p3 = (PyObject *) data3;
 
@@ -211,9 +211,9 @@ PyFilterObject_add (PyFilterObject *self,
       Py_INCREF (Py_None);
       self->param = Py_None;
     }
-  j_filter_add (self->inner,
+  t_filter_add (self->inner,
                 name,
-                (JFilterCallback) call_filter_callback,
+                (TFilterCallback) call_filter_callback,
                 self);
 
   Py_INCREF (Py_None);
@@ -221,7 +221,7 @@ PyFilterObject_add (PyFilterObject *self,
 }
 '''
 
-def j_filter_call():
+def t_filter_call():
     return '''
 static PyObject *
 PyFilterObject_call (PyFilterObject *self,
@@ -232,7 +232,7 @@ PyFilterObject_call (PyFilterObject *self,
   if (!PyArg_ParseTuple (args, "s|O", &name, &extra))
     return NULL;
 
-  j_filter_call (self->inner, name, extra);
+  t_filter_call (self->inner, name, extra);
 
   Py_INCREF (Py_None);
   return Py_None;
@@ -241,10 +241,10 @@ PyFilterObject_call (PyFilterObject *self,
 
 OVERRIDES = {
     'PyFilterObject': pyfilterobject,
-    'j_atom_entry_set_updated': j_atom_entry_set_updated,
-    'j_atom_entry_get_updated': j_atom_entry_get_updated,
-    'j_atom_entry_get_authors': j_atom_entry_get_authors,
-    'j_atom_entry_get_categories': j_atom_entry_get_categories,
-    'j_filter_add': j_filter_add,
-    'j_filter_call': j_filter_call,
+    't_atom_entry_set_updated': t_atom_entry_set_updated,
+    't_atom_entry_get_updated': t_atom_entry_get_updated,
+    't_atom_entry_get_authors': t_atom_entry_get_authors,
+    't_atom_entry_get_categories': t_atom_entry_get_categories,
+    't_filter_add': t_filter_add,
+    't_filter_call': t_filter_call,
 }

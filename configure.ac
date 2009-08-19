@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.64])
-AC_INIT([jarvis], [0.1], [http://puzzlepipe.org])
+AC_INIT([taningia], [0.1], [http://puzzlepipe.org])
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADERS([config.h])
 
@@ -52,12 +52,12 @@ AC_SUBST([GLIB_LIBS])
 AC_CONFIG_FILES([
   Makefile
   include/Makefile
-  include/jarvis/Makefile
+  include/taningia/Makefile
   src/Makefile
   bindings/Makefile
   bindings/defs/Makefile
   bindings/python/Makefile
-  jarvis.pc
+  taningia.pc
 ])
 
 AC_OUTPUT

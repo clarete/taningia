@@ -21,61 +21,61 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <jarvis/log.h>
+#include <taningia/log.h>
 
-struct _JLog
+struct _TLog
 {
   char *name;
-  JLogLevel level;
-  JLogHandlerFunc handler;
+  TLogLevel level;
+  TLogHandlerFunc handler;
   int use_colors;
 };
 
-JLog *
-j_log_new (const char *domain_name)
+TLog *
+t_log_new (const char *domain_name)
 {
-  JLog *log;
-  log = malloc (sizeof (JLog));
+  TLog *log;
+  log = malloc (sizeof (TLog));
   log->name = strdup (domain_name);
-  log->level = JLOG_CRITICAL | JLOG_ERROR | JLOG_WARN;
+  log->level = TLOG_CRITICAL | TLOG_ERROR | TLOG_WARN;
   log->handler = NULL;
   log->use_colors = 0;
   return log;
 }
 
 void
-j_log_free (JLog *log)
+t_log_free (TLog *log)
 {
   free (log->name);
   free (log);
 }
 
 void
-j_log_set_handler (JLog *log, JLogHandlerFunc handler)
+t_log_set_handler (TLog *log, TLogHandlerFunc handler)
 {
   log->handler = handler;
 }
 
 void
-j_log_set_use_colors (JLog *log, int use_colors)
+t_log_set_use_colors (TLog *log, int use_colors)
 {
   log->use_colors = use_colors;
 }
 
 int
-j_log_get_use_colors (JLog *log)
+t_log_get_use_colors (TLog *log)
 {
   return log->use_colors;
 }
 
 void
-j_log_set_level (JLog *log, JLogLevel level)
+t_log_set_level (TLog *log, TLogLevel level)
 {
   log->level = level;
 }
 
-JLogLevel
-j_log_get_level (JLog *log)
+TLogLevel
+t_log_get_level (TLog *log)
 {
   return log->level;
 }
@@ -112,9 +112,9 @@ j_log_get_level (JLog *log)
       }
 
 void
-j_log_info (JLog *log, const char *fmt, ...)
+t_log_info (TLog *log, const char *fmt, ...)
 {
-  if (!(log->level & JLOG_INFO))
+  if (!(log->level & TLOG_INFO))
     return;
 
   get_message (fmt, argp);
@@ -122,7 +122,7 @@ j_log_info (JLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, JLOG_INFO, msg))
+    if (log->handler (log, TLOG_INFO, msg))
       return;
 
   if (!log->use_colors)
@@ -133,9 +133,9 @@ j_log_info (JLog *log, const char *fmt, ...)
 }
 
 void
-j_log_warn (JLog *log, const char *fmt, ...)
+t_log_warn (TLog *log, const char *fmt, ...)
 {
-  if (!(log->level & JLOG_WARN))
+  if (!(log->level & TLOG_WARN))
     return;
 
   get_message (fmt, argp);
@@ -143,7 +143,7 @@ j_log_warn (JLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, JLOG_WARN, msg))
+    if (log->handler (log, TLOG_WARN, msg))
       return;
 
   if (!log->use_colors)
@@ -154,9 +154,9 @@ j_log_warn (JLog *log, const char *fmt, ...)
 }
 
 void
-j_log_debug (JLog *log, const char *fmt, ...)
+t_log_debug (TLog *log, const char *fmt, ...)
 {
-  if (!(log->level & JLOG_DEBUG))
+  if (!(log->level & TLOG_DEBUG))
     return;
 
   get_message (fmt, argp);
@@ -164,7 +164,7 @@ j_log_debug (JLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, JLOG_DEBUG, msg))
+    if (log->handler (log, TLOG_DEBUG, msg))
       return;
 
   if (!log->use_colors)
@@ -175,9 +175,9 @@ j_log_debug (JLog *log, const char *fmt, ...)
 }
 
 void
-j_log_critical (JLog *log, const char *fmt, ...)
+t_log_critical (TLog *log, const char *fmt, ...)
 {
-  if (!(log->level & JLOG_CRITICAL))
+  if (!(log->level & TLOG_CRITICAL))
     return;
 
   get_message (fmt, argp);
@@ -185,7 +185,7 @@ j_log_critical (JLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, JLOG_CRITICAL, msg))
+    if (log->handler (log, TLOG_CRITICAL, msg))
       return;
 
   if (!log->use_colors)
@@ -196,9 +196,9 @@ j_log_critical (JLog *log, const char *fmt, ...)
 }
 
 void
-j_log_error (JLog *log, const char *fmt, ...)
+t_log_error (TLog *log, const char *fmt, ...)
 {
-  if (!(log->level & JLOG_ERROR))
+  if (!(log->level & TLOG_ERROR))
     return;
 
   get_message (fmt, argp);
@@ -206,7 +206,7 @@ j_log_error (JLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, JLOG_ERROR, msg))
+    if (log->handler (log, TLOG_ERROR, msg))
       return;
 
   if (!log->use_colors)

@@ -7,5 +7,5 @@ Name: Lib Jarvis
 Description: A true web 3.0 library!
 Version: @VERSION@
 Requres: glib-2.0 iksemel
-Libs: -L${libdir} -ljarvis
+Libs: -L${libdir} -ltaningia
 Cflags: -I${includedir}

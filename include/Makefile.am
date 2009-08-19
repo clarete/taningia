@@ -1,1 +1,1 @@
-SUBDIRS = jarvis
+SUBDIRS = taningia

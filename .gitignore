@@ -22,8 +22,8 @@ libtool
 ltmain.sh
 missing
 stamp-h1
-/jarvis.pc
+/taningia.pc
 /app
 /conf.[ch]
-/bindings/defs/jarvis.json
-/bindings/python/jarvismodule.[ch]
+/bindings/defs/taningia.json
+/bindings/python/taningiamodule.[ch]

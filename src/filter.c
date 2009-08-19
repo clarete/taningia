@@ -18,19 +18,19 @@
  */
 
 #include <glib.h>
-#include <jarvis/filter.h>
+#include <taningia/filter.h>
 
-struct _JFilter
+struct _TFilter
 {
   GHashTable *hash;
   void *data;
 };
 
-JFilter *
-j_filter_new (void *data)
+TFilter *
+t_filter_new (void *data)
 {
-  JFilter *filter;
-  filter = g_slice_new (JFilter);
+  TFilter *filter;
+  filter = g_slice_new (TFilter);
   filter->data = data ? data : NULL;
   filter->hash =
     g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
@@ -38,22 +38,22 @@ j_filter_new (void *data)
 }
 
 void
-j_filter_free (JFilter *filter)
+t_filter_free (TFilter *filter)
 {
   g_hash_table_unref (filter->hash);
-  g_slice_free (JFilter, filter);
+  g_slice_free (TFilter, filter);
 }
 
 void *
-j_filter_get_data (JFilter *filter)
+t_filter_get_data (TFilter *filter)
 {
   return filter->data;
 }
 
 void
-j_filter_add (JFilter         *filter,
+t_filter_add (TFilter         *filter,
               const char      *name,
-              JFilterCallback  cb,
+              TFilterCallback  cb,
               void            *data)
 {
   GHook *hook;
@@ -71,17 +71,17 @@ j_filter_add (JFilter         *filter,
 }
 
 static gboolean
-j_filter_marshal (GHook *hook, gpointer *data)
+t_filter_marshal (GHook *hook, gpointer *data)
 {
 
-  JFilterCallback cb;
+  TFilterCallback cb;
   cb = hook->func;
   cb (data[0], hook->data, data[1]);
   return 1;
 }
 
 int
-j_filter_call (JFilter    *filter,
+t_filter_call (TFilter    *filter,
                const char *name,
                void       *packet)
 {
@@ -94,7 +94,7 @@ j_filter_call (JFilter    *filter,
   if (g_hash_table_lookup_extended (filter->hash, name, NULL, (gpointer *)&hlist))
     {
       g_hook_list_marshal_check (hlist, FALSE,
-                                 (GHookCheckMarshaller) j_filter_marshal,
+                                 (GHookCheckMarshaller) t_filter_marshal,
                                  data);
       return 1;
     }

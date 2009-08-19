@@ -23,31 +23,31 @@
 #include <pthread.h>
 #include <iksemel.h>
 
-#include <jarvis/xmpp.h>
-#include <jarvis/filter.h>
-#include <jarvis/log.h>
+#include <taningia/xmpp.h>
+#include <taningia/filter.h>
+#include <taningia/log.h>
 
-struct _JXmpp {
+struct _TXmpp {
   iksparser *parser;
   iksid *id;
   char *jid;
   char *password;
   char *host;
   int port;
-  JFilter *events;
-  JFilter *ids;
-  JLog *log;
+  TFilter *events;
+  TFilter *ids;
+  TLog *log;
   int running;
 };
 
 /* Prototypes of some local functions */
 
-static int      _j_xmpp_hook       (void *data, int type, iks *node);
+static int      _t_xmpp_hook       (void *data, int type, iks *node);
 
-static void    *_j_xmpp_do_run     (void *user_data);
+static void    *_t_xmpp_do_run     (void *user_data);
 
 static void
-_j_xmpp_log_hook (void *user_data, const char *data, size_t size, int is_incoming)
+_t_xmpp_log_hook (void *user_data, const char *data, size_t size, int is_incoming)
 {
   /* fprintf (stderr, "%s %s\n", is_incoming ? "[in]" : "[out]", data); */
 }
@@ -56,21 +56,21 @@ _j_xmpp_log_hook (void *user_data, const char *data, size_t size, int is_incomin
  * Allocate memory and initialize stuff necessary to create a new
  * XmppContext.
  */
-JXmpp *
-j_xmpp_new (const char *jid,
+TXmpp *
+t_xmpp_new (const char *jid,
             const char *password,
             const char *host,
             int         port)
 {
-  JXmpp *ctx;
-  ctx = malloc (sizeof (JXmpp));
+  TXmpp *ctx;
+  ctx = malloc (sizeof (TXmpp));
   ctx->jid = strdup (jid);
   ctx->password = strdup (password);
-  ctx->parser = iks_stream_new (IKS_NS_CLIENT, ctx, _j_xmpp_hook);
+  ctx->parser = iks_stream_new (IKS_NS_CLIENT, ctx, _t_xmpp_hook);
   ctx->id = iks_id_new (iks_parser_stack (ctx->parser), ctx->jid);
-  ctx->events = j_filter_new (ctx);
-  ctx->ids = j_filter_new (ctx);
-  ctx->log = j_log_new ("xmpp-client");
+  ctx->events = t_filter_new (ctx);
+  ctx->ids = t_filter_new (ctx);
+  ctx->log = t_log_new ("xmpp-client");
   ctx->running = 0;
 
   /* Handling optional arguments */
@@ -87,7 +87,7 @@ j_xmpp_new (const char *jid,
 
   /* Useful for debugging */
 
-  iks_set_log_hook (ctx->parser, _j_xmpp_log_hook);
+  iks_set_log_hook (ctx->parser, _t_xmpp_log_hook);
   return ctx;
 }
 
@@ -95,25 +95,25 @@ j_xmpp_new (const char *jid,
  * Free the memory used by a XmppContext struct.
  */
 void
-j_xmpp_free (JXmpp *ctx)
+t_xmpp_free (TXmpp *ctx)
 {
   free (ctx->jid);
   free (ctx->password);
   iks_parser_delete (ctx->parser);
-  j_filter_free (ctx->events);
-  j_filter_free (ctx->ids);
-  j_log_free (ctx->log);
+  t_filter_free (ctx->events);
+  t_filter_free (ctx->ids);
+  t_log_free (ctx->log);
   free (ctx);
 }
 
 const char *
-j_xmpp_get_jid (JXmpp *ctx)
+t_xmpp_get_jid (TXmpp *ctx)
 {
   return ctx->jid;
 }
 
 void
-j_xmpp_set_jid (JXmpp *ctx, const char *jid)
+t_xmpp_set_jid (TXmpp *ctx, const char *jid)
 {
   if (ctx->jid)
     free (ctx->jid);
@@ -121,13 +121,13 @@ j_xmpp_set_jid (JXmpp *ctx, const char *jid)
 }
 
 const char *
-j_xmpp_get_password (JXmpp *ctx)
+t_xmpp_get_password (TXmpp *ctx)
 {
   return ctx->password;
 }
 
 void
-j_xmpp_set_password (JXmpp *ctx, const char *password)
+t_xmpp_set_password (TXmpp *ctx, const char *password)
 {
   if (ctx->password)
     free (ctx->password);
@@ -135,13 +135,13 @@ j_xmpp_set_password (JXmpp *ctx, const char *password)
 }
 
 const char *
-j_xmpp_get_host (JXmpp *ctx)
+t_xmpp_get_host (TXmpp *ctx)
 {
   return ctx->host;
 }
 
 void
-j_xmpp_set_host (JXmpp *ctx, const char *host)
+t_xmpp_set_host (TXmpp *ctx, const char *host)
 {
   if (ctx->host)
     free (ctx->host);
@@ -149,47 +149,47 @@ j_xmpp_set_host (JXmpp *ctx, const char *host)
 }
 
 int
-j_xmpp_get_port (JXmpp *ctx)
+t_xmpp_get_port (TXmpp *ctx)
 {
   return ctx->port;
 }
 
 void
-j_xmpp_set_port (JXmpp *ctx, int port)
+t_xmpp_set_port (TXmpp *ctx, int port)
 {
   ctx->port = port;
 }
 
-JFilter *
-j_xmpp_get_filter_events (JXmpp *ctx)
+TFilter *
+t_xmpp_get_filter_events (TXmpp *ctx)
 {
   return ctx->events;
 }
 
-JFilter *
-j_xmpp_get_filter_ids (JXmpp *ctx)
+TFilter *
+t_xmpp_get_filter_ids (TXmpp *ctx)
 {
   return ctx->ids;
 }
 
-JLog *
-j_xmpp_get_logger (JXmpp *ctx)
+TLog *
+t_xmpp_get_logger (TXmpp *ctx)
 {
   return ctx->log;
 }
 
 int
-j_xmpp_is_running (JXmpp *ctx)
+t_xmpp_is_running (TXmpp *ctx)
 {
   return ctx->running;
 }
 
 int
-j_xmpp_send (JXmpp *ctx, iks *node)
+t_xmpp_send (TXmpp *ctx, iks *node)
 {
   int err;
   if ((err = iks_send (ctx->parser, node)) != IKS_OK)
-    j_log_warn (ctx->log, "Fail to send packet through j_xmpp_send");
+    t_log_warn (ctx->log, "Fail to send packet through t_xmpp_send");
   return err;
 }
 
@@ -198,7 +198,7 @@ j_xmpp_send (JXmpp *ctx, iks *node)
  * thread. To avoid problems with our loved GMainLoop used by soup.
  */
 int
-j_xmpp_run (JXmpp *ctx)
+t_xmpp_run (TXmpp *ctx)
 {
   int err;
   pthread_t th;
@@ -210,31 +210,31 @@ j_xmpp_run (JXmpp *ctx)
        * the error and send some useful result to the user. */
       return err;
     }
-  j_log_info (ctx->log, "Connected to xmpp:%s:%d", ctx->host, ctx->port);
+  t_log_info (ctx->log, "Connected to xmpp:%s:%d", ctx->host, ctx->port);
 
   ctx->running = 1;
 
   /* Detaching our main loop thread */
-  pthread_create (&th, NULL, _j_xmpp_do_run, (void *) ctx);
+  pthread_create (&th, NULL, _t_xmpp_do_run, (void *) ctx);
   pthread_detach (th);
-  j_log_info (ctx->log, "Detaching the main loop thread");
+  t_log_info (ctx->log, "Detaching the main loop thread");
 
   return IKS_OK;
 }
 
 void
-j_xmpp_stop (JXmpp *ctx)
+t_xmpp_stop (TXmpp *ctx)
 {
   iks_disconnect (ctx->parser);
   ctx->running = 0;
-  j_log_info (ctx->log, "Disconnected");
+  t_log_info (ctx->log, "Disconnected");
 }
 
 int
-j_xmpp_reconnect (JXmpp *ctx)
+t_xmpp_reconnect (TXmpp *ctx)
 {
-  j_xmpp_stop (ctx);
-  return j_xmpp_run (ctx);
+  t_xmpp_stop (ctx);
+  return t_xmpp_run (ctx);
 }
 
 /* Static (local) functions. A very special thanks to Thadeu
@@ -322,7 +322,7 @@ xmpp_id_hook (iksparser *parser, iks *node, char *id)
 }
 
 static int
-xmpp_features_hook (JXmpp *ctx, iks *node)
+xmpp_features_hook (TXmpp *ctx, iks *node)
 {
   iks *feat;
   char *ns;
@@ -334,12 +334,12 @@ xmpp_features_hook (JXmpp *ctx, iks *node)
         {
           if (iks_start_tls (ctx->parser) != IKS_OK)
             {
-              j_log_warn (ctx->log, "TLS negotiation failed");
+              t_log_warn (ctx->log, "TLS negotiation failed");
               return 1;
             }
           else
             {
-              j_log_info (ctx->log, "TLS negotiation done");
+              t_log_info (ctx->log, "TLS negotiation done");
               return 0;
             }
         }
@@ -348,12 +348,12 @@ xmpp_features_hook (JXmpp *ctx, iks *node)
           if (iks_start_sasl (ctx->parser, IKS_SASL_DIGEST_MD5,
                               ctx->id->user, ctx->password) != IKS_OK)
             {
-              j_log_warn (ctx->log, "SASL negotiation failed");
+              t_log_warn (ctx->log, "SASL negotiation failed");
               return 1;
             }
           else
             {
-              j_log_info (ctx->log, "SASL started");
+              t_log_info (ctx->log, "SASL started");
               return 0;
             }
         }
@@ -361,12 +361,12 @@ xmpp_features_hook (JXmpp *ctx, iks *node)
         {
           if (xmpp_bind_hook (ctx->parser, node) == 0)
             {
-              j_log_info (ctx->log, "Bind hook sent");
+              t_log_info (ctx->log, "Bind hook sent");
               return 0;
             }
           else
             {
-              j_log_warn (ctx->log, "Bind hook failed");
+              t_log_warn (ctx->log, "Bind hook failed");
               return 1;
             }
         }
@@ -375,29 +375,29 @@ xmpp_features_hook (JXmpp *ctx, iks *node)
 }
 
 int
-xmpp_other_hook (JXmpp *ctx, iks *node, char *ns)
+xmpp_other_hook (TXmpp *ctx, iks *node, char *ns)
 {
   if (!iks_strcmp (ns, "urn:ietf:params:xml:ns:xmpp-sasl"))
     {
       if (!iks_strcmp (iks_name (node), "success"))
         iks_send_header (ctx->parser, ctx->id->server);
       else if (!iks_strcmp (iks_name (node), "failure"))
-        j_log_warn (ctx->log, "Authentication failed");
+        t_log_warn (ctx->log, "Authentication failed");
       return 0;
     }
   return 1;
 }
 
 static int
-_j_xmpp_hook (void *data, int type, iks *node)
+_t_xmpp_hook (void *data, int type, iks *node)
 {
   char *name;
   char *id;
   char *ns;
   iksparser *parser;
-  JXmpp *ctx;
+  TXmpp *ctx;
 
-  ctx = (JXmpp *) data;
+  ctx = (TXmpp *) data;
   parser = ctx->parser;
   name = iks_name (node);
   id = iks_find_attrib (node, "id");
@@ -405,11 +405,11 @@ _j_xmpp_hook (void *data, int type, iks *node)
 
   /* Dispatching a notification to id handlers. */
   if (id)
-    j_filter_call (ctx->ids, id, node);
+    t_filter_call (ctx->ids, id, node);
 
   if (!iks_strcmp (name, "iq"))
     {
-      j_filter_call (ctx->events, "iq", node);
+      t_filter_call (ctx->events, "iq", node);
       if (xmpp_id_hook (parser, node, id) == 0)
         return IKS_OK;
       xmpp_iq_error (parser, node);
@@ -418,8 +418,8 @@ _j_xmpp_hook (void *data, int type, iks *node)
     {
       char *from;
       from = iks_find_attrib (node, "from");
-      j_filter_call (ctx->events, "presence", node);
-      j_log_info (ctx->log, "I sense a disturbance in the force: %s!", from);
+      t_filter_call (ctx->events, "presence", node);
+      t_log_info (ctx->log, "I sense a disturbance in the force: %s!", from);
     }
   else if (!iks_strcmp (name, "message"))
     {
@@ -427,13 +427,13 @@ _j_xmpp_hook (void *data, int type, iks *node)
       char *body;
       from = iks_find_attrib (node, "from");
       body = iks_find_cdata (node, "body");
-      j_filter_call (ctx->events, "message", node);
-      j_log_info (ctx->log, "Xmpp message from '%s':\n%s", from, body);
+      t_filter_call (ctx->events, "message", node);
+      t_log_info (ctx->log, "Xmpp message from '%s':\n%s", from, body);
     }
   else if (!iks_strcmp (name, "stream:features"))
     {
       /* Sending notification about incoming features */
-      j_filter_call (ctx->events, "features", node);
+      t_filter_call (ctx->events, "features", node);
 
       /* Calling our standard feature hook with tls, sasl and
        * binding operations. */
@@ -443,7 +443,7 @@ _j_xmpp_hook (void *data, int type, iks *node)
         }
       else
         {
-          j_log_critical (ctx->log, "Something wrong has happened:\n%s",
+          t_log_critical (ctx->log, "Something wrong has happened:\n%s",
                           iks_string (iks_stack (node), node));
         }
     }
@@ -453,7 +453,7 @@ _j_xmpp_hook (void *data, int type, iks *node)
       inner_name = iks_name (iks_child (node));
 
       /* Dispatching an event notifiying the error. */
-      j_filter_call (ctx->events, "error", node);
+      t_filter_call (ctx->events, "error", node);
 
       /* Trying to give more info about the error to the user. Some
        * kinds of errors can change the behaviour of the
@@ -462,12 +462,12 @@ _j_xmpp_hook (void *data, int type, iks *node)
        * we'll never get anything without connecting to the host. */
       if (!iks_strcmp (inner_name, "host-unknown"))
         {
-          j_xmpp_stop (ctx);
-          j_log_critical (ctx->log, "Unknown Host, aborting main loop");
+          t_xmpp_stop (ctx);
+          t_log_critical (ctx->log, "Unknown Host, aborting main loop");
         }
       else
         {
-          j_log_warn (ctx->log, "streamerror: %s",
+          t_log_warn (ctx->log, "streamerror: %s",
                       iks_string (iks_stack (node), node));
         }
     }
@@ -475,17 +475,17 @@ _j_xmpp_hook (void *data, int type, iks *node)
     {
       if (xmpp_other_hook (ctx, node, ns) == 0)
         return IKS_OK;
-      j_log_warn (ctx->log, "Unhandled hook: \"%s\"", name);
+      t_log_warn (ctx->log, "Unhandled hook: \"%s\"", name);
     }
   return IKS_OK;
 }
 
 /* The main loop of our xmpp client. */
 static void *
-_j_xmpp_do_run (void *user_data)
+_t_xmpp_do_run (void *user_data)
 {
   int err;
-  JXmpp *ctx = (JXmpp *) user_data;
+  TXmpp *ctx = (TXmpp *) user_data;
 
   while (ctx->running)
     {
@@ -494,20 +494,20 @@ _j_xmpp_do_run (void *user_data)
           switch (err)
             {
             case IKS_NET_NOCONN:
-              j_log_critical (ctx->log, "iks_recv: IKS_NET_NOCONN.");
+              t_log_critical (ctx->log, "iks_recv: IKS_NET_NOCONN.");
               break;
 
             case IKS_NET_RWERR:
-              j_log_critical (ctx->log, "iks_recv: IKS_NET_RWERR.");
+              t_log_critical (ctx->log, "iks_recv: IKS_NET_RWERR.");
               break;
 
             default:
-              j_log_critical (ctx->log, "iks_recv: Unhandled error.");
+              t_log_critical (ctx->log, "iks_recv: Unhandled error.");
               break;
             }
         }
     }
-  j_log_info (ctx->log, "Main loop finished, calling disconnect.");
+  t_log_info (ctx->log, "Main loop finished, calling disconnect.");
   iks_disconnect (ctx->parser);
   return NULL;
 }

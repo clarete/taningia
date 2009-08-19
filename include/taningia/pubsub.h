@@ -17,64 +17,64 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef _JARVIS_PUBSUB_H
-#define _JARVIS_PUBSUB_H
+#ifndef _TANINGIA_PUBSUB_H
+#define _TANINGIA_PUBSUB_H
 
 #include <iksemel.h>
-#include <jarvis/jarvis.h>
+#include <taningia/taningia.h>
 
 #define PUBSUB_NS "http://jabber.org/protocol/pubsub"
 
-typedef struct _JPubsub JPubsub;
+typedef struct _TPubsub TPubsub;
 
-JPubsub *j_pubsub_new                        (const char   *from,
+TPubsub *t_pubsub_new                        (const char   *from,
                                               const char   *to);
 
-void     j_pubsub_free                       (JPubsub      *ctx);
+void     t_pubsub_free                       (TPubsub      *ctx);
 
-iks     *j_pubsub_query_features             (JPubsub      *ctx);
+iks     *t_pubsub_query_features             (TPubsub      *ctx);
 
-iks     *j_pubsub_query_node_info            (JPubsub      *ctx,
+iks     *t_pubsub_query_node_info            (TPubsub      *ctx,
                                               const char   *node);
 
-iks     *j_pubsub_query_node_items           (JPubsub      *ctx,
+iks     *t_pubsub_query_node_items           (TPubsub      *ctx,
                                               const char   *node);
 
-iks     *j_pubsub_query_node_subscriptions   (JPubsub      *ctx,
+iks     *t_pubsub_query_node_subscriptions   (TPubsub      *ctx,
                                               const char   *node);
 
-iks     *j_pubsub_query_node_affiliations    (JPubsub      *ctx);
+iks     *t_pubsub_query_node_affiliations    (TPubsub      *ctx);
 
-iks     *j_pubsub_node_subscribe             (JPubsub      *ctx,
+iks     *t_pubsub_node_subscribe             (TPubsub      *ctx,
                                               const char   *node,
                                               const char   *jid _optional_);
 
-iks     *j_pubsub_node_unsubscribe           (JPubsub      *ctx,
+iks     *t_pubsub_node_unsubscribe           (TPubsub      *ctx,
                                               const char   *node,
                                               const char   *jid _optional_);
 
-iks     *j_pubsub_node_retrieve_items        (JPubsub      *ctx,
+iks     *t_pubsub_node_retrieve_items        (TPubsub      *ctx,
                                               const char   *node,
                                               int           max_items);
 
-iks     *j_pubsub_publish_item_text          (JPubsub      *ctx,
+iks     *t_pubsub_publish_item_text          (TPubsub      *ctx,
                                               const char   *node,
                                               const char   *id _optional_,
                                               const char   *body,
                                               int           len _len_);
 
-iks     *j_pubsub_publish_item_iks           (JPubsub      *ctx,
+iks     *t_pubsub_publish_item_iks           (TPubsub      *ctx,
                                               const char   *node,
                                               const char   *id _optional_,
                                               iks          *child);
 
-iks     *j_pubsub_delete_item                (JPubsub      *ctx,
+iks     *t_pubsub_delete_item                (TPubsub      *ctx,
                                               const char   *node,
                                               const char   *id);
 
-iks     *j_pubsub_node_create                (JPubsub      *ctx,
+iks     *t_pubsub_node_create                (TPubsub      *ctx,
                                               const char   *node,
                                               int           bare,
                                               ...);
 
-#endif /* _JARVIS_PUBSUB_H */
+#endif /* _TANINGIA_PUBSUB_H */

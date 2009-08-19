@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef _JARVIS_H_
-#define _JARVIS_H_
+#ifndef _TANINGIA_H_
+#define _TANINGIA_H_
 
 /* These macros are param modifier marks, they have no meaning for the
  * C user. They are mainly used by the binding scanner script to
@@ -34,4 +34,4 @@
  * marked with this must be a string */
 #define _len_
 
-#endif /* _JARVIS_H_ */
+#endif /* _TANINGIA_H_ */

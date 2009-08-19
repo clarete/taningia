@@ -17,28 +17,28 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef _JARVIS_FILTER_H_
-#define _JARVIS_FILTER_H_
+#ifndef _TANINGIA_FILTER_H_
+#define _TANINGIA_FILTER_H_
 
-#include <jarvis/jarvis.h>
+#include <taningia/taningia.h>
 
-typedef struct _JFilter JFilter;
+typedef struct _TFilter TFilter;
 
-typedef int (*JFilterCallback) (void *, void *, void *);
+typedef int (*TFilterCallback) (void *, void *, void *);
 
-JFilter            *j_filter_new                   (void                *data _optional_);
+TFilter            *t_filter_new                   (void                *data _optional_);
 
-void                j_filter_free                  (JFilter             *filter);
+void                t_filter_free                  (TFilter             *filter);
 
-void               *j_filter_get_data              (JFilter             *filter);
+void               *t_filter_get_data              (TFilter             *filter);
 
-void                j_filter_add                   (JFilter             *filter,
+void                t_filter_add                   (TFilter             *filter,
                                                     const char          *name,
-                                                    JFilterCallback      cb,
+                                                    TFilterCallback      cb,
                                                     void                *data _optional_);
 
-int                 j_filter_call                  (JFilter             *filter,
+int                 t_filter_call                  (TFilter             *filter,
                                                     const char          *name,
                                                     void                *data _optional_);
 
-#endif /* _JARVIS_FILTER_H_ */
+#endif /* _TANINGIA_FILTER_H_ */

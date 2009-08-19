@@ -23,7 +23,7 @@ import os
 import simplejson
 
 def camel_to_underscore(content):
-    """Convert names like JAtomEntry to j_atom_entry.
+    """Convert names like TAtomEntry to t_atom_entry.
     """
     newstr = ''
     for index, item in enumerate(content):
@@ -36,7 +36,7 @@ def camel_to_underscore(content):
 
 def clear_spaces(buf):
     """Replace all whitespaces to a single whitespace, like:
-    `JAtomContent          *' to `JAtomContent *'.
+    `TAtomContent          *' to `TAtomContent *'.
     """
     while buf.find('  ') != -1:
         buf = buf.replace('  ', ' ')
@@ -150,7 +150,7 @@ def scan_file(libprefix, fname):
     types = []
     for i in type_names:
         # All methods of a `class' starts with its underscored name,
-        # like this: JAtomEntry methods starts with the j_atom_entry_
+        # like this: TAtomEntry methods starts with the t_atom_entry_
         # prefix.
         prefix = '%s_' % camel_to_underscore(i)
         fmethods = []
@@ -168,9 +168,9 @@ def scan_file(libprefix, fname):
         for method in methods:
             name = method['name']
             # FIXME: This line tries to match things like
-            # "j_atom_entry_set_title".startswith("j_atom_entry"). This
+            # "t_atom_entry_set_title".startswith("t_atom_entry"). This
             # actually is not right, since we can have another type
-            # called "j_atom_entry_content". So, this will need to be
+            # called "t_atom_entry_content". So, this will need to be
             # rewriten. This works now because there is no clash in
             # our type names today.
             if name.startswith(prefix):
@@ -203,7 +203,7 @@ def get_defs(libname, files):
     """
 
     # This is a standard of our library. For example, our main library
-    # is called `jarvis', so our namespace starts with `j'. Sure it
+    # is called `taningia', so our namespace starts with `t'. Sure it
     # doesn't fit other libraries, so be carefull.
     libprefix = libname[0]
 
