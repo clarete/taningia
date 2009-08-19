@@ -423,7 +423,14 @@ class CFile(Helper):
                 pytype = 'i'
 
             if '_optional_' in modifiers:
-                types += '|' + pytype
+                # Python optional flag is not per parameter, if a
+                # parameter is optional in a function, all of the next
+                # params are going to be too. So, only one `|'
+                # (optional marker) should be added.
+                if '|' in types:
+                    types += pytype
+                else:
+                    types += '|' + pytype
             elif '_len_' in modifiers:
                 types += '#'
             else:
