@@ -408,6 +408,8 @@ class CFile(Helper):
                 # before used.
                 if ptype.endswith('*'):
                     app('  %s %s = NULL;' % (ptype, name))
+                elif ptype == 'int':
+                    app('  %s %s = 0;' % (ptype, name))
                 else:
                     app('  %s %s;' % (ptype, name))
             svars.append('&%s' % name)
