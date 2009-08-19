@@ -32,7 +32,7 @@ PyAtomEntryObject_set_updated (PyAtomEntryObject *self,
 
   if (!PyDateTime_Check (date))
     {
-      PyErr_SetString(PyExc_ValueError,
+      PyErr_SetString(PyExc_TypeError,
 		      "param 1 must be a datetime.datetime instance.");
       return NULL;
     }
@@ -195,7 +195,7 @@ PyFilterObject_add (PyFilterObject *self,
 
   if (!PyCallable_Check (callback))
     {
-      PyErr_SetString (PyExc_ValueError,
+      PyErr_SetString (PyExc_TypeError,
                        "Param 2 must be callable.");
       return NULL;
     }
