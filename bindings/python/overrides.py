@@ -206,6 +206,11 @@ PyFilterObject_add (PyFilterObject *self,
       Py_INCREF (extra);
       self->param = extra;
     }
+  else
+    {
+      Py_INCREF (Py_None);
+      self->param = Py_None;
+    }
   j_filter_add (self->inner,
                 name,
                 (JFilterCallback) call_filter_callback,
