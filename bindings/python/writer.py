@@ -235,6 +235,11 @@ init%(mname)s (void)
     return;
   PyModule_AddObject (m, "%(mname)s_CAPI", capi);
 
+  /* Enums */
+
+%(enums)s
+
+  /* Module declaration */
 %(modules)s
 }
 '''
@@ -268,7 +273,10 @@ class Helper(object):
         self.libcamel = self.defs['name'].capitalize()
         self.libupper = self.defs['name'].upper()
         self.alltypes = []
+        self.allenums = []
         for i in self.defs['modules']:
+            for e in i['enums']:
+                self.allenums.append(e['name'])
             for j in i['types']:
                 self.alltypes.append(j['cname'])
 
@@ -408,6 +416,12 @@ class CFile(Helper):
             # the function and building a string with needed arguments
             # with its types.
             pytype = TYPE_MAP.get(ptype, 'O') # Fallingback to `object'
+
+            # If the current type is found in our enum registry, we
+            # know that our param will receive an int.
+            if ptype in self.allenums:
+                pytype = 'i'
+
             if '_optional_' in modifiers:
                 types += '|' + pytype
             elif '_len_' in modifiers:
@@ -459,10 +473,17 @@ class CFile(Helper):
         bval = RETURN_MAP.get(rtype)
         if bval:
             return bval
+
+        # Looking in our registered types for an already known one
         for i in self.alltypes:
             if rtype == i + ' *':
                 bval = 'Py_BuildValue ("O", %s (ret))' % \
                     macroname(self.name_from_cname(i))
+
+        # Now is the time to look in our enum registry.
+        for i in self.allenums:
+            if rtype == i:
+                bval = 'Py_BuildValue ("i", ret)'
         if bval:
             return bval
         return 'Py_BuildValue ("")'
@@ -601,17 +622,31 @@ class CFile(Helper):
             'type': pytypename(ctype['name']),
             }
 
+    def enums(self, module):
+        enums = []
+        for enum in module['enums']:
+            enums.append('  /* %s */' % enum['name'])
+            for entry in enum['entries']:
+                enums.append('  PyModule_AddIntConstant (m, "%s", %s);' % (
+                        entry, entry))
+        return '\n'.join(enums)
+
     def modinit(self):
         ctypes = []
+        enums = []
         for module in self.defs['modules']:
+            if module['enums']:
+                enums.append(self.enums(module))
             for ctype in module['types']:
                 ctypes.append(TEMPLATE_C_MODULE_INIT % {
                         'name': ctype['name'],
                         'pytype': pytypename(ctype['name'])
                         })
+
         return TEMPLATE_C_MODULE_INITFUNC % {
             'mname': self.lib,
             'modules': '\n'.join(ctypes),
+            'enums': '\n'.join(enums),
             'doc': self.defs.get('doc', ''),
             }
 
