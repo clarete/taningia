@@ -57,6 +57,7 @@ AC_CONFIG_FILES([
   bindings/Makefile
   bindings/defs/Makefile
   bindings/python/Makefile
+  examples/Makefile
   taningia.pc
 ])
 
