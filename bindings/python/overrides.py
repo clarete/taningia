@@ -239,12 +239,77 @@ PyFilterObject_call (PyFilterObject *self,
 }
 '''
 
+def pylogobject():
+    return '''typedef struct {
+  PyObject_HEAD
+  TLog *inner;
+  PyObject *handler_callback;
+  PyObject *handler_data;
+} PyLogObject;
+'''
+
+def t_log_set_handler():
+    return '''
+static void
+_call_py_log_handler (TLog *log, TLogLevel level, const char *msg, void *user_data)
+{
+  PyLogObject *self;
+  PyObject *args;
+  PyObject *result;
+  self = (PyLogObject *) user_data;
+  args = Py_BuildValue ("(OisO)", self, level, msg, self->handler_data);
+  result = PyObject_CallObject (self->handler_callback, args);
+  Py_DECREF (args);
+  if (result == NULL)
+    PyErr_Print ();
+  else
+    Py_DECREF (result);
+}
+
+static PyObject *
+PyLogObject_set_handler (PyLogObject *self,
+                         PyObject    *args)
+{
+  PyObject *callback = NULL;
+  PyObject *param = NULL;
+  if (!PyArg_ParseTuple (args, "O|O", &callback, &param))
+    return NULL;
+  if (!PyCallable_Check (callback))
+    {
+      PyErr_SetString (PyExc_TypeError, "Param 1 must be callable.");
+      return NULL;
+    }
+  else
+    {
+      Py_INCREF (callback);
+      self->handler_callback = callback;
+    }
+  if (param != NULL)
+    {
+      Py_INCREF (param);
+      self->handler_data = param;
+    }
+  else
+    {
+      Py_INCREF (Py_None);
+      self->handler_data = Py_None;
+    }
+  Py_INCREF (self);
+  t_log_set_handler (self->inner, (TLogHandlerFunc) _call_py_log_handler, self);
+
+  Py_INCREF (Py_None);
+  return Py_None;
+}
+'''
+
 OVERRIDES = {
     'PyFilterObject': pyfilterobject,
+    'PyLogObject': pylogobject,
     't_atom_entry_set_updated': t_atom_entry_set_updated,
     't_atom_entry_get_updated': t_atom_entry_get_updated,
     't_atom_entry_get_authors': t_atom_entry_get_authors,
     't_atom_entry_get_categories': t_atom_entry_get_categories,
     't_filter_add': t_filter_add,
     't_filter_call': t_filter_call,
+    't_log_set_handler': t_log_set_handler,
 }
