@@ -322,7 +322,7 @@ xmpp_session_hook (iksparser *parser, iks *node)
   iks_insert_attrib (iq, "type", "set");
   iks_insert_attrib (iq, "id", "session1");
   iks_insert_attrib (iks_insert (iq, "session"),
-                     "xmlns", "urn:ietf:params:xml:ns:xmpp-session");
+                     "xmlns", IKS_NS_XMPP_SESSION);
   iks_send (parser, iq);
   iks_delete (iq);
   return 0;
@@ -376,7 +376,7 @@ xmpp_features_hook (TXmpp *ctx, iks *node)
               return 0;
             }
         }
-      else if (!iks_strcmp (ns, "urn:ietf:params:xml:ns:xmpp-sasl"))
+      else if (!iks_strcmp (ns, IKS_NS_XMPP_SASL))
         {
           if (iks_start_sasl (ctx->parser, IKS_SASL_DIGEST_MD5,
                               ctx->id->user, ctx->password) != IKS_OK)
@@ -390,7 +390,7 @@ xmpp_features_hook (TXmpp *ctx, iks *node)
               return 0;
             }
         }
-      else if (!iks_strcmp (ns, "urn:ietf:params:xml:ns:xmpp-bind"))
+      else if (!iks_strcmp (ns, IKS_NS_XMPP_BIND))
         {
           if (xmpp_bind_hook (ctx->parser, node) == 0)
             {
@@ -410,7 +410,7 @@ xmpp_features_hook (TXmpp *ctx, iks *node)
 int
 xmpp_other_hook (TXmpp *ctx, iks *node, char *ns)
 {
-  if (!iks_strcmp (ns, "urn:ietf:params:xml:ns:xmpp-sasl"))
+  if (!iks_strcmp (ns, IKS_NS_XMPP_SASL))
     {
       if (!iks_strcmp (iks_name (node), "success"))
         iks_send_header (ctx->parser, ctx->id->server);
