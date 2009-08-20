@@ -29,6 +29,7 @@ struct _TLog
   TLogLevel level;
   TLogHandlerFunc handler;
   int use_colors;
+  void *handler_data;
 };
 
 TLog *
@@ -39,6 +40,7 @@ t_log_new (const char *domain_name)
   log->name = strdup (domain_name);
   log->level = TLOG_CRITICAL | TLOG_ERROR | TLOG_WARN;
   log->handler = NULL;
+  log->handler_data = NULL;
   log->use_colors = 0;
   return log;
 }
@@ -51,9 +53,10 @@ t_log_free (TLog *log)
 }
 
 void
-t_log_set_handler (TLog *log, TLogHandlerFunc handler)
+t_log_set_handler (TLog *log, TLogHandlerFunc handler, void *user_data)
 {
   log->handler = handler;
+  log->handler_data = user_data;
 }
 
 void
@@ -122,7 +125,7 @@ t_log_info (TLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, TLOG_INFO, msg))
+    if (log->handler (log, TLOG_INFO, msg, log->handler_data))
       return;
 
   if (!log->use_colors)
@@ -143,7 +146,7 @@ t_log_warn (TLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, TLOG_WARN, msg))
+    if (log->handler (log, TLOG_WARN, msg, log->handler_data))
       return;
 
   if (!log->use_colors)
@@ -164,7 +167,7 @@ t_log_debug (TLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, TLOG_DEBUG, msg))
+    if (log->handler (log, TLOG_DEBUG, msg, log->handler_data))
       return;
 
   if (!log->use_colors)
@@ -185,7 +188,7 @@ t_log_critical (TLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, TLOG_CRITICAL, msg))
+    if (log->handler (log, TLOG_CRITICAL, msg, log->handler_data))
       return;
 
   if (!log->use_colors)
@@ -206,7 +209,7 @@ t_log_error (TLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, TLOG_ERROR, msg))
+    if (log->handler (log, TLOG_ERROR, msg, log->handler_data))
       return;
 
   if (!log->use_colors)

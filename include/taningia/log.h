@@ -30,13 +30,13 @@ typedef enum {
   TLOG_ERROR    = 1 << 5,
 } TLogLevel;
 
-typedef int *(*TLogHandlerFunc) (TLog *log, TLogLevel level, const char *);
+typedef int *(*TLogHandlerFunc) (TLog *log, TLogLevel level, const char *, void *);
 
 TLog     *t_log_new            (const char *domain_name);
 
 void      t_log_free           (TLog *log);
 
-void      t_log_set_handler    (TLog *log, TLogHandlerFunc handler);
+void      t_log_set_handler    (TLog *log, TLogHandlerFunc handler, void *user_data);
 
 void      t_log_set_use_colors (TLog *log, int use_colors);
 
