@@ -31,7 +31,7 @@
  * of a message, of an error and stuff. We'll document these events
  * better someday.
  *
- * This example is very close to the xmpp-clieant.c because the usage
+ * This example is very close to the xmpp-client.c because the usage
  * of filters makes more sense with a client, it was basically
  * copy-n-pasted from xmpp-client.c example, so if you have already
  * read that example, keep only the filter stuff in mind, the rest
