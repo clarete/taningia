@@ -129,10 +129,10 @@ t_log_info (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[  INFO] %s\n", msg);
+    fprintf (stderr, "[  INFO ] %s\n", msg);
   else
     /* Cyan */
-    fprintf (stderr, "\033[;36m[  INFO]\033[;0m \033[;0m%s\033[;0m\n", msg);
+    fprintf (stderr, "\033[;36m[  INFO ]\033[;0m \033[;0m%s\033[;0m\n", msg);
 }
 
 void
@@ -150,10 +150,10 @@ t_log_warn (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[  WARN] %s\n", msg);
+    fprintf (stderr, "[  WARN ] %s\n", msg);
   else
     /* Yellow */
-    fprintf (stderr, "\033[;33m[  WARN]\033[;0m \033[;0m%s\033[;0m\n", msg);
+    fprintf (stderr, "\033[;33m[  WARN ]\033[;0m \033[;0m%s\033[;0m\n", msg);
 }
 
 void
@@ -171,10 +171,10 @@ t_log_debug (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ DEBUG] %s\n", msg);
+    fprintf (stderr, "[ DEBUG ] %s\n", msg);
   else
     /* Blue */
-    fprintf (stderr, "\033[;34m[ DEBUG]\033[;0m \033[0;0m%s\033[;0m\n", msg);
+    fprintf (stderr, "\033[;34m[ DEBUG ]\033[;0m \033[0;0m%s\033[;0m\n", msg);
 }
 
 void
@@ -192,10 +192,10 @@ t_log_critical (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ CRITI] %s\n", msg);
+    fprintf (stderr, "[ CRITI ] %s\n", msg);
   else
     /* Red with no bold */
-    fprintf (stderr, "\033[;31m[ CRITI]\033[;0m \033[;0m%s\033[;0m\n", msg);
+    fprintf (stderr, "\033[;31m[ CRITI ]\033[;0m \033[;0m%s\033[;0m\n", msg);
 }
 
 void
@@ -213,8 +213,8 @@ t_log_error (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ ERROR] %s\n", msg);
+    fprintf (stderr, "[ ERROR ] %s\n", msg);
   else
     /* Red foreground */
-    fprintf (stderr, "\033[1;31m[ ERROR]\033[1;0m \033[1;1m%s\033[1;0m\n", msg);
+    fprintf (stderr, "\033[1;31m[ ERROR ]\033[1;0m \033[1;1m%s\033[1;0m\n", msg);
 }
