@@ -76,6 +76,7 @@ TEMPLATE_H_MACROS = '''#define Py%(type)s_AS_%(type_upper)s(op) \\
 TEMPLATE_H_TYPES = '''typedef struct {
   PyObject_HEAD
   %(cname)s *inner;
+%(extra)s
 } %(pytype)s;
 '''
 
@@ -98,6 +99,14 @@ static Py%(libcamel)s_CAPI *Py%(libcamel)sAPI;
 
 # ---- .c file templates ----
 
+TEMPLATE_C_MACROS = '''
+/* Macros used to make it easy to generate code. */
+
+#define INIT_MEMBER(x)         \\
+  Py_INCREF (Py_None);         \\
+  x = Py_None;
+'''
+
 TEMPLATE_C_CAPI = '''/* C API definition */
 static Py%(libcamel)s_CAPI CAPI = {
 %(definitions)s
@@ -111,6 +120,7 @@ TEMPLATE_C_NEWFUNC = '''static PyObject *
   self = (%(pyname)s *) (type->tp_alloc (type, 0));
   if (self != NULL)
     self->inner = ctype;
+  Py_XINCREF (self);
   return (PyObject *) self;
 }
 '''
@@ -164,6 +174,53 @@ static PyMethodDef %(pyname)s_methods[] = {
 };
 '''
 
+# This part of code was writen to generate objects that support
+# "cyclic garbage collection". I've followed the example available in
+# the 2.1.3 section of the "Extending and Embeding the Python
+# Interpreter" tutorial.
+
+TEMPLATE_C_CYCLIC_GC = '''
+static int
+%(pyname)s_traverse (%(pyname)s *self, visitproc visit, void *arg)
+{
+%(traverse_members)s
+  return 0;
+}
+
+static int
+%(pyname)s_clear (%(pyname)s *self)
+{
+%(clear_members)s
+  return 0;
+}
+
+static void
+%(pyname)s_dealloc (%(pyname)s *self)
+{
+  %(pyname)s_clear (self);
+  self->ob_type->tp_free ((PyObject *) self);
+}
+
+static PyObject *
+%(pyname)s_new (PyTypeObject *type, PyObject *args, PyObject *kwargs)
+{
+  %(pyname)s *self;
+
+  self = (%(pyname)s *) type->tp_alloc (type, 0);
+  if (self != NULL)
+    {
+%(new_members)s
+    }
+  return (PyObject *) self;
+}
+
+static struct PyMemberDef %(pyname)s_members[] = {
+%(members_def)s
+  { NULL }
+};
+
+'''
+
 TEMPLATE_C_TYPE = '''
 static PyTypeObject %(type)s = {
   PyObject_HEAD_INIT(NULL)
@@ -186,25 +243,25 @@ static PyTypeObject %(type)s = {
   0,                                        /* tp_getattro */
   0,                                        /* tp_setattro */
   0,                                        /* tp_as_buffer */
-  Py_TPFLAGS_DEFAULT,                       /* tp_flags */
+  %(tp_flags)s,                             /* tp_flags */
   "%(name)s Objects",                       /* tp_doc */
-  0,                                        /* tp_traverse */
-  0,                                        /* tp_clear */
+  %(tp_traverse)s,                          /* tp_traverse */
+  %(tp_clear)s,                             /* tp_clear */
   0,                                        /* tp_richcompare */
   0,                                        /* tp_weaklistoffset */
   0,                                        /* tp_iter */
   0,                                        /* tp_iternext */
   %(pyname)s_methods,                       /* tp_methods */
-  0,                                        /* tp_members */
+  %(tp_members)s,                           /* tp_members */
   0,                                        /* tp_getset */
   0,                                        /* tp_base */
   0,                                        /* tp_dict */
   0,                                        /* tp_descr_get */
   0,                                        /* tp_descr_set */
   0,                                        /* tp_dictoffset */
-  (initproc) %(pyname)s_init,               /* tp_init */
+  %(tp_init)s,                              /* tp_init */
   0,                                        /* tp_alloc */
-  PyType_GenericNew,                        /* tp_new */
+  %(tp_new)s,                               /* tp_new */
 };
 '''
 
@@ -267,6 +324,8 @@ def macro_py2c(name):
            }
 
 class Helper(object):
+    cyclegctypes = []
+
     def __init__(self, defs):
         self.defs = defs
         self.lib = self.defs['name']
@@ -286,6 +345,11 @@ class Helper(object):
             'libupper': self.libupper,
             'alltypes': self.alltypes,
             }
+
+    def iscgctype(self, tname):
+        for i in self.cyclegctypes:
+            if i['type'] == tname:
+                return True
 
     def uctx(self, mydict):
         ctx = self.dctx.copy()
@@ -322,13 +386,38 @@ class HFile(Helper):
         app = ret.append
         for module in self.defs['modules']:
             for ctype in module['types']:
+                extra = []
                 pname = pyname(ctype['name'])
+
+                # Overriding a type means add more items to its
+                # struct. Currently, only PyObjects can be
+                # added. Because the overriding function right now
+                # returns a list of item names to be added to the
+                # struct.
+                #
+                # The idea here is simple. Since we have a PyObject*
+                # field in the type struct, this type should support
+                # "Cyclic GC", so a new entry in `self.cyclegctypes'
+                # that will be readed in the type generation
+                # function. This new entry contains the customized
+                # items. It is importanto to generate _new and _clean
+                # functions.
                 if pname in OVERRIDES:
-                    app(OVERRIDES[pname]())
-                    continue
+                    subitems = OVERRIDES[pname]()
+                    if subitems:
+                        self.cyclegctypes.append({
+                                'type': pname,
+                                'childs': subitems,
+                                })
+                    for sitem in subitems:
+                        extra.append('  PyObject *%s;' % sitem)
+
+                # Just filling the type template. All bizarre cyclic
+                # gc stuff ends right above here!
                 app(TEMPLATE_H_TYPES % self.uctx({
                             'cname': ctype['cname'],
                             'pytype': pname,
+                            'extra': '\n'.join(extra),
                             }))
         return '\n'.join(ret)
 
@@ -503,12 +592,13 @@ class CFile(Helper):
         parts = []
         app = parts.append
         app('#include <Python.h>')
+        app('#include <structmember.h>')
         for dep in self.defs['dependencies']['public']:
             includes.append('#include <%s>' % dep)
         for dep in self.defs['dependencies']['priv']:
             app('#include <%s>' % dep)
         app('#include "%smodule.h"' % self.defs['name'])
-        app('')
+        app(TEMPLATE_C_MACROS)
         return '\n'.join(parts)
 
     def macros(self):
@@ -581,6 +671,11 @@ class CFile(Helper):
         return TEMPLATE_C_CONSTRUCTOR % ctx
 
     def destructor(self, ctype):
+        # We should not build the constructor of an object that
+        # implements cgc, so aborting.
+        if self.iscgctype(pyname(ctype['name'])):
+            return ''
+
         cname = ctype['destructor']['cname']
         if cname in OVERRIDES:
             return OVERRIDES[cname]()
@@ -624,11 +719,68 @@ class CFile(Helper):
             'methods': '\n'.join(methods),
             }
 
+    def cgc(self, ctype):
+        cpyname = pyname(ctype['name'])
+
+        # We should not generate cgc code for types that doesn't
+        # actually need it.
+        if not self.iscgctype(cpyname):
+            return ''
+
+        # Since we reached this point, we are sure that there *is* an
+        # entry called `pyname(ctype['name'])' in the OVERRIDES dict.
+        members = OVERRIDES[cpyname]()
+
+        # Building entries to be put in _clear method.
+        new_members = []
+        traverse_members = []
+        clear_members = []
+        members_def = []
+        for i in members:
+            new_members.append('      INIT_MEMBER (self->%s);' % i)
+            traverse_members.append('  Py_VISIT (self->%s);' % i)
+            clear_members.append('  Py_CLEAR (self->%s);' % i)
+            members_def.append('  {"%s", T_OBJECT_EX, offsetof (%s, %s), 0, ""},'
+                               % (i, cpyname, i))
+
+        return TEMPLATE_C_CYCLIC_GC % {
+            'pyname': pyname(ctype['name']),
+            'new_members': '\n'.join(new_members),
+            'traverse_members': '\n'.join(traverse_members),
+            'clear_members': '\n'.join(clear_members),
+            'members_def': '\n'.join(members_def),
+            }
+
     def pytype(self, ctype):
+        tp_flags = ['Py_TPFLAGS_DEFAULT', 'Py_TPFLAGS_BASETYPE']
+        tp_traverse = '0'
+        tp_clear = '0'
+        tp_new = 'PyType_GenericNew'
+        tp_members = '0'
+        tp_init = '(initproc) %s_init' % pyname(ctype['name'])
+
+        # Here we're looking for types that need to implement cyclic
+        # garbage collection. To do it, some slots in the type
+        # definition must be implemented, like traverse, clear and new
+        # methods.
+        if self.iscgctype(pyname(ctype['name'])):
+            cpyname = pyname(ctype['name'])
+            tp_flags.append('Py_TPFLAGS_HAVE_GC')
+            tp_traverse = '(traverseproc) %s_traverse' % cpyname
+            tp_clear = '(inquiry) %s_clear' % cpyname
+            tp_new = '%s_new' % cpyname
+            tp_members = '%s_members' % cpyname
+
         return TEMPLATE_C_TYPE % {
             'name': ctype['name'],
             'pyname': pyname(ctype['name']),
             'type': pytypename(ctype['name']),
+            'tp_flags': ' | ' .join(tp_flags),
+            'tp_traverse': tp_traverse,
+            'tp_clear': tp_clear,
+            'tp_new': tp_new,
+            'tp_init': tp_init,
+            'tp_members': tp_members,
             }
 
     def enums(self, module):
@@ -669,6 +821,7 @@ class CFile(Helper):
                     app(self.method(ctype, method))
                 app(self.destructor(ctype))
                 app(self.method_defs(ctype))
+                app(self.cgc(ctype))
                 app(self.pytype(ctype))
         return '\n'.join(parts)
 

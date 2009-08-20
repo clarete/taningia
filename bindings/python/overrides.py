@@ -128,59 +128,68 @@ PyAtomEntryObject_get_categories (PyAtomEntryObject *self,
 '''
 
 def pyfilterobject():
-    return '''typedef struct {
-  PyObject_HEAD
-  TFilter *inner;
-  PyObject *callback;
-  PyObject *param;
-} PyFilterObject;
-'''
+    return ['callback', 'param']
 
 def t_filter_add():
     return '''
-static int
-call_filter_callback (void *data1, void *data2, void *data3)
+static void
+_call_py_filter_callback (void *data1, void *data2, void *data3)
 {
-  PyObject *retval;
-  PyObject *ptuple;
-  PyObject *p1 = NULL, *p2 = NULL, *p3 = NULL;
-  PyFilterObject *filter;
+  PyObject *args, *result;
+  PyFilterObject *self;
+  PyObject *p1, *p2, *p3;
+  PyGILState_STATE state;
+  void *tmp;
 
-  /* Getting params to pass to the callback */
-  filter = (PyFilterObject *) data2;
-  p1 = (PyObject *) t_filter_get_data (filter->inner);
-  p2 = (PyObject *) filter->param;
-  p3 = (PyObject *) data3;
+  state = PyGILState_Ensure ();
 
-  if (!p1)
+  /* The filter object is coming as a parameter to our callback */
+  self = (PyFilterObject *) data2;
+
+  /* Packing parameters in a tuple to pass to our callback */
+  tmp = t_filter_get_data (self->inner);
+  if (tmp)
+    {
+      p1 = Py_Xmpp_FromXmpp (tmp);
+      Py_INCREF (p1);
+    }
+  else
     {
       Py_INCREF (Py_None);
       p1 = Py_None;
     }
-  if (!p2)
+  p2 = self->param;
+  if (p2)
+    Py_INCREF (p2);
+  else
     {
       Py_INCREF (Py_None);
       p2 = Py_None;
     }
-  if (!p3)
+  if (data3)
+    {
+      p3 = PyIks_FromIks ((iks *)data3);
+      Py_XINCREF (p3);
+    }
+  else
     {
       Py_INCREF (Py_None);
       p3 = Py_None;
     }
 
-  /* Packing all params in a tuple */
-  ptuple = PyTuple_New (3);
-  PyTuple_SetItem (ptuple, 0, p1);
-  PyTuple_SetItem (ptuple, 1, p2);
-  PyTuple_SetItem (ptuple, 2, p3);
+  args = Py_BuildValue ("(OOO)", p1, p2, p3);
+  result = PyObject_CallObject (self->callback, args);
+  Py_DECREF (args);
 
-  retval = PyObject_CallObject (filter->callback, ptuple);
-  if (!retval)
-    PyErr_Print ();
+  if (result == NULL)
+    {
+      PyErr_Print ();
+      PyErr_Clear ();
+    }
   else
-    Py_DECREF (retval);
+    Py_DECREF (result);
 
-  return 1;
+  PyGILState_Release (state);
 }
 
 static PyObject *
@@ -189,32 +198,31 @@ PyFilterObject_add (PyFilterObject *self,
 {
   const char *name = NULL;
   PyObject *callback = NULL;
-  PyObject *extra = NULL;
-  if (!PyArg_ParseTuple (args, "sO|O", &name, &callback, &extra))
+  PyObject *param = NULL;
+  if (!PyArg_ParseTuple (args, "sO|O:add", &name, &callback, &param))
     return NULL;
-
   if (!PyCallable_Check (callback))
     {
-      PyErr_SetString (PyExc_TypeError,
-                       "Param 2 must be callable.");
+      PyErr_SetString (PyExc_TypeError, "Param 1 must be callable.");
       return NULL;
     }
-  Py_INCREF (callback);
-  self->callback = callback;
-  if (extra)
+  else
     {
-      Py_INCREF (extra);
-      self->param = extra;
+      Py_INCREF (callback);
+      self->callback = callback;
+    }
+  if (param != NULL)
+    {
+      Py_INCREF (param);
+      self->param = param;
     }
   else
     {
       Py_INCREF (Py_None);
       self->param = Py_None;
     }
-  t_filter_add (self->inner,
-                name,
-                (TFilterCallback) call_filter_callback,
-                self);
+  Py_INCREF (self);
+  t_filter_add (self->inner, name, (TFilterCallback) _call_py_filter_callback, self);
 
   Py_INCREF (Py_None);
   return Py_None;
@@ -229,10 +237,17 @@ PyFilterObject_call (PyFilterObject *self,
 {
   const char *name = NULL;
   PyObject *extra = NULL;
+
   if (!PyArg_ParseTuple (args, "s|O", &name, &extra))
     return NULL;
 
+  Py_INCREF (extra);
+
+  Py_BEGIN_ALLOW_THREADS
+
   t_filter_call (self->inner, name, extra);
+
+  Py_END_ALLOW_THREADS
 
   Py_INCREF (Py_None);
   return Py_None;
@@ -240,13 +255,7 @@ PyFilterObject_call (PyFilterObject *self,
 '''
 
 def pylogobject():
-    return '''typedef struct {
-  PyObject_HEAD
-  TLog *inner;
-  PyObject *handler_callback;
-  PyObject *handler_data;
-} PyLogObject;
-'''
+    return ['handler_callback', 'handler_data']
 
 def t_log_set_handler():
     return '''
