@@ -78,7 +78,7 @@ PyAtomEntryObject_get_authors (PyAtomEntryObject *self,
                                PyObject          *args)
 {
   PyObject *alist;
-  TAtomAuthor **authors;
+  TAtomPerson **authors;
   int len, i;
   t_atom_entry_get_authors (self->inner, &authors, &len);
 
@@ -89,7 +89,7 @@ PyAtomEntryObject_get_authors (PyAtomEntryObject *self,
   for (i = 0; i < len; i++)
     {
       PyObject *author;
-      author = Py_AtomAuthor_FromAtomAuthor (authors[i]);
+      author = Py_AtomPerson_FromAtomPerson (authors[i]);
       Py_INCREF (author);
       PyList_SetItem (alist, i, author);
     }

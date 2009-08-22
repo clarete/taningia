@@ -34,7 +34,7 @@ struct _TAtomContent
   TIri *src;
 };
 
-struct _TAtomAuthor
+struct _TAtomPerson
 {
   char *name;
   char *email;
@@ -161,96 +161,96 @@ t_atom_content_set_content (TAtomContent *content,
 }
 
 
-/* TAtomAuthor */
+/* TAtomPerson */
 
-TAtomAuthor *
-t_atom_author_new (const char *name,
+TAtomPerson *
+t_atom_person_new (const char *name,
                    const char *email,
                    const char *iri)
 {
-  TAtomAuthor *author;
-  author = malloc (sizeof (TAtomAuthor));
-  author->name = strdup (name);
-  author->email = email ? strdup (email) : NULL;
-  author->iri = iri ? strdup (iri) : NULL;
-  return author;
+  TAtomPerson *person;
+  person = malloc (sizeof (TAtomPerson));
+  person->name = strdup (name);
+  person->email = email ? strdup (email) : NULL;
+  person->iri = iri ? strdup (iri) : NULL;
+  return person;
 }
 
 void
-t_atom_author_free (TAtomAuthor *author)
+t_atom_person_free (TAtomPerson *person)
 {
-  if (author->name)
-    free (author->name);
-  if (author->email)
-    free (author->email);
-  if (author->iri)
-    free (author->iri);
-  free (author);
+  if (person->name)
+    free (person->name);
+  if (person->email)
+    free (person->email);
+  if (person->iri)
+    free (person->iri);
+  free (person);
 }
 
 iks *
-t_atom_author_to_iks (TAtomAuthor *author)
+t_atom_person_to_iks (TAtomPerson *person, const char *element)
 {
   iks *ik;
-  ik = iks_new ("author");
-  iks_insert_cdata (iks_insert (ik, "name"), author->name, 0);
-  if (author->email)
-    iks_insert_cdata (iks_insert (ik, "email"), author->email, 0);
-  if (author->iri)
-    iks_insert_cdata (iks_insert (ik, "uri"), author->iri, 0);
+  ik = iks_new (element);
+  iks_insert_cdata (iks_insert (ik, "name"), person->name, 0);
+  if (person->email)
+    iks_insert_cdata (iks_insert (ik, "email"), person->email, 0);
+  if (person->iri)
+    iks_insert_cdata (iks_insert (ik, "uri"), person->iri, 0);
   return ik;
 }
 
 char *
-t_atom_author_to_string (TAtomAuthor *author)
+t_atom_person_to_string (TAtomPerson *person, const char *element)
 {
-  iks *ik = t_atom_author_to_iks (author);
+  iks *ik = t_atom_person_to_iks (person, element);
   return iks_string (iks_stack (ik), ik);
 }
 
 const char *
-t_atom_author_get_name (TAtomAuthor *author)
+t_atom_person_get_name (TAtomPerson *person)
 {
-  return (const char *) author->name;
+  return (const char *) person->name;
 }
 
 void
-t_atom_author_set_name (TAtomAuthor *author,
+t_atom_person_set_name (TAtomPerson *person,
                         const char  *name)
 {
-  if (author->name)
-    free (author->name);
-  author->name = strdup (name);
+  if (person->name)
+    free (person->name);
+  person->name = strdup (name);
 }
 
 const char *
-t_atom_author_get_email (TAtomAuthor *author)
+t_atom_person_get_email (TAtomPerson *person)
 {
-  return (const char *) author->email;
+  return (const char *) person->email;
 }
 
 void
-t_atom_author_set_email (TAtomAuthor *author,
+t_atom_person_set_email (TAtomPerson *person,
                          const char  *email)
 {
-  if (author->email)
-    free (author->email);
-  author->email = strdup (email);
+  if (person->email)
+    free (person->email);
+  person->email = strdup (email);
 }
 
 const char *
-t_atom_author_get_iri (TAtomAuthor *author)
+t_atom_person_get_iri (TAtomPerson *person)
 {
-  return (const char *) author->iri;
+  return (const char *) person->iri;
 }
 
 void
-t_atom_author_set_iri (TAtomAuthor *author,
+t_atom_person_set_iri (TAtomPerson *person,
                        const char  *iri)
 {
-  if (author->iri)
-    free (author->iri);
-  author->iri = strdup (iri);
+  if (person->iri)
+    free (person->iri);
+  person->iri = strdup (iri);
 }
 
 /* TAtomCategory */
@@ -411,7 +411,8 @@ t_atom_entry_to_iks (TAtomEntry *entry)
     for (i = 0; i < entry->authors->len; i++)
       {
         iks *authors =
-          t_atom_author_to_iks (g_ptr_array_index (entry->authors, i));
+          t_atom_person_to_iks (g_ptr_array_index (entry->authors, i),
+                                "author");
         iks_insert_node (ik, authors);
       }
   if (entry->categories)
@@ -465,18 +466,18 @@ t_atom_entry_set_updated (TAtomEntry *entry,
 
 void
 t_atom_entry_get_authors (TAtomEntry    *entry,
-                          TAtomAuthor ***authors,
+                          TAtomPerson ***authors,
                           int           *len)
 {
   if (len)
     *len = entry->authors->len;
   if (authors)
-    *authors = (TAtomAuthor **) entry->authors->pdata;
+    *authors = (TAtomPerson **) entry->authors->pdata;
 }
 
 void
 t_atom_entry_add_author (TAtomEntry  *entry,
-                         TAtomAuthor *author)
+                         TAtomPerson *author)
 {
   if (entry->authors == NULL)
     entry->authors = g_ptr_array_new ();
@@ -488,7 +489,7 @@ t_atom_entry_del_authors (TAtomEntry *entry)
 {
   int i;
   for (i = 0; i < entry->authors->len; i++)
-    t_atom_author_free (g_ptr_array_index (entry->authors, i));
+    t_atom_person_free (g_ptr_array_index (entry->authors, i));
   g_ptr_array_free (entry->authors, TRUE);
 }
 

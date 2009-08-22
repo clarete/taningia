@@ -29,7 +29,7 @@
 
 typedef struct _TAtomEntry    TAtomEntry;
 typedef struct _TAtomCategory TAtomCategory;
-typedef struct _TAtomAuthor   TAtomAuthor;
+typedef struct _TAtomPerson   TAtomPerson;
 typedef struct _TAtomContent  TAtomContent;
 
 /* TAtomContent */
@@ -49,22 +49,24 @@ void                t_atom_content_set_content     (TAtomContent   *content,
                                                     const char     *text,
                                                     int             len _len_);
 
-/* TAtomAuthor */
+/* TAtomPerson */
 
-TAtomAuthor        *t_atom_author_new              (const char     *name,
+TAtomPerson        *t_atom_person_new              (const char     *name,
                                                     const char     *email _optional_,
                                                     const char     *iri _optional_);
-void                t_atom_author_free             (TAtomAuthor    *author);
-iks                *t_atom_author_to_iks           (TAtomAuthor    *author);
-char               *t_atom_author_to_string        (TAtomAuthor    *author);
-const char         *t_atom_author_get_name         (TAtomAuthor    *author);
-void                t_atom_author_set_name         (TAtomAuthor    *author,
+void                t_atom_person_free             (TAtomPerson    *person);
+iks                *t_atom_person_to_iks           (TAtomPerson    *person,
+                                                    const char     *element);
+char               *t_atom_person_to_string        (TAtomPerson    *person,
+                                                    const char     *element);
+const char         *t_atom_person_get_name         (TAtomPerson    *person);
+void                t_atom_person_set_name         (TAtomPerson    *person,
                                                     const char     *name);
-const char         *t_atom_author_get_email        (TAtomAuthor    *author);
-void                t_atom_author_set_email        (TAtomAuthor    *author,
+const char         *t_atom_person_get_email        (TAtomPerson    *person);
+void                t_atom_person_set_email        (TAtomPerson    *person,
                                                     const char     *email);
-const char         *t_atom_author_get_iri          (TAtomAuthor    *author);
-void                t_atom_author_set_iri          (TAtomAuthor    *author,
+const char         *t_atom_person_get_iri          (TAtomPerson    *person);
+void                t_atom_person_set_iri          (TAtomPerson    *person,
                                                     const char     *iri);
 
 /* TAtomCategory */
@@ -98,10 +100,10 @@ time_t              t_atom_entry_get_updated       (TAtomEntry       *entry);
 void                t_atom_entry_set_updated       (TAtomEntry       *entry,
                                                     time_t            updated);
 void                t_atom_entry_get_authors       (TAtomEntry       *entry,
-                                                    TAtomAuthor    ***authors _out_,
+                                                    TAtomPerson    ***authors _out_,
                                                     int              *len _out_);
 void                t_atom_entry_add_author        (TAtomEntry       *entry,
-                                                    TAtomAuthor      *author);
+                                                    TAtomPerson      *author);
 void                t_atom_entry_del_authors       (TAtomEntry       *entry);
 void                t_atom_entry_get_categories    (TAtomEntry       *entry,
                                                     TAtomCategory  ***categories _out_,
