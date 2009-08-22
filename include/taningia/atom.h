@@ -73,7 +73,7 @@ void                t_atom_person_set_iri          (TAtomPerson    *person,
 
 TAtomCategory      *t_atom_category_new            (const char     *term,
                                                     const char     *label _optional_,
-                                                    const char     *scheme _optional_);
+                                                    TIri           *scheme _optional_);
 void                t_atom_category_free           (TAtomCategory  *category);
 iks                *t_atom_category_to_iks         (TAtomCategory  *category);
 char               *t_atom_category_to_string      (TAtomCategory  *category);
@@ -83,9 +83,9 @@ void                t_atom_category_set_label      (TAtomCategory  *category,
 const char         *t_atom_category_get_term       (TAtomCategory  *category);
 void                t_atom_category_set_term       (TAtomCategory  *category,
                                                     const char     *term);
-const char         *t_atom_category_get_scheme     (TAtomCategory  *category);
+TIri               *t_atom_category_get_scheme     (TAtomCategory  *category);
 void                t_atom_category_set_scheme     (TAtomCategory  *category,
-                                                    const char     *scheme);
+                                                    TIri           *scheme);
 
 /* TAtomEntry */
 

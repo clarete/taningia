@@ -45,7 +45,7 @@ struct _TAtomCategory
 {
   char *label;
   char *term;
-  char *scheme;
+  TIri *scheme;
 };
 
 struct _TAtomEntry
@@ -258,13 +258,13 @@ t_atom_person_set_iri (TAtomPerson *person,
 TAtomCategory *
 t_atom_category_new (const char *term,
                      const char *label,
-                     const char *scheme)
+                     TIri *scheme)
 {
   TAtomCategory *cat;
   cat = malloc (sizeof (TAtomCategory));
   cat->term = strdup (term);
   cat->label = label ? strdup (label) : NULL;
-  cat->scheme = scheme ? strdup (scheme) : NULL;
+  cat->scheme = scheme ? scheme : NULL;
   return cat;
 }
 
@@ -276,7 +276,7 @@ t_atom_category_free (TAtomCategory  *category)
   if (category->label)
     free (category->label);
   if (category->scheme)
-    free (category->scheme);
+    t_iri_free (category->scheme);
   free (category);
 }
 
@@ -289,7 +289,11 @@ t_atom_category_to_iks (TAtomCategory *category)
   if (category->label)
     iks_insert_attrib (ik, "label", category->label);
   if (category->scheme)
-    iks_insert_attrib (ik, "scheme", category->scheme);
+    {
+      char *iri;
+      iri = t_iri_to_string (category->scheme);
+      iks_insert_attrib (ik, "scheme", iri);
+    }
   return ik;
 }
 
@@ -333,20 +337,20 @@ t_atom_category_set_term (TAtomCategory *category,
   category->term = strdup (term);
 }
 
-const char *
+TIri *
 t_atom_category_get_scheme (TAtomCategory *category)
 {
-  return (const char *) category->scheme;
+  return category->scheme;
 }
 
 void
 t_atom_category_set_scheme (TAtomCategory *category,
-                            const char    *scheme)
+                            TIri          *scheme)
 {
   if (category->scheme)
-    free (category->scheme);
+    t_iri_free (category->scheme);
   if (scheme)
-    category->scheme = strdup (scheme);
+    category->scheme = scheme;
   else
     category->scheme = NULL;
 }
