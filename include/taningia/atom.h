@@ -96,6 +96,9 @@ char               *t_atom_entry_to_string         (TAtomEntry       *entry);
 const char         *t_atom_entry_get_title         (TAtomEntry       *entry);
 void                t_atom_entry_set_title         (TAtomEntry       *entry,
                                                     const char       *title);
+TIri               *t_atom_entry_get_id            (TAtomEntry       *entry);
+void                t_atom_entry_set_id            (TAtomEntry       *entry,
+                                                    TIri             *id);
 time_t              t_atom_entry_get_updated       (TAtomEntry       *entry);
 void                t_atom_entry_set_updated       (TAtomEntry       *entry,
                                                     time_t            updated);

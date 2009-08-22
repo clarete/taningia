@@ -50,7 +50,7 @@ struct _TAtomCategory
 
 struct _TAtomEntry
 {
-  char         *id;
+  TIri         *id;
   char         *title;
   time_t        updated;
   GPtrArray    *authors;
@@ -374,7 +374,7 @@ t_atom_entry_free (TAtomEntry *entry)
   if (entry->title)
     free (entry->title);
   if (entry->id)
-    free (entry->id);
+    t_iri_free (entry->id);
   if (entry->authors)
     t_atom_entry_del_authors (entry);
   if (entry->categories)
@@ -449,6 +449,20 @@ t_atom_entry_set_title (TAtomEntry *entry,
   if (entry->title)
     free (entry->title);
   entry->title = strdup (title);
+}
+
+TIri *
+t_atom_entry_get_id (TAtomEntry *entry)
+{
+  return entry->id;
+}
+
+void
+t_atom_entry_set_id (TAtomEntry *entry, TIri *id)
+{
+  if (entry->id)
+    t_iri_free (entry->id);
+  entry->id = id;
 }
 
 time_t
