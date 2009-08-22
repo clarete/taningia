@@ -403,14 +403,18 @@ iks *
 t_atom_entry_to_iks (TAtomEntry *entry)
 {
   iks *ik;
-  char *updated;
+  char *updated, *id_iri;
   int i;
   updated = time_to_iso8601 (entry->updated);
+  id_iri = t_iri_to_string (entry->id);
+
   ik = iks_new ("entry");
   iks_insert_attrib (ik, "xmlns", J_ATOM_NS);
+  iks_insert_cdata (iks_insert (ik, "id"), id_iri, 0);
   iks_insert_cdata (iks_insert (ik, "title"), entry->title, 0);
   iks_insert_cdata (iks_insert (ik, "updated"), updated, 0);
   free (updated);
+  free (id_iri);
   if (entry->authors)
     for (i = 0; i < entry->authors->len; i++)
       {
