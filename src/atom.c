@@ -24,13 +24,14 @@
 #include <iksemel.h>
 #include <glib.h>               /* to g_time_val_to_iso8601 */
 #include <taningia/atom.h>
+#include <taningia/iri.h>
 
 struct _TAtomContent
 {
   char *type;
   char *content;
-  char *src;
   int   len;
+  TIri *src;
 };
 
 struct _TAtomAuthor
@@ -68,7 +69,7 @@ t_atom_content_new (const char *type,
   TAtomContent *ct;
   ct = malloc (sizeof (TAtomContent));
   ct->type = strdup (type);
-  ct->content = strndup (content, len);
+  ct->content = content ? strndup (content, len) :  NULL;
   ct->src = NULL;
   ct->len = len;
   return ct;
@@ -82,7 +83,7 @@ t_atom_content_free (TAtomContent *content)
   if (content->content)
     free (content->content);
   if (content->src)
-    free (content->src);
+    t_iri_free (content->src);
   free (content);
 }
 
@@ -92,8 +93,13 @@ t_atom_content_to_iks (TAtomContent *content)
   iks *ct;
   ct = iks_new ("content");
   iks_insert_attrib (ct, "type", content->type);
-  if (content->src)
-    iks_insert_attrib (ct, "type", content->type);
+  if (content->src != NULL)
+    {
+      char *iri;
+      iri = t_iri_to_string (content->src);
+      iks_insert_attrib (ct, "src", iri);
+      free (iri);
+    }
   else if (content->content)
     iks_insert_cdata (ct, content->content, content->len);
   return ct;
@@ -106,7 +112,7 @@ t_atom_content_to_string (TAtomContent *content)
   return iks_string (iks_stack (ik), ik);
 }
 
-const char *
+TIri *
 t_atom_content_get_src (TAtomContent *content)
 {
   return content->src;
@@ -114,15 +120,46 @@ t_atom_content_get_src (TAtomContent *content)
 
 void
 t_atom_content_set_src (TAtomContent *content,
-                        const char   *src)
+                        TIri         *src)
 {
   if (content->src)
-    free (content->src);
-  if (src)
-    content->src = strdup (src);
-  else
-    content->src = NULL;
+    {
+      t_iri_free (content->src);
+      if (src != NULL && content->content)
+        {
+          free (content->content);
+          content->content = NULL;
+        }
+    }
+  content->src = src;
 }
+
+const char *
+t_atom_content_get_content (TAtomContent *content,
+                            int          *len)
+{
+  if (len)
+    *len = content->len;
+  return content->content;
+}
+
+void
+t_atom_content_set_content (TAtomContent *content,
+                            const char   *text,
+                            int           len)
+{
+  if (content->content)
+    {
+      free (content->content);
+      if (text != NULL && content->src)
+        {
+          t_iri_free (content->src);
+          content->src = NULL;
+        }
+    }
+  content->content = strdup (text);
+}
+
 
 /* TAtomAuthor */
 

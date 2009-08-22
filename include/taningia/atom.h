@@ -20,9 +20,10 @@
 #ifndef _TANINGIA_ATOM_H_
 #define _TANINGIA_ATOM_H_
 
-#include <taningia/taningia.h>
 #include <time.h>
 #include <iksemel.h>
+#include <taningia/taningia.h>
+#include <taningia/iri.h>
 
 #define J_ATOM_NS "http://www.w3.org/2005/Atom"
 
@@ -34,14 +35,19 @@ typedef struct _TAtomContent  TAtomContent;
 /* TAtomContent */
 
 TAtomContent       *t_atom_content_new             (const char     *type,
-                                                    const char     *content,
+                                                    const char     *content _optional_,
                                                     int             len _len_);
 void                t_atom_content_free            (TAtomContent   *content);
 iks                *t_atom_content_to_iks          (TAtomContent   *content);
 char               *t_atom_content_to_string       (TAtomContent   *entry);
-const char         *t_atom_content_get_src         (TAtomContent   *content);
+TIri               *t_atom_content_get_src         (TAtomContent   *content);
 void                t_atom_content_set_src         (TAtomContent   *content,
-                                                    const char     *src);
+                                                    TIri           *src);
+const char         *t_atom_content_get_content     (TAtomContent   *content,
+                                                    int            *len _out_);
+void                t_atom_content_set_content     (TAtomContent   *content,
+                                                    const char     *text,
+                                                    int             len _len_);
 
 /* TAtomAuthor */
 
