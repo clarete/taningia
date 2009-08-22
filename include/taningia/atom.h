@@ -34,7 +34,7 @@ typedef struct _TAtomContent  TAtomContent;
 
 /* TAtomContent */
 
-TAtomContent       *t_atom_content_new             (const char     *type,
+TAtomContent       *t_atom_content_new             (const char     *type _optional_,
                                                     const char     *content _optional_,
                                                     int             len _len_);
 void                t_atom_content_free            (TAtomContent   *content);

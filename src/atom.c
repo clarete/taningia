@@ -68,7 +68,7 @@ t_atom_content_new (const char *type,
 {
   TAtomContent *ct;
   ct = malloc (sizeof (TAtomContent));
-  ct->type = strdup (type);
+  ct->type = strdup (type ? type : "text");
   ct->content = content ? strndup (content, len) :  NULL;
   ct->src = NULL;
   ct->len = len;
