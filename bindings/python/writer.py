@@ -131,6 +131,12 @@ TEMPLATE_C_CONSTRUCTOR = '''static int
                  PyObject   *kwargs)
 {%(params)s
   self->inner = %(name)s (%(param_names)s);
+  if (self->inner == NULL)
+    {
+      PyErr_SetString (PyExc_ValueError,
+                       "Probable error in parameters");
+      return -1;
+    }
   return 0;
 }
 '''
@@ -575,7 +581,8 @@ class CFile(Helper):
         # Looking in our registered types for an already known one
         for i in self.alltypes:
             if rtype == i + ' *':
-                bval = 'Py_BuildValue ("O", %s (ret))' % \
+                bval = 'ret ? Py_BuildValue ("O", %s (ret)) : ' \
+                       'Py_BuildValue ("O", Py_None)' % \
                     macroname(self.name_from_cname(i))
 
         # Now is the time to look in our enum registry.
