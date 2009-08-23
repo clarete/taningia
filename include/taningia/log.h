@@ -20,6 +20,8 @@
 #ifndef _TANINGIA_LOG_H_
 #define _TANINGIA_LOG_H_
 
+#define MAX_DATE_SIZE 64
+
 typedef struct _TLog TLog;
 
 typedef enum {

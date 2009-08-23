@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <taningia/log.h>
+#include <time.h>
 
 struct _TLog
 {
@@ -30,6 +31,7 @@ struct _TLog
   TLogHandlerFunc handler;
   int use_colors;
   void *handler_data;
+  char *date_format;
 };
 
 TLog *
@@ -42,6 +44,7 @@ t_log_new (const char *domain_name)
   log->handler = NULL;
   log->handler_data = NULL;
   log->use_colors = 0;
+  log->date_format = strdup ("%I:%M:%S %p");
   return log;
 }
 
@@ -49,6 +52,7 @@ void
 t_log_free (TLog *log)
 {
   free (log->name);
+  free (log->date_format);
   free (log);
 }
 
@@ -83,6 +87,20 @@ t_log_get_level (TLog *log)
   return log->level;
 }
 
+void
+t_log_set_date_format (TLog *log, const char * date_format)
+{
+  if (log->date_format)
+    free (log->date_format);
+  log->date_format = strdup (date_format);
+}
+
+const char *
+t_log_get_date_format (TLog *log)
+{
+  return log->date_format;
+}
+
 /* I had problems to make it as a simple static function because of
  * the varargs stuff. I'll try to implement it better soon */
 #define get_message(fmt, argp)                          \
@@ -114,9 +132,31 @@ t_log_get_level (TLog *log)
           msg = np;                                     \
       }
 
+static char *
+t_log_localtime (TLog * log)
+{
+  time_t rawtime = time(NULL);
+  struct tm * timeinfo;
+  char *buffer = malloc(MAX_DATE_SIZE);
+
+  time ( &rawtime );
+  timeinfo = localtime ( &rawtime );
+
+  if (log->date_format == NULL)
+    return NULL;
+
+  if (strftime (buffer, MAX_DATE_SIZE, log->date_format, timeinfo))
+    return buffer;
+
+  fprintf (stderr, "Oh god, fix it! Date format too long!");
+  return NULL;
+}
+
 void
 t_log_info (TLog *log, const char *fmt, ...)
 {
+  char *log_time = t_log_localtime (log);
+
   if (!(log->level & TLOG_INFO))
     return;
 
@@ -129,15 +169,22 @@ t_log_info (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[  INFO ] %s\n", msg);
+    fprintf (stderr, "[  INFO ] [ %s ] %s\n", t_log_localtime (log), msg);
   else
     /* Cyan */
-    fprintf (stderr, "\033[;36m[  INFO ]\033[;0m \033[;0m%s\033[;0m\n", msg);
+    fprintf (stderr,
+             "\033[;36m[  INFO ] [ %s ]\033[;0m \033[;0m%s\033[;0m\n",
+             log_time,
+             msg);
+
+  free(log_time);
 }
 
 void
 t_log_warn (TLog *log, const char *fmt, ...)
 {
+  char *log_time = t_log_localtime (log);
+
   if (!(log->level & TLOG_WARN))
     return;
 
@@ -150,15 +197,22 @@ t_log_warn (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[  WARN ] %s\n", msg);
+    fprintf (stderr, "[  WARN ] [ %s ] %s\n", t_log_localtime (log), msg);
   else
     /* Yellow */
-    fprintf (stderr, "\033[;33m[  WARN ]\033[;0m \033[;0m%s\033[;0m\n", msg);
+    fprintf (stderr,
+             "\033[;33m[  WARN ] [ %s ]\033[;0m \033[;0m%s\033[;0m\n",
+             log_time,
+             msg);
+
+  free(log_time);
 }
 
 void
 t_log_debug (TLog *log, const char *fmt, ...)
 {
+  char *log_time = t_log_localtime (log);
+
   if (!(log->level & TLOG_DEBUG))
     return;
 
@@ -171,15 +225,22 @@ t_log_debug (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ DEBUG ] %s\n", msg);
+    fprintf (stderr, "[ DEBUG ] [ %s ] %s\n", t_log_localtime (log), msg);
   else
     /* Blue */
-    fprintf (stderr, "\033[;34m[ DEBUG ]\033[;0m \033[0;0m%s\033[;0m\n", msg);
+    fprintf (stderr,
+             "\033[;34m[ DEBUG ] [ %s ]\033[;0m \033[0;0m%s\033[;0m\n",
+             log_time,
+             msg);
+
+  free(log_time);
 }
 
 void
 t_log_critical (TLog *log, const char *fmt, ...)
 {
+  char *log_time = t_log_localtime (log);
+
   if (!(log->level & TLOG_CRITICAL))
     return;
 
@@ -192,15 +253,22 @@ t_log_critical (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ CRITI ] %s\n", msg);
+    fprintf (stderr, "[ CRITI ] [ %s ]%s\n", t_log_localtime (log), msg);
   else
     /* Red with no bold */
-    fprintf (stderr, "\033[;31m[ CRITI ]\033[;0m \033[;0m%s\033[;0m\n", msg);
+    fprintf (stderr,
+             "\033[;31m[ CRITI ] [ %s ]\033[;0m \033[;0m%s\033[;0m\n",
+             log_time,
+             msg);
+
+  free(log_time);
 }
 
 void
 t_log_error (TLog *log, const char *fmt, ...)
 {
+  char *log_time = t_log_localtime (log);
+
   if (!(log->level & TLOG_ERROR))
     return;
 
@@ -213,8 +281,13 @@ t_log_error (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ ERROR ] %s\n", msg);
+    fprintf (stderr, "[ ERROR ] [ %s ] %s\n", t_log_localtime (log), msg);
   else
     /* Red foreground */
-    fprintf (stderr, "\033[1;31m[ ERROR ]\033[1;0m \033[1;1m%s\033[1;0m\n", msg);
+    fprintf (stderr,
+             "\033[1;31m[ ERROR ] [ %s ]\033[1;0m \033[1;1m%s\033[1;0m\n",
+             log_time,
+             msg);
+
+  free(log_time);
 }
