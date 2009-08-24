@@ -318,11 +318,9 @@ int
 xmpp_session_hook (iksparser *parser, iks *node)
 {
   iks *iq;
-  iq = iks_new ("iq");
-  iks_insert_attrib (iq, "type", "set");
+
+  iq = iks_make_session ();
   iks_insert_attrib (iq, "id", "session1");
-  iks_insert_attrib (iks_insert (iq, "session"),
-                     "xmlns", IKS_NS_XMPP_SESSION);
   iks_send (parser, iq);
   iks_delete (iq);
   return 0;
