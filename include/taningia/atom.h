@@ -89,7 +89,9 @@ void                t_atom_category_set_scheme     (TAtomCategory  *category,
 
 /* TAtomEntry */
 
-TAtomEntry         *t_atom_entry_new               (const char       *title);
+TAtomEntry         *t_atom_entry_new               (const char       *title _optional_);
+int                 t_atom_entry_set_from_file     (TAtomEntry       *entry,
+                                                    const char       *fname);
 void                t_atom_entry_free              (TAtomEntry       *entry);
 iks                *t_atom_entry_to_iks            (TAtomEntry       *entry);
 char               *t_atom_entry_to_string         (TAtomEntry       *entry);

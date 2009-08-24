@@ -18,6 +18,8 @@
  */
 
 #define _GNU_SOURCE
+#define _XOPEN_SOURCE       /* glibc 2.0 needs this to use strptime */
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -58,6 +60,12 @@ struct _TAtomEntry
   char         *summary;
   TAtomContent *content;
 };
+
+/* Forward prototypes */
+
+static char   *time_to_iso8601   (time_t t);
+
+static time_t  iso8601_to_time   (const char *dt);
 
 /* TAtomContent */
 
@@ -367,7 +375,7 @@ t_atom_entry_new (const char *title)
 {
   TAtomEntry *entry;
   entry = malloc (sizeof (TAtomEntry));
-  entry->title = strdup (title);
+  entry->title = title ? strdup (title) : NULL;
   entry->id = NULL;
   entry->updated = time (0);
   entry->authors = NULL;
@@ -375,6 +383,165 @@ t_atom_entry_new (const char *title)
   entry->summary = NULL;
   entry->content = NULL;
   return entry;
+}
+
+int
+t_atom_entry_set_from_file (TAtomEntry *entry,
+                            const char *fname)
+{
+  TIri *eid;
+  iks *ik, *child;
+  char *id, *title, *updated, *summary;
+  int err;
+
+  if ((err = iks_load (fname, &ik)) != IKS_OK)
+    return 0;
+  if (strcmp (iks_name (ik), "entry") ||
+      !iks_has_children (ik))
+    {
+      iks_delete (ik);
+      printf ("Wrong root entry element\n");
+      return 0;
+    }
+  id = iks_find_cdata (ik, "id");
+  if (!id)
+    {
+      printf ("No id\n");
+      return 0;
+    }
+  eid = t_iri_new (id);
+  if (!eid)
+    {
+      printf ("Invalid id iri\n");
+      return 0;
+    }
+  title = iks_find_cdata (ik, "title");
+  if (!title)
+    {
+      printf ("No title\n");
+      return 0;
+    }
+
+  /* Here we have almost all required fields */
+  t_atom_entry_set_id (entry, eid);
+  t_atom_entry_set_title (entry, title);
+
+  updated = iks_find_cdata (ik, "updated");
+  if (updated)
+    {
+      time_t updatedt;
+      updatedt = iso8601_to_time (updated);
+      t_atom_entry_set_updated (entry, updatedt);
+    }
+  summary = iks_find_cdata (ik, "summary");
+  if (summary)
+    t_atom_entry_set_summary (entry, summary);
+
+  /* Looking for more structured data */
+  for (child = iks_child (ik); child; child = iks_next (child))
+    {
+      if (!strcmp (iks_name (child), "author"))
+        {
+          char *name, *email = NULL, *uri = NULL;
+          TIri *iri = NULL;
+          TAtomPerson *author;
+          name = iks_find_cdata (child, "name");
+
+          /* Specification is clear, an atom:author element *MUST*
+           * have a name. */
+          if (!name)
+            {
+              printf ("Author with no name\n");
+              return 0;
+            }
+          email = iks_find_cdata (child, "email");
+          uri = iks_find_cdata (child, "uri");
+          if (uri)
+            iri = t_iri_new (uri);
+
+          /* Like above, specification denies invalid iris in an atom
+           * person. */
+          if (uri && !iri)
+            {
+              printf ("Author with an invalid iri in uri field\n");
+              return 0;
+            }
+          author = t_atom_person_new (name, email, iri);
+          t_atom_entry_add_author (entry, author);
+        }
+      if (!strcmp (iks_name (child), "category"))
+        {
+          TAtomCategory *cat;
+          TIri *iri = NULL;
+          char *term = NULL, *label = NULL, *scheme = NULL;
+          term = iks_find_attrib (child, "term");
+          label = iks_find_attrib (child, "label");
+          scheme = iks_find_attrib (child, "scheme");
+          if (!term)
+            {
+              printf ("Category with no term attribute\n");
+              return 0;
+            }
+          if (scheme)
+            {
+              iri = t_iri_new (scheme);
+              if (!iri)
+                {
+                  printf ("Category scheme attribute is not a valid iri");
+                  return 0;
+                }
+            }
+          cat = t_atom_category_new (term, label, iri);
+          t_atom_entry_add_category (entry, cat);
+        }
+      if (!strcmp (iks_name (child), "content"))
+        {
+          TAtomContent *ct;
+          char *type = NULL, *src = NULL, *content = NULL;
+          int content_len = 0;
+          type = iks_find_attrib (child, "type");
+          src = iks_find_attrib (child, "src");
+          content = iks_cdata (iks_child (child));
+          if (!type)
+            {
+              printf ("No type attribute specified for content");
+              return 0;
+            }
+
+          /* When content is filled, entry content should have no src
+           * attribute */
+          if (src && content)
+            {
+              printf ("Invalid content, it has src "
+                      "attribute and content is filled\n");
+              return 0;
+            }
+          if (!src && !content)
+            {
+              printf ("No src attribute or content in content tag");
+              return 0;
+            }
+          if (content)
+            content_len = iks_cdata_size (iks_child (child));
+          ct = t_atom_content_new (type, content, content_len);
+          if (src)
+            {
+              TIri *srci;
+              srci = t_iri_new (src);
+              if (!srci)
+                {
+                  printf ("Invalid iri in content src attribute");
+                  t_atom_content_free (ct);
+                  return 0;
+                }
+              t_atom_content_set_src (ct, srci);
+            }
+          if (content)
+            t_atom_content_set_content (ct, content, content_len);
+          t_atom_entry_set_content (entry, ct);
+        }
+    }
+  return 1;
 }
 
 void
@@ -402,6 +569,14 @@ time_to_iso8601 (time_t t)
   gtv.tv_sec = t;
   gtv.tv_usec = 0;
   return g_time_val_to_iso8601 (&gtv);
+}
+
+static time_t
+iso8601_to_time (const char *dt)
+{
+  struct tm tm;
+  strptime (dt, "%Y-%m-%dT%H:%M:%SZ", &tm);
+  return mktime (&tm);
 }
 
 iks *
@@ -451,7 +626,7 @@ t_atom_entry_to_string (TAtomEntry *entry)
 {
   iks *ik = t_atom_entry_to_iks (entry);
   if (ik)
-    return iks_string (iks_stack (ik), ik);
+    return strdup (iks_string (iks_stack (ik), ik));
   return NULL;
 }
 
