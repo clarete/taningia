@@ -26,55 +26,68 @@
 #define PUBSUB_NS "http://jabber.org/protocol/pubsub"
 
 typedef struct _TPubsub TPubsub;
+typedef struct _TPubsubNode TPubsubNode;
 
-TPubsub *t_pubsub_new                        (const char   *from,
-                                              const char   *to);
+/* TPubsub */
 
-void     t_pubsub_free                       (TPubsub      *ctx);
+TPubsub    *t_pubsub_new                     (const char *from,
+                                              const char *to);
 
-iks     *t_pubsub_query_features             (TPubsub      *ctx);
+void        t_pubsub_free                    (TPubsub    *ctx);
 
-iks     *t_pubsub_query_node_info            (TPubsub      *ctx,
-                                              const char   *node);
+iks        *t_pubsub_query_features          (TPubsub    *ctx);
 
-iks     *t_pubsub_query_node_items           (TPubsub      *ctx,
-                                              const char   *node);
+iks        *t_pubsub_query_affiliations      (TPubsub    *ctx);
 
-iks     *t_pubsub_query_node_subscriptions   (TPubsub      *ctx,
-                                              const char   *node);
+const char *t_pubsub_get_node_prefix         (TPubsub    *ctx);
 
-iks     *t_pubsub_query_node_affiliations    (TPubsub      *ctx);
+void        t_pubsub_set_node_prefix         (TPubsub    *ctx,
+                                              const char *prefix);
 
-iks     *t_pubsub_node_subscribe             (TPubsub      *ctx,
-                                              const char   *node,
-                                              const char   *jid _optional_);
+/* TPubsubNode */
 
-iks     *t_pubsub_node_unsubscribe           (TPubsub      *ctx,
-                                              const char   *node,
-                                              const char   *jid _optional_);
+TPubsubNode *t_pubsub_node_new               (TPubsub    *ctx,
+                                              const char *name _optional_);
 
-iks     *t_pubsub_node_retrieve_items        (TPubsub      *ctx,
-                                              const char   *node,
-                                              int           max_items);
+void         t_pubsub_node_free              (TPubsubNode *node);
 
-iks     *t_pubsub_publish_item_text          (TPubsub      *ctx,
-                                              const char   *node,
-                                              const char   *id _optional_,
-                                              const char   *body,
-                                              int           len _len_);
+const char  *t_pubsub_node_get_name          (TPubsubNode *node);
 
-iks     *t_pubsub_publish_item_iks           (TPubsub      *ctx,
-                                              const char   *node,
-                                              const char   *id _optional_,
-                                              iks          *child);
+void         t_pubsub_node_set_name          (TPubsubNode *node,
+                                              const char  *name);
 
-iks     *t_pubsub_delete_item                (TPubsub      *ctx,
-                                              const char   *node,
-                                              const char   *id);
+iks         *t_pubsub_node_query_info        (TPubsubNode *node);
 
-iks     *t_pubsub_node_create                (TPubsub      *ctx,
-                                              const char   *node,
-                                              int           bare,
+iks         *t_pubsub_node_subscriptions     (TPubsubNode *node);
+
+iks         *t_pubsub_node_affiliations      (TPubsubNode *node);
+
+iks         *t_pubsub_node_subscribe         (TPubsubNode *node,
+                                              const char  *jid _optional_);
+
+iks         *t_pubsub_node_unsubscribe       (TPubsubNode *node,
+                                              const char  *jid _optional_);
+
+/*
+iks         *t_pubsub_node_items             (TPubsubNode *node);
+*/
+
+iks         *t_pubsub_node_items             (TPubsubNode *node,
+                                              int          max_items);
+
+iks         *t_pubsub_node_publish_text      (TPubsubNode *node,
+                                              const char  *id _optional_,
+                                              const char  *body,
+                                              int          len _len_);
+
+iks         *t_pubsub_node_publish_iks       (TPubsubNode *node,
+                                              const char  *id _optional_,
+                                              iks         *child);
+
+iks         *t_pubsub_node_delete_item       (TPubsubNode *node,
+                                              const char  *id);
+
+iks         *t_pubsub_node_create            (TPubsubNode *node,
                                               ...);
 
 #endif /* _TANINGIA_PUBSUB_H */
