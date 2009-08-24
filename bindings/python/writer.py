@@ -41,7 +41,7 @@ RETURN_MAP = {
     'const char *':  'Py_BuildValue ("s", ret)',
     'int':           'Py_BuildValue ("i", ret)',
     'long':          'Py_BuildValue ("i", ret)',
-    'iks *':         'Py_BuildValue ("O", PyIks_FromIks (ret))'
+    'iks *':         'Py_BuildValue ("O", ret ? PyIks_FromIks (ret) : Py_None)',
 }
 
 # ---- .h file templates ----
