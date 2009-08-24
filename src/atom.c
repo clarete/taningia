@@ -38,7 +38,7 @@ struct _TAtomPerson
 {
   char *name;
   char *email;
-  char *iri;
+  TIri *iri;
 };
 
 struct _TAtomCategory
@@ -166,13 +166,13 @@ t_atom_content_set_content (TAtomContent *content,
 TAtomPerson *
 t_atom_person_new (const char *name,
                    const char *email,
-                   const char *iri)
+                   TIri       *iri)
 {
   TAtomPerson *person;
   person = malloc (sizeof (TAtomPerson));
   person->name = strdup (name);
   person->email = email ? strdup (email) : NULL;
-  person->iri = iri ? strdup (iri) : NULL;
+  person->iri = iri;
   return person;
 }
 
@@ -184,7 +184,7 @@ t_atom_person_free (TAtomPerson *person)
   if (person->email)
     free (person->email);
   if (person->iri)
-    free (person->iri);
+    t_iri_free (person->iri);
   free (person);
 }
 
@@ -197,7 +197,12 @@ t_atom_person_to_iks (TAtomPerson *person, const char *element)
   if (person->email)
     iks_insert_cdata (iks_insert (ik, "email"), person->email, 0);
   if (person->iri)
-    iks_insert_cdata (iks_insert (ik, "uri"), person->iri, 0);
+    {
+      char *iri;
+      iri = t_iri_to_string (person->iri);
+      iks_insert_cdata (iks_insert (ik, "uri"), iri, 0);
+      free (iri);
+    }
   return ik;
 }
 
@@ -211,7 +216,7 @@ t_atom_person_to_string (TAtomPerson *person, const char *element)
 const char *
 t_atom_person_get_name (TAtomPerson *person)
 {
-  return (const char *) person->name;
+  return person->name;
 }
 
 void
@@ -226,7 +231,7 @@ t_atom_person_set_name (TAtomPerson *person,
 const char *
 t_atom_person_get_email (TAtomPerson *person)
 {
-  return (const char *) person->email;
+  return person->email;
 }
 
 void
@@ -238,19 +243,19 @@ t_atom_person_set_email (TAtomPerson *person,
   person->email = strdup (email);
 }
 
-const char *
+TIri *
 t_atom_person_get_iri (TAtomPerson *person)
 {
-  return (const char *) person->iri;
+  return person->iri;
 }
 
 void
 t_atom_person_set_iri (TAtomPerson *person,
-                       const char  *iri)
+                       TIri        *iri)
 {
   if (person->iri)
-    free (person->iri);
-  person->iri = strdup (iri);
+    t_iri_free (person->iri);
+  person->iri = iri;
 }
 
 /* TAtomCategory */

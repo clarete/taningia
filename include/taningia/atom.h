@@ -53,7 +53,7 @@ void                t_atom_content_set_content     (TAtomContent   *content,
 
 TAtomPerson        *t_atom_person_new              (const char     *name,
                                                     const char     *email _optional_,
-                                                    const char     *iri _optional_);
+                                                    TIri           *iri _optional_);
 void                t_atom_person_free             (TAtomPerson    *person);
 iks                *t_atom_person_to_iks           (TAtomPerson    *person,
                                                     const char     *element);
@@ -65,9 +65,9 @@ void                t_atom_person_set_name         (TAtomPerson    *person,
 const char         *t_atom_person_get_email        (TAtomPerson    *person);
 void                t_atom_person_set_email        (TAtomPerson    *person,
                                                     const char     *email);
-const char         *t_atom_person_get_iri          (TAtomPerson    *person);
+TIri               *t_atom_person_get_iri          (TAtomPerson    *person);
 void                t_atom_person_set_iri          (TAtomPerson    *person,
-                                                    const char     *iri);
+                                                    TIri           *iri);
 
 /* TAtomCategory */
 
