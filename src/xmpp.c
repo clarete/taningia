@@ -37,6 +37,7 @@ struct _TXmpp {
   TFilter *events;
   TFilter *ids;
   TLog *log;
+  TError *error;
   int running;
 };
 
@@ -71,6 +72,7 @@ t_xmpp_new (const char *jid,
   ctx->events = t_filter_new (ctx);
   ctx->ids = t_filter_new (ctx);
   ctx->log = t_log_new ("xmpp-client");
+  ctx->error = NULL;
   ctx->running = 0;
 
   /* Handling optional arguments */
@@ -103,6 +105,8 @@ t_xmpp_free (TXmpp *ctx)
   t_filter_free (ctx->events);
   t_filter_free (ctx->ids);
   t_log_free (ctx->log);
+  if (ctx->error)
+    t_error_free (ctx->error);
   free (ctx);
 }
 
@@ -178,6 +182,12 @@ t_xmpp_get_logger (TXmpp *ctx)
   return ctx->log;
 }
 
+TError *
+t_xmpp_get_error (TXmpp *ctx)
+{
+  return ctx->error;
+}
+
 int
 t_xmpp_is_running (TXmpp *ctx)
 {
@@ -189,7 +199,18 @@ t_xmpp_send (TXmpp *ctx, iks *node)
 {
   int err;
   if ((err = iks_send (ctx->parser, node)) != IKS_OK)
-    t_log_warn (ctx->log, "Fail to send packet through t_xmpp_send");
+    {
+      t_log_warn (ctx->log, "Fail to send packet through t_xmpp_send");
+      if (ctx->error)
+        {
+          t_error_free (ctx->error);
+          ctx->error = NULL;
+        }
+      ctx->error = t_error_new ("xmpp");
+      t_error_set_message (ctx->error,
+                           "Failed to send package through theclient");
+      t_error_set_code (ctx->error, err);
+    }
   return err;
 }
 
@@ -208,6 +229,18 @@ t_xmpp_run (TXmpp *ctx)
     {
       /* Something didnt't work properly here, so we need to handle
        * the error and send some useful result to the user. */
+      if (ctx->error)
+        {
+          t_error_free (ctx->error);
+          ctx->error = NULL;
+        }
+      ctx->error = t_error_new ("xmpp");
+      t_error_set_message (ctx->error,
+                           "Unable to connect to: %s:%d",
+                           ctx->host, ctx->port);
+      t_error_set_code (ctx->error, err);
+      t_log_warn (ctx->log, "Unable to connect to: %s:%d",
+                  ctx->host, ctx->port);
       return err;
     }
   t_log_info (ctx->log, "Connected to xmpp:%s:%d", ctx->host, ctx->port);
@@ -463,6 +496,15 @@ _t_xmpp_hook (void *data, int type, iks *node)
       if (!iks_strcmp (inner_name, "host-unknown"))
         {
           t_xmpp_stop (ctx);
+          if (ctx->error)
+            {
+              t_error_free (ctx->error);
+              ctx->error = NULL;
+            }
+          ctx->error = t_error_new ("xmpp");
+          t_error_set_message (ctx->error,
+                               "Unknown host, aborting main loop");
+          t_error_set_code (ctx->error, 1);
           t_log_critical (ctx->log, "Unknown Host, aborting main loop");
         }
       else

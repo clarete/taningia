@@ -24,6 +24,7 @@
 #include <taningia/taningia.h>
 #include <taningia/filter.h>
 #include <taningia/log.h>
+#include <taningia/error.h>
 
 typedef struct _TXmpp TXmpp;
 
@@ -59,6 +60,8 @@ TFilter           *t_xmpp_get_filter_events        (TXmpp               *ctx);
 TFilter           *t_xmpp_get_filter_ids           (TXmpp               *ctx);
 
 TLog              *t_xmpp_get_logger               (TXmpp               *ctx);
+
+TError            *t_xmpp_get_error                (TXmpp               *ctx);
 
 int                t_xmpp_send                     (TXmpp               *ctx,
                                                     iks                 *node);
