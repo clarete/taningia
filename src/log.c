@@ -44,7 +44,7 @@ t_log_new (const char *domain_name)
   log->handler = NULL;
   log->handler_data = NULL;
   log->use_colors = 0;
-  log->date_format = strdup ("%I:%M:%S %p");
+  log->date_format = strdup ("%x %X");
   return log;
 }
 
@@ -135,12 +135,12 @@ t_log_get_date_format (TLog *log)
 static char *
 t_log_localtime (TLog * log)
 {
-  time_t rawtime = time(NULL);
   struct tm * timeinfo;
-  char *buffer = malloc(MAX_DATE_SIZE);
+  time_t rawtime = time (NULL);
+  char *buffer = malloc (MAX_DATE_SIZE);
 
-  time ( &rawtime );
-  timeinfo = localtime ( &rawtime );
+  time (&rawtime);
+  timeinfo = localtime (&rawtime);
 
   if (log->date_format == NULL)
     return NULL;
@@ -169,7 +169,7 @@ t_log_info (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[  INFO ] [ %s ] %s\n", t_log_localtime (log), msg);
+    fprintf (stderr, "[  INFO ] [ %s ] %s\n", log_time, msg);
   else
     /* Cyan */
     fprintf (stderr,
@@ -177,7 +177,7 @@ t_log_info (TLog *log, const char *fmt, ...)
              log_time,
              msg);
 
-  free(log_time);
+  free (log_time);
 }
 
 void
@@ -197,7 +197,7 @@ t_log_warn (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[  WARN ] [ %s ] %s\n", t_log_localtime (log), msg);
+    fprintf (stderr, "[  WARN ] [ %s ] %s\n", log_time, msg);
   else
     /* Yellow */
     fprintf (stderr,
@@ -205,7 +205,7 @@ t_log_warn (TLog *log, const char *fmt, ...)
              log_time,
              msg);
 
-  free(log_time);
+  free (log_time);
 }
 
 void
@@ -225,7 +225,7 @@ t_log_debug (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ DEBUG ] [ %s ] %s\n", t_log_localtime (log), msg);
+    fprintf (stderr, "[ DEBUG ] [ %s ] %s\n", log_time, msg);
   else
     /* Blue */
     fprintf (stderr,
@@ -233,7 +233,7 @@ t_log_debug (TLog *log, const char *fmt, ...)
              log_time,
              msg);
 
-  free(log_time);
+  free (log_time);
 }
 
 void
@@ -253,7 +253,7 @@ t_log_critical (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ CRITI ] [ %s ]%s\n", t_log_localtime (log), msg);
+    fprintf (stderr, "[ CRITI ] [ %s ]%s\n", log_time, msg);
   else
     /* Red with no bold */
     fprintf (stderr,
@@ -261,7 +261,7 @@ t_log_critical (TLog *log, const char *fmt, ...)
              log_time,
              msg);
 
-  free(log_time);
+  free (log_time);
 }
 
 void
@@ -281,7 +281,7 @@ t_log_error (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ ERROR ] [ %s ] %s\n", t_log_localtime (log), msg);
+    fprintf (stderr, "[ ERROR ] [ %s ] %s\n", log_time, msg);
   else
     /* Red foreground */
     fprintf (stderr,
@@ -289,5 +289,5 @@ t_log_error (TLog *log, const char *fmt, ...)
              log_time,
              msg);
 
-  free(log_time);
+  free (log_time);
 }
