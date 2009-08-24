@@ -154,7 +154,7 @@ TEMPLATE_C_METHOD = '''static PyObject *
 %(pyname)s_%(name)s (%(pyname)s *self, PyObject *args)
 {
   %(rtype)s ret;%(params)s
-  ret = %(cname)s (self->inner%(param_names)s);
+  ret = %(cname)s (%(param_names)s);
   return %(ret)s;
 }
 '''
@@ -162,7 +162,7 @@ TEMPLATE_C_METHOD = '''static PyObject *
 TEMPLATE_C_METHOD_NORET = '''static PyObject *
 %(pyname)s_%(name)s (%(pyname)s *self, PyObject *args)
 {%(params)s
-  %(cname)s (self->inner%(param_names)s);
+  %(cname)s (%(param_names)s);
   Py_INCREF (Py_None);
   return Py_None;
 }
@@ -491,7 +491,8 @@ class CFile(Helper):
                 continue
 
             if nopointer in self.alltypes:
-                app('  %s * %s = NULL;' % (pyname(self.name_from_cname(ptype)), name))
+                app('  %s * %s = NULL;' % (pyname(self.name_from_cname(ptype)),
+                                           name))
                 increfs.append(name)
 
             # FIXME: hardcoded things should be avoided..
@@ -535,7 +536,7 @@ class CFile(Helper):
 
         # Calling python api function that parse arguments from the
         # args list.
-        if params:
+        if svars:
             app('  if (!PyArg_ParseTuple (args, "%s", %s))' % (
                     types, ', '.join(svars)))
             if method['name'] == 'new': # Handling constructor
@@ -549,20 +550,19 @@ class CFile(Helper):
         return '\n'.join(args)
 
     def parse_arg_names(self, obj, method):
-        ret = ''
         params = method['params']
-        if params[0]['type'] in (obj['cname'], '%s *' % obj['cname']):
-            params = params[1:]
-            if params:
-                ret = ', '
-
         newparams = []
+        if params[0]['type'] in (obj['cname'], '%s *' % obj['cname']):
+            newparams.append('self->inner')
+            params = params[1:]
+
         for param in params:
             name = param['name']
             ptype = param['type']
             modifiers = param['modifiers']
             nopointer = ptype.replace('*', '').strip()
             if ptype == 'varargs':
+                varargs = 1
                 continue
             if nopointer in self.alltypes:
                 newparams.append('%s->inner' % name)
@@ -570,7 +570,7 @@ class CFile(Helper):
                 newparams.append('%s->inner' % name)
             else:
                 newparams.append('%s' % name)
-        return ret + ', '.join(newparams)
+        return ', '.join(newparams)
 
     def build_return(self, obj, method):
         rtype = method['rtype'];

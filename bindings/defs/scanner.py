@@ -173,7 +173,10 @@ def scan_file(libprefix, fname):
             # called "t_atom_entry_content". So, this will need to be
             # rewriten. This works now because there is no clash in
             # our type names today.
-            if name.startswith(prefix):
+            mnames = [len(name.replace(y, '')) for y in
+                      [camel_to_underscore(x) for x in type_names]]
+            choosen_type = type_names[mnames.index(min(mnames))]
+            if choosen_type == i and name.startswith(prefix):
                 # method dict has the following fields: name, cname,
                 # rtype and params (another dict)
                 nmethod = {}
