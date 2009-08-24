@@ -71,6 +71,10 @@ TEMPLATE_H_MACROS = '''#define Py%(type)s_AS_%(type_upper)s(op) \\
 
 #define Py%(type)s_From%(type)s(o) \\
   Py%(libcamel)sAPI->Py%(type)s_From%(type)s(o, Py%(libcamel)sAPI->%(type)sType)
+
+#define Py%(type)sObject_Check(op) \\
+  PyObject_TypeCheck(op, &Py%(type)sType)
+
 '''
 
 TEMPLATE_H_TYPES = '''typedef struct {
@@ -362,6 +366,14 @@ class Helper(object):
         ctx.update(mydict)
         return ctx
 
+    def name_from_cname(self, cname):
+        nopointer = cname.replace('*', '').strip()
+        for module in self.defs['modules']:
+            for ctype in module['types']:
+                if ctype['cname'] == nopointer:
+                    return ctype['name']
+        raise ValueError('CName %s not found.' % cname)
+
 # ---- file generators ----
 
 class HFile(Helper):
@@ -382,7 +394,7 @@ class HFile(Helper):
         for module in self.defs['modules']:
             for ctype in module['types']:
                 app(TEMPLATE_H_MACROS % self.uctx({
-                            'type': ctype['name'].capitalize(),
+                            'type': self.name_from_cname(ctype['cname']),
                             'type_upper': ctype['name'].upper(),
                             }))
         return '\n'.join(ret)
@@ -457,19 +469,12 @@ class HFile(Helper):
 
 class CFile(Helper):
 
-    def name_from_cname(self, cname):
-        nopointer = cname.replace('*', '').strip()
-        for module in self.defs['modules']:
-            for ctype in module['types']:
-                if ctype['cname'] == nopointer:
-                    return ctype['name']
-        raise ValueError('CName %s not found.' % cname)
-
     def parse_args(self, obj, method):
         args = []
         app = args.append
         params = method['params']
         svars = []
+        tests = []
 
         # We don't need to parse the `self' parameter
         if params[0]['type'] in (obj['cname'], '%s *' % obj['cname']):
@@ -491,9 +496,10 @@ class CFile(Helper):
                 continue
 
             if nopointer in self.alltypes:
-                app('  %s * %s = NULL;' % (pyname(self.name_from_cname(ptype)),
-                                           name))
+                pname = pyname(self.name_from_cname(ptype))
+                app('  %s * %s = NULL;' % (pname, name))
                 increfs.append(name)
+                tests.append((pname, name))
 
             # FIXME: hardcoded things should be avoided..
             elif nopointer == 'iks':
@@ -543,6 +549,18 @@ class CFile(Helper):
                 app('    return -1;')
             else:
                 app('    return NULL;')
+
+        # Testing for known type parameters
+        for pname, name in tests:
+            app('  if (!%s_Check (%s))' % (pname, name))
+            app('    {')
+            app('      PyErr_SetString(PyExc_TypeError,')
+            app('        "param 1 must be a %s instance.");' % pname)
+            if method['name'] == 'new':
+                app('      return -1;')
+            else:
+                app('      return NULL;')
+            app('    }')
 
         for i in increfs:
             app('  Py_INCREF (%s);' % i)
