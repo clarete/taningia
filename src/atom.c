@@ -405,6 +405,10 @@ t_atom_entry_to_iks (TAtomEntry *entry)
   iks *ik;
   char *updated, *id_iri;
   int i;
+
+  if (entry->id == NULL)
+    return NULL;
+
   updated = time_to_iso8601 (entry->updated);
   id_iri = t_iri_to_string (entry->id);
 
@@ -441,7 +445,16 @@ char *
 t_atom_entry_to_string (TAtomEntry *entry)
 {
   iks *ik = t_atom_entry_to_iks (entry);
-  return iks_string (iks_stack (ik), ik);
+  if (ik)
+    return iks_string (iks_stack (ik), ik);
+  return NULL;
+}
+
+int
+t_atom_entry_to_file (TAtomEntry *entry,
+                      const char *fname)
+{
+  return iks_save (fname, t_atom_entry_to_iks (entry));
 }
 
 const char *

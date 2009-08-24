@@ -93,6 +93,8 @@ TAtomEntry         *t_atom_entry_new               (const char       *title);
 void                t_atom_entry_free              (TAtomEntry       *entry);
 iks                *t_atom_entry_to_iks            (TAtomEntry       *entry);
 char               *t_atom_entry_to_string         (TAtomEntry       *entry);
+int                 t_atom_entry_to_file           (TAtomEntry       *entry,
+                                                    const char       *fname);
 const char         *t_atom_entry_get_title         (TAtomEntry       *entry);
 void                t_atom_entry_set_title         (TAtomEntry       *entry,
                                                     const char       *title);
