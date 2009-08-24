@@ -552,7 +552,7 @@ class CFile(Helper):
 
         # Testing for known type parameters
         for pname, name in tests:
-            app('  if (!%s_Check (%s))' % (pname, name))
+            app('  if (%s && !%s_Check (%s))' % (name, pname, name))
             app('    {')
             app('      PyErr_SetString(PyExc_TypeError,')
             app('        "param 1 must be a %s instance.");' % pname)
@@ -563,7 +563,7 @@ class CFile(Helper):
             app('    }')
 
         for i in increfs:
-            app('  Py_INCREF (%s);' % i)
+            app('  Py_XINCREF (%s);' % i)
 
         return '\n'.join(args)
 
@@ -574,6 +574,10 @@ class CFile(Helper):
             newparams.append('self->inner')
             params = params[1:]
 
+        # Shortcuts that are going to be used in the loop bellow.
+        optional = lambda x: '%s ? %s->inner : NULL' % (x, x)
+        required = lambda x: '%s->inner' % x
+
         for param in params:
             name = param['name']
             ptype = param['type']
@@ -583,9 +587,15 @@ class CFile(Helper):
                 varargs = 1
                 continue
             if nopointer in self.alltypes:
-                newparams.append('%s->inner' % name)
+                if '_optional_' in modifiers:
+                    newparams.append(optional(name))
+                else:
+                    newparams.append(required(name))
             elif nopointer == 'iks':
-                newparams.append('%s->inner' % name)
+                if '_optional_' in modifiers:
+                    newparams.append(optional(name))
+                else:
+                    newparams.append(required(name))
             else:
                 newparams.append('%s' % name)
         return ', '.join(newparams)
