@@ -27,6 +27,7 @@
 
 #define J_ATOM_NS "http://www.w3.org/2005/Atom"
 
+typedef struct _TAtomFeed     TAtomFeed;
 typedef struct _TAtomEntry    TAtomEntry;
 typedef struct _TAtomCategory TAtomCategory;
 typedef struct _TAtomPerson   TAtomPerson;
@@ -125,5 +126,52 @@ void                t_atom_entry_set_summary       (TAtomEntry       *entry,
 TAtomContent       *t_atom_entry_get_content       (TAtomEntry       *entry);
 void                t_atom_entry_set_content       (TAtomEntry       *entry,
                                                     TAtomContent     *content);
+
+/* TAtomFeed */
+
+TAtomFeed          *t_atom_feed_new                (const char       *title _optional_);
+void                t_atom_feed_free               (TAtomFeed        *feed);
+
+iks                *t_atom_feed_to_iks             (TAtomFeed        *feed);
+char               *t_atom_feed_to_string          (TAtomFeed        *feed);
+int                 t_atom_feed_to_file            (TAtomFeed        *feed,
+                                                    const char       *fname);
+
+const char         *t_atom_feed_get_title          (TAtomFeed        *feed);
+void                t_atom_feed_set_title          (TAtomFeed        *feed,
+                                                    const char       *title);
+
+TIri               *t_atom_feed_get_id             (TAtomFeed        *feed);
+void                t_atom_feed_set_id             (TAtomFeed        *feed,
+                                                    TIri             *id);
+
+time_t              t_atom_feed_get_updated        (TAtomFeed        *feed);
+void                t_atom_feed_set_updated        (TAtomFeed        *feed,
+                                                    time_t            updated);
+
+void                t_atom_feed_get_authors        (TAtomFeed        *feed,
+                                                    TAtomPerson    ***authors _out_,
+                                                    int              *len _out_);
+void                t_atom_feed_add_author         (TAtomFeed        *feed,
+                                                    TAtomPerson       *author);
+void                t_atom_feed_del_authors        (TAtomFeed        *feed);
+
+
+void                t_atom_feed_get_categories     (TAtomFeed        *feed,
+                                                    TAtomCategory  ***categories _out_,
+                                                    int              *len _out_);
+void                t_atom_feed_add_category       (TAtomFeed        *feed,
+                                                    TAtomCategory    *category);
+void                t_atom_feed_del_categories     (TAtomFeed        *feed);
+
+
+void                t_atom_feed_get_entries        (TAtomFeed        *feed,
+                                                    TAtomEntry     ***entries _out_,
+                                                    int              *len _out_);
+void                t_atom_feed_add_entry          (TAtomFeed        *feed,
+                                                    TAtomEntry       *entry);
+void                t_atom_feed_del_entries        (TAtomFeed        *feed);
+
+
 
 #endif /* _TANINGIA_ATOM_H_ */

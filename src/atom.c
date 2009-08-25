@@ -61,6 +61,16 @@ struct _TAtomEntry
   TAtomContent *content;
 };
 
+struct _TAtomFeed
+{
+  TIri         *id;
+  char         *title;
+  time_t        updated;
+  GPtrArray    *authors;
+  GPtrArray    *categories;
+  GPtrArray    *entries;
+};
+
 /* Forward prototypes */
 
 static char   *time_to_iso8601   (time_t t);
@@ -768,4 +778,345 @@ t_atom_entry_set_content (TAtomEntry   *entry,
   if (entry->content)
     t_atom_content_free (entry->content);
   entry->content = content;
+}
+
+/* TAtomFeed */
+
+TAtomFeed *
+t_atom_feed_new (const char *title)
+{
+  TAtomFeed *feed;
+  feed = malloc (sizeof (TAtomFeed));
+  feed->title = title ? strdup (title) : NULL;
+  feed->id = NULL;
+  feed->updated = time (0);
+  feed->authors = NULL;
+  feed->categories = NULL;
+  feed->entries = NULL;
+  return feed;
+}
+
+int
+t_atom_feed_set_from_file (TAtomFeed  *feed,
+                           const char *fname)
+{
+  TIri *eid;
+  iks *ik, *child;
+  char *id, *title, *updated;
+  int err;
+
+  if ((err = iks_load (fname, &ik)) != IKS_OK)
+    return 0;
+  if (strcmp (iks_name (ik), "feed") ||
+      !iks_has_children (ik))
+    {
+      iks_delete (ik);
+      printf ("Wrong root feed element\n");
+      return 0;
+    }
+  id = iks_find_cdata (ik, "id");
+  if (!id)
+    {
+      printf ("No id\n");
+      return 0;
+    }
+  eid = t_iri_new (id);
+  if (!eid)
+    {
+      printf ("Invalid id iri\n");
+      return 0;
+    }
+  title = iks_find_cdata (ik, "title");
+  if (!title)
+    {
+      printf ("No title\n");
+      return 0;
+    }
+
+  /* Here we have almost all required fields */
+  t_atom_feed_set_id (feed, eid);
+  t_atom_feed_set_title (feed, title);
+
+  updated = iks_find_cdata (ik, "updated");
+  if (updated)
+    {
+      time_t updatedt;
+      updatedt = iso8601_to_time (updated);
+      t_atom_feed_set_updated (feed, updatedt);
+    }
+
+  /* Looking for more structured data */
+  for (child = iks_child (ik); child; child = iks_next (child))
+    {
+      if (!strcmp (iks_name (child), "author"))
+        {
+          char *name, *email = NULL, *uri = NULL;
+          TIri *iri = NULL;
+          TAtomPerson *author;
+          name = iks_find_cdata (child, "name");
+
+          /* Specification is clear, an atom:author element *MUST*
+           * have a name. */
+          if (!name)
+            {
+              printf ("Author with no name\n");
+              return 0;
+            }
+          email = iks_find_cdata (child, "email");
+          uri = iks_find_cdata (child, "uri");
+          if (uri)
+            iri = t_iri_new (uri);
+
+          /* Like above, specification denies invalid iris in an atom
+           * person. */
+          if (uri && !iri)
+            {
+              printf ("Author with an invalid iri in uri field\n");
+              return 0;
+            }
+          author = t_atom_person_new (name, email, iri);
+          t_atom_feed_add_author (feed, author);
+        }
+      if (!strcmp (iks_name (child), "category"))
+        {
+          TAtomCategory *cat;
+          TIri *iri = NULL;
+          char *term = NULL, *label = NULL, *scheme = NULL;
+          term = iks_find_attrib (child, "term");
+          label = iks_find_attrib (child, "label");
+          scheme = iks_find_attrib (child, "scheme");
+          if (!term)
+            {
+              printf ("Category with no term attribute\n");
+              return 0;
+            }
+          if (scheme)
+            {
+              iri = t_iri_new (scheme);
+              if (!iri)
+                {
+                  printf ("Category scheme attribute is not a valid iri");
+                  return 0;
+                }
+            }
+          cat = t_atom_category_new (term, label, iri);
+          t_atom_feed_add_category (feed, cat);
+        }
+    }
+  return 1;
+}
+
+void
+t_atom_feed_free (TAtomFeed *feed)
+{
+  if (feed->id)
+    t_iri_free (feed->id);
+  if (feed->title)
+    free (feed->title);
+  if (feed->authors)
+    t_atom_feed_del_authors (feed);
+  if (feed->categories)
+    t_atom_feed_del_categories (feed);
+  if (feed->entries)
+    t_atom_feed_del_entries (feed);
+  free (feed);
+}
+
+iks *
+t_atom_feed_to_iks (TAtomFeed *feed)
+{
+  iks *ik;
+  char *updated, *id_iri;
+  int i;
+
+  if (feed->id == NULL)
+    return NULL;
+
+  updated = time_to_iso8601 (feed->updated);
+  id_iri = t_iri_to_string (feed->id);
+
+  ik = iks_new ("feed");
+  iks_insert_attrib (ik, "xmlns", J_ATOM_NS);
+  iks_insert_cdata (iks_insert (ik, "id"), id_iri, 0);
+  iks_insert_cdata (iks_insert (ik, "title"), feed->title, 0);
+  iks_insert_cdata (iks_insert (ik, "updated"), updated, 0);
+  free (updated);
+  free (id_iri);
+  if (feed->authors)
+    for (i = 0; i < feed->authors->len; i++)
+      {
+        iks *authors =
+          t_atom_person_to_iks (g_ptr_array_index (feed->authors, i),
+                                "author");
+        iks_insert_node (ik, authors);
+      }
+  if (feed->categories)
+    for (i = 0; i < feed->categories->len; i++)
+      {
+        iks *categories =
+          t_atom_category_to_iks (g_ptr_array_index (feed->categories, i));
+        iks_insert_node (ik, categories);
+      }
+  if (feed->entries)
+    for (i = 0; i < feed->entries->len; i++)
+      {
+        iks *entries =
+          t_atom_entry_to_iks (g_ptr_array_index (feed->entries, i));
+        iks_insert_node (ik, entries);
+      }
+  return ik;
+}
+
+char *
+t_atom_feed_to_string (TAtomFeed *feed)
+{
+  iks *ik = t_atom_feed_to_iks (feed);
+  if (ik)
+    return strdup (iks_string (iks_stack (ik), ik));
+  return NULL;
+}
+
+int
+t_atom_feed_to_file (TAtomFeed  *feed,
+                     const char *fname)
+{
+  return iks_save (fname, t_atom_feed_to_iks (feed));
+}
+
+const char *
+t_atom_feed_get_title (TAtomFeed *feed)
+{
+  return feed->title;
+}
+
+void
+t_atom_feed_set_title (TAtomFeed  *feed,
+                       const char *title)
+{
+  if (feed->title)
+    free (feed->title);
+  feed->title = strdup (title);
+}
+
+TIri *
+t_atom_feed_get_id (TAtomFeed *feed)
+{
+  return feed->id;
+}
+
+void
+t_atom_feed_set_id (TAtomFeed *feed, TIri *id)
+{
+  if (feed->id)
+    t_iri_free (feed->id);
+  feed->id = id;
+}
+
+time_t
+t_atom_feed_get_updated (TAtomFeed *feed)
+{
+  return feed->updated;
+}
+
+void
+t_atom_feed_set_updated (TAtomFeed *feed,
+                         time_t     updated)
+{
+  feed->updated = updated;
+}
+
+void
+t_atom_feed_get_authors (TAtomFeed     *feed,
+                         TAtomPerson ***authors,
+                         int           *len)
+{
+  if (feed->authors)
+    {
+      if (len)
+        *len = feed->authors->len;
+      if (authors)
+        *authors = (TAtomPerson **) feed->authors->pdata;
+    }
+}
+
+void
+t_atom_feed_add_author (TAtomFeed   *feed,
+                        TAtomPerson *author)
+{
+  if (feed->authors == NULL)
+    feed->authors = g_ptr_array_new ();
+  g_ptr_array_add (feed->authors, author);
+}
+
+void
+t_atom_feed_del_authors (TAtomFeed *feed)
+{
+  int i;
+  for (i = 0; i < feed->authors->len; i++)
+    t_atom_person_free (g_ptr_array_index (feed->authors, i));
+  g_ptr_array_free (feed->authors, TRUE);
+}
+
+void
+t_atom_feed_get_categories (TAtomFeed       *feed,
+                            TAtomCategory ***categories,
+                            int             *len)
+{
+  if (feed->categories)
+    {
+      if (len)
+        *len = feed->categories->len;
+      if (categories)
+        *categories = (TAtomCategory **) feed->categories->pdata;
+    }
+}
+
+void
+t_atom_feed_add_category (TAtomFeed     *feed,
+                          TAtomCategory *category)
+{
+  if (feed->categories == NULL)
+    feed->categories = g_ptr_array_new ();
+  g_ptr_array_add (feed->categories, category);
+}
+
+void
+t_atom_feed_del_categories (TAtomFeed *feed)
+{
+  int i;
+  for (i = 0; i < feed->categories->len; i++)
+    t_atom_category_free (g_ptr_array_index (feed->categories, i));
+  g_ptr_array_free (feed->categories, TRUE);
+}
+
+void
+t_atom_feed_get_entries (TAtomFeed    *feed,
+                         TAtomEntry ***entries,
+                         int          *len)
+{
+  if (feed->entries)
+    {
+      if (len)
+        *len = feed->entries->len;
+      if (entries)
+        *entries = (TAtomEntry **) feed->entries->pdata;
+    }
+}
+
+void
+t_atom_feed_add_entry (TAtomFeed  *feed,
+                       TAtomEntry *entry)
+{
+  if (feed->entries == NULL)
+    feed->entries = g_ptr_array_new ();
+  g_ptr_array_add (feed->entries, entry);
+}
+
+void
+t_atom_feed_del_entries (TAtomFeed *feed)
+{
+  int i;
+  for (i = 0; i < feed->entries->len; i++)
+    t_atom_entry_free (g_ptr_array_index (feed->entries, i));
+  g_ptr_array_free (feed->entries, TRUE);
 }

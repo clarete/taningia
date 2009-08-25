@@ -311,6 +311,90 @@ PyLogObject_set_handler (PyLogObject *self,
 }
 '''
 
+def t_atom_feed_get_authors():
+    return '''
+static PyObject *
+PyAtomFeedObject_get_authors (PyAtomFeedObject *self,
+                              PyObject         *args)
+{
+  PyObject *alist;
+  TAtomPerson **authors;
+  int len = 0, i;
+  t_atom_feed_get_authors (self->inner, &authors, &len);
+
+  alist = PyList_New (len);
+  if (!alist)
+    return NULL;
+
+  for (i = 0; i < len; i++)
+    {
+      PyObject *author;
+      author = Py_AtomPerson_FromAtomPerson (authors[i]);
+      Py_INCREF (author);
+      PyList_SetItem (alist, i, author);
+    }
+
+  Py_INCREF (alist);
+  return alist;
+}
+'''
+
+def t_atom_feed_get_categories():
+    return '''
+static PyObject *
+PyAtomFeedObject_get_categories (PyAtomFeedObject *self,
+                                 PyObject         *args)
+{
+  PyObject *alist;
+  TAtomCategory **categories;
+  int len = 0, i;
+  t_atom_feed_get_categories (self->inner, &categories, &len);
+
+  alist = PyList_New (len);
+  if (!alist)
+    return NULL;
+
+  for (i = 0; i < len; i++)
+    {
+      PyObject *category;
+      category = Py_AtomCategory_FromAtomCategory (categories[i]);
+      Py_INCREF (category);
+      PyList_SetItem (alist, i, category);
+    }
+
+  Py_INCREF (alist);
+  return alist;
+}
+'''
+
+def t_atom_feed_get_entries():
+    return '''
+static PyObject *
+PyAtomFeedObject_get_entries (PyAtomFeedObject *self,
+                              PyObject         *args)
+{
+  PyObject *alist;
+  TAtomEntry **entries;
+  int len = 0, i;
+  t_atom_feed_get_entries (self->inner, &entries, &len);
+
+  alist = PyList_New (len);
+  if (!alist)
+    return NULL;
+
+  for (i = 0; i < len; i++)
+    {
+      PyObject *entry;
+      entry = Py_AtomEntry_FromAtomEntry (entries[i]);
+      Py_INCREF (entry);
+      PyList_SetItem (alist, i, entry);
+    }
+
+  Py_INCREF (alist);
+  return alist;
+}
+'''
+
 OVERRIDES = {
     'PyFilterObject': pyfilterobject,
     'PyLogObject': pylogobject,
@@ -318,6 +402,9 @@ OVERRIDES = {
     't_atom_entry_get_updated': t_atom_entry_get_updated,
     't_atom_entry_get_authors': t_atom_entry_get_authors,
     't_atom_entry_get_categories': t_atom_entry_get_categories,
+    't_atom_feed_get_authors': t_atom_feed_get_authors,
+    't_atom_feed_get_categories': t_atom_feed_get_categories,
+    't_atom_feed_get_entries': t_atom_feed_get_entries,
     't_filter_add': t_filter_add,
     't_filter_call': t_filter_call,
     't_log_set_handler': t_log_set_handler,
