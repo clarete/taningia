@@ -121,7 +121,20 @@ t_atom_content_to_iks (TAtomContent *content)
       free (iri);
     }
   else if (content->content)
-    iks_insert_cdata (ct, content->content, content->len);
+    {
+      /* Section 4.1.3 of the RFC is clear, if the content type is
+       * "text/xhtml" an xhtml div element should be created */
+      if (!strcmp (content->type, "xhtml"))
+        {
+          iks *div = iks_insert (ct, "div");
+          iks_insert_attrib (div, "xmlns", "http://www.w3.org/1999/xhtml");
+          iks_insert_cdata (div, content->content, content->len);
+        }
+      else
+        {
+          iks_insert_cdata (ct, content->content, content->len);
+        }
+    }
   return ct;
 }
 
