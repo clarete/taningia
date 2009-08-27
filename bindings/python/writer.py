@@ -163,6 +163,28 @@ TEMPLATE_C_METHOD = '''static PyObject *
 }
 '''
 
+TEMPLATE_C_METHOD_RET_DATE = '''static PyObject *
+%(pyname)s_%(name)s (%(pyname)s *self, PyObject *args)
+{
+  struct tm *ctm;
+  PyObject *date;
+  %(rtype)s ret;%(params)s
+
+  ret = %(cname)s (%(param_names)s);
+  if (ret)
+    {
+      ctm = localtime (&ret);
+      date = PyDateTime_FromDateAndTime (1900 + ctm->tm_year, ctm->tm_mon + 1,
+                                         ctm->tm_mday, ctm->tm_hour,
+                                         ctm->tm_min, ctm->tm_sec, 0);
+      Py_INCREF (date);
+      return date;
+    }
+  Py_INCREF (Py_None);
+  return Py_None;
+}
+'''
+
 TEMPLATE_C_METHOD_NORET = '''static PyObject *
 %(pyname)s_%(name)s (%(pyname)s *self, PyObject *args)
 {%(params)s
@@ -182,6 +204,42 @@ static PyMethodDef %(pyname)s_methods[] = {
 %(methods)s
   { NULL }                        /* sentinel */
 };
+'''
+
+TEMPLATE_C_CHEKC_DATE = '''
+  if (!PyDateTime_Check (%s))
+    {
+      PyErr_SetString (PyExc_TypeError,
+                       "param 1 must be a datetime.datetime instance.");
+      return NULL;
+    }
+'''
+
+TEMPLATE_C_PARAM_DATE = '''
+  PyObject *%(name)s;
+  time_t _time_%(name)s;
+
+  if (!PyArg_ParseTuple (args, "O", &%(name)s))
+    return NULL;%(check)s
+  if (%(name)s == Py_None)
+    _time_%(name)s = 0;
+  else
+    {
+      struct tm mtm;
+      mtm.tm_sec = PyDateTime_DATE_GET_SECOND (%(name)s);
+      mtm.tm_min = PyDateTime_DATE_GET_MINUTE (%(name)s);
+      mtm.tm_hour = PyDateTime_DATE_GET_HOUR (%(name)s);
+      mtm.tm_mday = PyDateTime_GET_DAY (%(name)s);
+      mtm.tm_mon = PyDateTime_GET_MONTH (%(name)s) - 1;      /* Month starts from 0 */
+      mtm.tm_year = PyDateTime_GET_YEAR (%(name)s) - 1900;   /* see `man mktime'    */
+      mtm.tm_isdst = -1;
+      mtm.tm_gmtoff = 1;
+      if ((_time_%(name)s = mktime (&mtm)) == -1)
+        {
+          PyErr_SetString (PyExc_ValueError, "Invalid date");
+          return NULL;
+        }
+    }
 '''
 
 # This part of code was writen to generate objects that support
@@ -505,6 +563,15 @@ class CFile(Helper):
             elif nopointer == 'iks':
                 app('  PyIksObject * %s = NULL;' % name)
                 increfs.append(name)
+            elif nopointer == 'time_t':
+                check = ''
+                if not '_nullable_' in modifiers:
+                    check = TEMPLATE_C_CHEKC_DATE % name
+                app(TEMPLATE_C_PARAM_DATE % {
+                        'name': name,
+                        'check': check
+                        })
+                return '\n'.join(args)
             else:
                 # it is a pointer... so it should be initialized
                 # before used.
@@ -591,6 +658,8 @@ class CFile(Helper):
                     newparams.append(optional(name))
                 else:
                     newparams.append(required(name))
+            elif nopointer == 'time_t':
+                newparams.append('_time_%s' % name)
             elif nopointer == 'iks':
                 if '_optional_' in modifiers:
                     newparams.append(optional(name))
@@ -628,6 +697,7 @@ class CFile(Helper):
         app = parts.append
         app('#include <Python.h>')
         app('#include <structmember.h>')
+        app('#include <time.h>')
         for dep in self.defs['dependencies']['public']:
             includes.append('#include <%s>' % dep)
         for dep in self.defs['dependencies']['priv']:
@@ -731,10 +801,12 @@ class CFile(Helper):
                'params': self.parse_args(ctype, method),
                'param_names': self.parse_arg_names(ctype, method),
                }
-        if method['rtype'] != 'void':
-            return TEMPLATE_C_METHOD % ctx
-        else:
+        if method['rtype'] == 'void':
             return TEMPLATE_C_METHOD_NORET % ctx
+        elif method['rtype'] == 'time_t':
+            return TEMPLATE_C_METHOD_RET_DATE % ctx
+        else:
+            return TEMPLATE_C_METHOD % ctx
 
     def method_defs(self, ctype):
         methods = []

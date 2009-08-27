@@ -55,6 +55,7 @@ struct _TAtomEntry
   TIri         *id;
   char         *title;
   time_t        updated;
+  time_t        published;
   char         *rights;
   GPtrArray    *authors;
   GPtrArray    *categories;
@@ -389,6 +390,7 @@ t_atom_entry_new (const char *title)
   entry->title = title ? strdup (title) : NULL;
   entry->id = NULL;
   entry->updated = time (0);
+  entry->published = 0;
   entry->rights = NULL;
   entry->authors = NULL;
   entry->categories = NULL;
@@ -403,7 +405,7 @@ t_atom_entry_set_from_file (TAtomEntry *entry,
 {
   TIri *eid;
   iks *ik, *child;
-  char *id, *title, *updated, *summary, *rights;
+  char *id, *title, *updated, *published, *summary, *rights;
   int err;
 
   if ((err = iks_load (fname, &ik)) != IKS_OK)
@@ -445,6 +447,15 @@ t_atom_entry_set_from_file (TAtomEntry *entry,
       updatedt = iso8601_to_time (updated);
       t_atom_entry_set_updated (entry, updatedt);
     }
+
+  published = iks_find_cdata (ik, "published");
+  if (published)
+    {
+      time_t publishedt;
+      publishedt = iso8601_to_time (published);
+      t_atom_entry_set_published (entry, publishedt);
+    }
+
   summary = iks_find_cdata (ik, "summary");
   if (summary)
     t_atom_entry_set_summary (entry, summary);
@@ -619,6 +630,13 @@ t_atom_entry_to_iks (TAtomEntry *entry)
   free (id_iri);
 
   /* Not required fields */
+  if (entry->published)
+    {
+      char *published;
+      published = time_to_iso8601 (entry->published);
+      iks_insert_cdata (iks_insert (ik, "published"), published, 0);
+    }
+
   if (entry->rights)
     iks_insert_cdata (iks_insert (ik, "rights"), entry->rights, 0);
 
@@ -700,6 +718,19 @@ t_atom_entry_set_updated (TAtomEntry *entry,
                           time_t      updated)
 {
   entry->updated = updated;
+}
+
+time_t
+t_atom_entry_get_published (TAtomEntry *entry)
+{
+  return entry->published;
+}
+
+void
+t_atom_entry_set_published (TAtomEntry *entry,
+                            time_t      published)
+{
+  entry->published = published;
 }
 
 const char *

@@ -34,4 +34,10 @@
  * marked with this must be a string */
 #define _len_
 
+/* Mark parameters that can receive NULL values. Different from _out_
+ * parameters because, it is still required, but can receive a NULL
+ * value.
+ */
+#define _nullable_
+
 #endif /* _TANINGIA_H_ */
