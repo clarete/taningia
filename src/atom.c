@@ -55,6 +55,7 @@ struct _TAtomEntry
   TIri         *id;
   char         *title;
   time_t        updated;
+  char         *rights;
   GPtrArray    *authors;
   GPtrArray    *categories;
   char         *summary;
@@ -388,6 +389,7 @@ t_atom_entry_new (const char *title)
   entry->title = title ? strdup (title) : NULL;
   entry->id = NULL;
   entry->updated = time (0);
+  entry->rights = NULL;
   entry->authors = NULL;
   entry->categories = NULL;
   entry->summary = NULL;
@@ -401,7 +403,7 @@ t_atom_entry_set_from_file (TAtomEntry *entry,
 {
   TIri *eid;
   iks *ik, *child;
-  char *id, *title, *updated, *summary;
+  char *id, *title, *updated, *summary, *rights;
   int err;
 
   if ((err = iks_load (fname, &ik)) != IKS_OK)
@@ -446,6 +448,10 @@ t_atom_entry_set_from_file (TAtomEntry *entry,
   summary = iks_find_cdata (ik, "summary");
   if (summary)
     t_atom_entry_set_summary (entry, summary);
+
+  rights = iks_find_cdata (ik, "rights");
+  if (rights)
+    t_atom_entry_set_rights (entry, rights);
 
   /* Looking for more structured data */
   for (child = iks_child (ik); child; child = iks_next (child))
@@ -561,6 +567,8 @@ t_atom_entry_free (TAtomEntry *entry)
     free (entry->title);
   if (entry->id)
     t_iri_free (entry->id);
+  if (entry->rights)
+    free (entry->rights);
   if (entry->authors)
     t_atom_entry_del_authors (entry);
   if (entry->categories)
@@ -609,6 +617,11 @@ t_atom_entry_to_iks (TAtomEntry *entry)
   iks_insert_cdata (iks_insert (ik, "updated"), updated, 0);
   free (updated);
   free (id_iri);
+
+  /* Not required fields */
+  if (entry->rights)
+    iks_insert_cdata (iks_insert (ik, "rights"), entry->rights, 0);
+
   if (entry->authors)
     for (i = 0; i < entry->authors->len; i++)
       {
@@ -687,6 +700,21 @@ t_atom_entry_set_updated (TAtomEntry *entry,
                           time_t      updated)
 {
   entry->updated = updated;
+}
+
+const char *
+t_atom_entry_get_rights (TAtomEntry *entry)
+{
+  return entry->rights;
+}
+
+void
+t_atom_entry_set_rights (TAtomEntry *entry,
+                         const char *rights)
+{
+  if (entry->rights)
+    free (entry->rights);
+  entry->rights = strdup (rights);
 }
 
 void

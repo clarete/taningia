@@ -107,6 +107,9 @@ void                t_atom_entry_set_id            (TAtomEntry       *entry,
 time_t              t_atom_entry_get_updated       (TAtomEntry       *entry);
 void                t_atom_entry_set_updated       (TAtomEntry       *entry,
                                                     time_t            updated);
+const char         *t_atom_entry_get_rights        (TAtomEntry       *entry);
+void                t_atom_entry_set_rights        (TAtomEntry       *entry,
+                                                    const char       *rights);
 void                t_atom_entry_get_authors       (TAtomEntry       *entry,
                                                     TAtomPerson    ***authors _out_,
                                                     int              *len _out_);
