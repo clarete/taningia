@@ -341,6 +341,89 @@ PyAtomFeedObject_get_entries (PyAtomFeedObject *self,
 }
 '''
 
+def t_pubsub_node_createv():
+    return ''
+
+def t_pubsub_node_create():
+    return '''
+static PyObject *
+PyPubsubNodeObject_create (PyPubsubNodeObject *self,
+                           PyObject           *args)
+{
+  PyObject *dict = NULL;
+  char **params = NULL;
+  Py_ssize_t counter = 0;
+
+  if (!PyArg_ParseTuple (args, "|O", &dict))
+    return NULL;
+  if (dict && !PyDict_Check(dict))
+    {
+      PyErr_SetString (PyExc_TypeError, "Param 1 must be a dictionary");
+      return NULL;
+    }
+  else if (dict)
+    {
+      PyObject *items, *key, *val;
+      Py_ssize_t len, i;
+
+      items = PyDict_Items (dict);
+      len = PyList_Size (items);
+      params = malloc (sizeof (char *) * (len*2) + 1);
+
+      for (i = 0; i < len; i++)
+        {
+          PyObject *item;
+          item = PyList_GetItem (items, i);
+
+          key = PyTuple_GetItem (item, 0);
+          val = PyTuple_GetItem (item, 1);
+
+          if (!PyString_Check (key) || !PyString_Check (val))
+            {
+              PyErr_SetString (PyExc_TypeError,
+                    "All keys and values in the config_param dict "
+                    "must be strings.");
+              Py_DECREF (items);
+              return NULL;
+            }
+          else
+            {
+              char *ckey, *cval;
+              ckey = PyString_AS_STRING (key);
+              cval = PyString_AS_STRING (val);
+              params[counter++] = strdup (ckey);
+              params[counter++] = strdup (cval);
+            }
+        }
+    }
+  if (params)
+    {
+      iks *riq;
+      char *arg;
+      int c = 0;
+
+      /* Adding the sentinel required by the next step */
+      params[counter++] = NULL;
+
+      /* Yep, we must use createv() here to pass a char ** to it.
+       * the create() one uses va_lists in (...) form. */
+      riq = t_pubsub_node_createv (self->inner, (const char **) params);
+
+      /* Freeing param container */
+      while ((arg = params[c++]) != NULL)
+        free (arg);
+      free (params);
+
+      return PyIks_FromIks (riq);
+    }
+  else
+    {
+      iks *riq = t_pubsub_node_create (self->inner, NULL);
+      return PyIks_FromIks (riq);
+    }
+}
+'''
+
 OVERRIDES = {
     'PyFilterObject': pyfilterobject,
     'PyLogObject': pylogobject,
@@ -352,4 +435,6 @@ OVERRIDES = {
     't_filter_add': t_filter_add,
     't_filter_call': t_filter_call,
     't_log_set_handler': t_log_set_handler,
+    't_pubsub_node_createv': t_pubsub_node_createv,
+    't_pubsub_node_create': t_pubsub_node_create,
 }
