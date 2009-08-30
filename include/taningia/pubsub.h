@@ -90,4 +90,7 @@ iks         *t_pubsub_node_delete_item       (TPubsubNode *node,
 iks         *t_pubsub_node_create            (TPubsubNode *node,
                                               ...);
 
+iks         *t_pubsub_node_createv           (TPubsubNode *node,
+                                              const char **conf_params);
+
 #endif /* _TANINGIA_PUBSUB_H */

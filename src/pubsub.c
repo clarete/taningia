@@ -103,6 +103,10 @@ _t_pubsub_get_node_prefix (TPubsub *ctx)
   stack = iks_stack_new (128, 0);
   id = iks_id_new (stack, ctx->from);
   iks_stack_delete (stack);
+
+  if (!id || !id->server || !id->user)
+    return NULL;
+
   path_size =
     strlen (id->server) +
     strlen (id->user) + 8 + 1;
@@ -502,6 +506,78 @@ t_pubsub_node_create (TPubsubNode *node,
       i++;
     }
   va_end (args);
+  /* Making sure that user didn't forget to build `pairs' of keys and
+   * vals */
+  assert (nargs == nvals);
+  debugiq (iq);
+  return iq;
+}
+
+iks *
+t_pubsub_node_createv (TPubsubNode *node,
+                       const char **conf_params)
+{
+  iks *iq, *create, *config, *form;
+  const char *arg;
+  int nargs, nvals, i;
+  iq = createiqps (node->ctx, IKS_TYPE_SET);
+  create = iks_insert (iks_child (iq), "create");
+
+  if (node->name)
+    {
+      if (node->ctx->node_prefix)
+        {
+          size_t name_size = strlen (node->name);
+          size_t fsize = node->ctx->node_prefix_len + name_size;
+          char *full_name = malloc (fsize);
+          memcpy (full_name, node->ctx->node_prefix,
+                  node->ctx->node_prefix_len);
+          memcpy ((full_name+node->ctx->node_prefix_len),
+                  node->name, name_size);
+          iks_insert_attrib (create, "node", full_name);
+          free (full_name);
+        }
+      else
+        iks_insert_attrib (create, "node", node->name);
+    }
+
+  /* Building configuration */
+  config = iks_insert (iks_child (iq), "configure");
+  form = NULL;
+  nargs = nvals = i = 0;
+
+  /* Creating the dataform to hold config info */
+  while ((arg = conf_params[i]) != NULL)
+    {
+      iks *field;
+      if (form == NULL)
+        {
+          iks *f;
+          form = iks_insert (config, "x");
+          iks_insert_attrib (form, "xmlns", "jabber:x:data");
+          iks_insert_attrib (form, "type", "submit");
+          f = iks_insert (form, "field");
+          iks_insert_attrib (f, "var", "FORM_TYPE");
+          iks_insert_attrib (f, "type", "hidden");
+          iks_insert_cdata (iks_insert (f, "value"), NS_PS_CONFIG, 0);
+        }
+      if (i % 2 == 0)           /* Handling args */
+        {
+          size_t ssize = strlen (arg)+7+1;
+          char fname[ssize];
+          snprintf (fname, ssize, "pubsub#%s", arg);
+          field = iks_insert (form, "field");
+          iks_insert_attrib (field, "var", fname);
+          nargs++;
+        }
+      else                      /* Handling vals */
+        {
+          iks_insert_cdata (iks_insert (field, "value"), arg, 0);
+          nvals++;
+        }
+      i++;
+    }
+
   /* Making sure that user didn't forget to build `pairs' of keys and
    * vals */
   assert (nargs == nvals);
