@@ -811,6 +811,12 @@ class CFile(Helper):
     def method_defs(self, ctype):
         methods = []
         for method in ctype['methods']:
+            # If a false value (actually a blank string) is returned
+            # from the OVERRIDE dict, the method will not be added to
+            # the method list.
+            cname = method['cname']
+            if cname in OVERRIDES and not OVERRIDES[cname]():
+                continue
             if method['params']:
                 arg = 'METH_VARARGS'
             else:
