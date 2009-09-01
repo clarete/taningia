@@ -253,7 +253,7 @@ t_log_critical (TLog *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ CRITI ] [ %s ]%s\n", log_time, msg);
+    fprintf (stderr, "[ CRITI ] [ %s ] %s\n", log_time, msg);
   else
     /* Red with no bold */
     fprintf (stderr,

@@ -73,7 +73,6 @@ t_filter_add (TFilter         *filter,
 static gboolean
 t_filter_marshal (GHook *hook, gpointer *data)
 {
-
   TFilterCallback cb;
   cb = hook->func;
   cb (data[0], hook->data, data[1]);
