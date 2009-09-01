@@ -350,6 +350,8 @@ init%(mname)s (void)
   PyObject *m;
   PyObject *capi;
 
+  PyEval_InitThreads ();
+
   PyIks_IMPORT;                 /* To use iksemel bindings */
   PyDateTime_IMPORT;
 
