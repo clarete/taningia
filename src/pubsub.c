@@ -41,7 +41,6 @@ struct _TPubsub
   char *from;
   char *to;
   char *node_prefix;
-  int   node_prefix_len;
   TLog *log;
 };
 
@@ -93,30 +92,6 @@ createiqps (TPubsub *ctx, enum iksubtype type)
 
 /* TPubsub */
 
-static char *
-_t_pubsub_get_node_prefix (TPubsub *ctx)
-{
-  ikstack *stack;
-  iksid *id;
-  int path_size;
-  char *real_name;
-  stack = iks_stack_new (128, 0);
-  id = iks_id_new (stack, ctx->from);
-  iks_stack_delete (stack);
-
-  if (!id || !id->server || !id->user)
-    return NULL;
-
-  path_size =
-    strlen (id->server) +
-    strlen (id->user) + 8 + 1;
-  real_name = malloc (path_size);
-  snprintf (real_name, path_size, "/home/%s/%s/",
-           id->server, id->user);
-  ctx->node_prefix_len = path_size;
-  return real_name;
-}
-
 TPubsub *
 t_pubsub_new (const char *from, const char *to)
 {
@@ -125,8 +100,7 @@ t_pubsub_new (const char *from, const char *to)
   ctx->from = strdup (from);
   ctx->to = strdup (to);
   ctx->log = t_log_new ("pubsub");
-  ctx->node_prefix_len = 0;     /* Will be filled in the next line. */
-  ctx->node_prefix = _t_pubsub_get_node_prefix (ctx);
+  ctx->node_prefix = NULL;
   return ctx;
 }
 
@@ -454,13 +428,9 @@ t_pubsub_node_create (TPubsubNode *node,
     {
       if (node->ctx->node_prefix)
         {
-          size_t name_size = strlen (node->name);
-          size_t fsize = node->ctx->node_prefix_len + name_size;
-          char *full_name = malloc (fsize);
-          memcpy (full_name, node->ctx->node_prefix,
-                  node->ctx->node_prefix_len);
-          memcpy ((full_name+node->ctx->node_prefix_len),
-                  node->name, name_size);
+          size_t size = strlen (node->name) + strlen (node->ctx->node_prefix);
+          char *full_name = malloc (size)-1;
+          snprintf (full_name, size, "%s%s", node->ctx->node_prefix, node->name);
           iks_insert_attrib (create, "node", full_name);
           free (full_name);
         }
@@ -527,13 +497,9 @@ t_pubsub_node_createv (TPubsubNode *node,
     {
       if (node->ctx->node_prefix)
         {
-          size_t name_size = strlen (node->name);
-          size_t fsize = node->ctx->node_prefix_len + name_size;
-          char *full_name = malloc (fsize);
-          memcpy (full_name, node->ctx->node_prefix,
-                  node->ctx->node_prefix_len);
-          memcpy ((full_name+node->ctx->node_prefix_len),
-                  node->name, name_size);
+          size_t size = strlen (node->name) + strlen (node->ctx->node_prefix);
+          char *full_name = malloc (size)-1;
+          snprintf (full_name, size, "%s%s", node->ctx->node_prefix, node->name);
           iks_insert_attrib (create, "node", full_name);
           free (full_name);
         }
