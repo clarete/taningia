@@ -529,6 +529,11 @@ _t_xmpp_do_run (void *user_data)
 
   while (ctx->running)
     {
+      if (!ctx->parser)
+        {
+          ctx->running = 0;
+          break;
+        }
       if ((err = iks_recv (ctx->parser, -1)) != IKS_OK)
         {
           switch (err)
@@ -547,7 +552,5 @@ _t_xmpp_do_run (void *user_data)
             }
         }
     }
-  t_log_info (ctx->log, "Main loop finished, calling disconnect.");
-  iks_disconnect (ctx->parser);
   return NULL;
 }
