@@ -431,13 +431,21 @@ int
 t_atom_entry_set_from_file (TAtomEntry *entry,
                             const char *fname)
 {
-  TIri *eid;
-  iks *ik, *child;
-  char *id, *title, *updated, *published, *summary, *rights;
+  iks *ik;
   int err;
-
   if ((err = iks_load (fname, &ik)) != IKS_OK)
     return 0;
+  return t_atom_entry_set_from_iks (entry, ik);
+}
+
+int
+t_atom_entry_set_from_iks (TAtomEntry *entry,
+                           iks        *ik)
+{
+  TIri *eid;
+  iks *child;
+  char *id, *title, *updated, *published, *summary, *rights;
+
   if (strcmp (iks_name (ik), "entry") ||
       !iks_has_children (ik))
     {
