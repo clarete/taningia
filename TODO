@@ -1,0 +1,34 @@
+General
+
+ * Write functions to parse pubsub answers.
+
+ * Write tests.
+
+ * Write examples.
+
+ * Improve pubsub creation message implementation.
+
+ * Improve implementation of IRI rfc.
+
+ * Improve Atom rfc implementation.
+
+ * Use `stamp' files when creating taningia.json and python module
+   files to know that they need to be regenerated.
+
+Python bindings
+
+ * Fix memmory leaks
+
+ * Divide library modules in separated python modules.
+
+ * Handle varargs parameters.
+
+ * Support static methods.
+
+ * Write tests.
+
+ * Write examples.
+
+Things that I'm not sure that we'll do
+
+ * Create an AtomPub interface.
