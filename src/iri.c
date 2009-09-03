@@ -350,7 +350,7 @@ _t_iri_set_from_string (TIri *iri, const char *string)
    */
 
   if (ihier_part[0] == '/' &&
-      ihier_part[0] == '/')
+      ihier_part[1] == '/')
     {
       const char *userinfo, *port, *path;
       char *port_str;
