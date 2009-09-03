@@ -27,6 +27,6 @@ AM_LDFLAGS = \
 	$(PYIKSEMEL_LIBS) \
 	$(top_builddir)/src/libtaningia.la
 
-EXTRA_DIST = $(taningia_la_SOURCES)
+EXTRA_DIST = $(taningia_la_SOURCES) writer.py overrides.py
 
 CLEANFILES = $(taningia_la_SOURCES)

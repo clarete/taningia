@@ -6,6 +6,8 @@ all:
 		 $(INCDIR)/pubsub.h $(INCDIR)/xmpp.h $(INCDIR)/log.h	\
 		 $(INCDIR)/iri.h
 
-EXTRA_DIST = $(PACKAGE).json
+$(PACKAGE).json: all
+
+EXTRA_DIST = $(PACKAGE).json scanner.py
 
 CLEANFILES = $(PACKAGE).json
