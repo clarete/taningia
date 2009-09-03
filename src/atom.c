@@ -145,6 +145,21 @@ t_atom_content_to_string (TAtomContent *content)
   return iks_string (iks_stack (ik), ik);
 }
 
+const char *
+t_atom_content_get_type (TAtomContent *content)
+{
+  return content->type;
+}
+
+void
+t_atom_content_set_type (TAtomContent *content,
+                         const char   *type)
+{
+  if (content->type)
+    free (content->type);
+  content->type = strdup (type);
+}
+
 TIri *
 t_atom_content_get_src (TAtomContent *content)
 {

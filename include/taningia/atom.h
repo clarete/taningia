@@ -41,6 +41,9 @@ TAtomContent       *t_atom_content_new             (const char     *type _option
 void                t_atom_content_free            (TAtomContent   *content);
 iks                *t_atom_content_to_iks          (TAtomContent   *content);
 char               *t_atom_content_to_string       (TAtomContent   *entry);
+const char         *t_atom_content_get_type        (TAtomContent   *content);
+void                t_atom_content_set_type        (TAtomContent   *content,
+                                                    const char     *type);
 TIri               *t_atom_content_get_src         (TAtomContent   *content);
 void                t_atom_content_set_src         (TAtomContent   *content,
                                                     TIri           *src);
