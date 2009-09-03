@@ -606,6 +606,11 @@ class CFile(Helper):
                     types += '|' + pytype
             elif '_len_' in modifiers:
                 types += '#'
+            elif '_out_' in modifiers:
+                # We're not handling this kind of modifier yet, we're
+                # writting overrides for them. we actually have just a
+                # few placess with it, so don't care about it now...
+                continue
             else:
                 types += pytype
 
