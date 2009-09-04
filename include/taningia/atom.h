@@ -32,6 +32,31 @@ typedef struct _TAtomEntry    TAtomEntry;
 typedef struct _TAtomCategory TAtomCategory;
 typedef struct _TAtomPerson   TAtomPerson;
 typedef struct _TAtomContent  TAtomContent;
+typedef struct _TAtomLink     TAtomLink;
+
+/* TAtomLink */
+
+TAtomLink          *t_atom_link_new                (TIri           *href);
+void                t_atom_link_free               (TAtomLink      *link);
+
+iks                *t_atom_link_to_iks             (TAtomLink      *link);
+char               *t_atom_link_to_string          (TAtomLink      *link);
+
+TIri               *t_atom_link_get_href           (TAtomLink      *link);
+void                t_atom_link_set_href           (TAtomLink      *link,
+                                                    TIri           *href);
+const char         *t_atom_link_get_title          (TAtomLink      *link);
+void                t_atom_link_set_title          (TAtomLink      *link,
+                                                    const char     *title);
+const char         *t_atom_link_get_rel            (TAtomLink      *link);
+void                t_atom_link_set_rel            (TAtomLink      *link,
+                                                    const char     *rel);
+const char         *t_atom_link_get_type           (TAtomLink      *link);
+void                t_atom_link_set_type           (TAtomLink      *link,
+                                                    const char     *type);
+const char         *t_atom_link_get_length         (TAtomLink      *link);
+void                t_atom_link_set_length         (TAtomLink      *link,
+                                                    const char     *length);
 
 /* TAtomContent */
 
@@ -124,13 +149,22 @@ void                t_atom_entry_get_authors       (TAtomEntry       *entry,
 void                t_atom_entry_add_author        (TAtomEntry       *entry,
                                                     TAtomPerson      *author);
 void                t_atom_entry_del_authors       (TAtomEntry       *entry);
+
 void                t_atom_entry_get_categories    (TAtomEntry       *entry,
                                                     TAtomCategory  ***categories _out_,
                                                     int              *len _out_);
-
 void                t_atom_entry_add_category      (TAtomEntry       *entry,
                                                     TAtomCategory    *category);
 void                t_atom_entry_del_categories    (TAtomEntry       *entry);
+
+void                t_atom_entry_get_links         (TAtomEntry       *entry,
+                                                    TAtomLink      ***links,
+                                                    int              *len);
+void                t_atom_entry_add_link          (TAtomEntry       *entry,
+                                                    TAtomLink        *link);
+void                t_atom_entry_del_links         (TAtomEntry       *entry);
+
+
 const char         *t_atom_entry_get_summary       (TAtomEntry       *entry);
 void                t_atom_entry_set_summary       (TAtomEntry       *entry,
                                                     const char       *summary);
@@ -177,8 +211,16 @@ void                t_atom_feed_del_categories     (TAtomFeed        *feed);
 
 
 void                t_atom_feed_get_entries        (TAtomFeed        *feed,
-                                                    TAtomEntry     ***entries _out_,
-                                                    int              *len _out_);
+                                                    TAtomEntry     ***entries,
+                                                    int              *len);
+
+void                t_atom_feed_add_link           (TAtomFeed        *feed,
+                                                    TAtomLink        *link);
+void                t_atom_feed_del_links          (TAtomFeed        *feed);
+void                t_atom_feed_get_links          (TAtomFeed        *feed,
+                                                    TAtomLink      ***links,
+                                                    int              *len);
+
 void                t_atom_feed_add_entry          (TAtomFeed        *feed,
                                                     TAtomEntry       *entry);
 void                t_atom_feed_del_entries        (TAtomFeed        *feed);

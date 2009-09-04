@@ -73,6 +73,34 @@ PyAtomEntryObject_get_categories (PyAtomEntryObject *self,
 }
 '''
 
+def t_atom_entry_get_links():
+    return '''
+static PyObject *
+PyAtomEntryObject_get_links (PyAtomEntryObject *self,
+                             PyObject          *args)
+{
+  PyObject *alist;
+  TAtomLink **links;
+  int len, i;
+  t_atom_entry_get_links (self->inner, &links, &len);
+
+  alist = PyList_New (len);
+  if (!alist)
+    return NULL;
+
+  for (i = 0; i < len; i++)
+    {
+      PyObject *link;
+      link = Py_AtomLink_FromAtomLink (links[i]);
+      Py_INCREF (link);
+      PyList_SetItem (alist, i, link);
+    }
+
+  Py_INCREF (alist);
+  return alist;
+}
+'''
+
 def pyfilterobject():
     return ['callback', 'param']
 
@@ -313,6 +341,34 @@ PyAtomFeedObject_get_categories (PyAtomFeedObject *self,
 }
 '''
 
+def t_atom_feed_get_links():
+    return '''
+static PyObject *
+PyAtomFeedObject_get_links (PyAtomFeedObject *self,
+                            PyObject          *args)
+{
+  PyObject *alist;
+  TAtomLink **links;
+  int len, i;
+  t_atom_feed_get_links (self->inner, &links, &len);
+
+  alist = PyList_New (len);
+  if (!alist)
+    return NULL;
+
+  for (i = 0; i < len; i++)
+    {
+      PyObject *link;
+      link = Py_AtomLink_FromAtomLink (links[i]);
+      Py_INCREF (link);
+      PyList_SetItem (alist, i, link);
+    }
+
+  Py_INCREF (alist);
+  return alist;
+}
+'''
+
 def t_atom_feed_get_entries():
     return '''
 static PyObject *
@@ -429,8 +485,10 @@ OVERRIDES = {
     'PyLogObject': pylogobject,
     't_atom_entry_get_authors': t_atom_entry_get_authors,
     't_atom_entry_get_categories': t_atom_entry_get_categories,
+    't_atom_entry_get_links': t_atom_entry_get_links,
     't_atom_feed_get_authors': t_atom_feed_get_authors,
     't_atom_feed_get_categories': t_atom_feed_get_categories,
+    't_atom_feed_get_links': t_atom_feed_get_links,
     't_atom_feed_get_entries': t_atom_feed_get_entries,
     't_filter_add': t_filter_add,
     't_filter_call': t_filter_call,

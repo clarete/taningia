@@ -28,6 +28,15 @@
 #include <taningia/atom.h>
 #include <taningia/iri.h>
 
+struct _TAtomLink
+{
+  TIri *href;
+  char *title;
+  char *rel;
+  char *type;
+  char *length;
+};
+
 struct _TAtomContent
 {
   char *type;
@@ -59,6 +68,7 @@ struct _TAtomEntry
   char         *rights;
   GPtrArray    *authors;
   GPtrArray    *categories;
+  GPtrArray    *links;
   char         *summary;
   TAtomContent *content;
 };
@@ -71,6 +81,7 @@ struct _TAtomFeed
   GPtrArray    *authors;
   GPtrArray    *categories;
   GPtrArray    *entries;
+  GPtrArray    *links;
 };
 
 /* Forward prototypes */
@@ -78,6 +89,139 @@ struct _TAtomFeed
 static char   *time_to_iso8601   (time_t t);
 
 static time_t  iso8601_to_time   (const char *dt);
+
+/* TAtomLink */
+
+TAtomLink *
+t_atom_link_new (TIri *href)
+{
+  TAtomLink *lnk;
+  lnk = malloc (sizeof (TAtomLink));
+  lnk->href = href;
+  lnk->title = NULL;
+  lnk->rel = NULL;
+  lnk->type = NULL;
+  lnk->length = NULL;
+  return lnk;
+}
+
+void
+t_atom_link_free (TAtomLink *link)
+{
+  if (link->href)
+    t_iri_free (link->href);
+  if (link->title)
+    free (link->title);
+  if (link->rel)
+    free (link->rel);
+  if (link->type)
+    free (link->type);
+  if (link->length)
+    free (link->length);
+  free (link);
+}
+
+iks *
+t_atom_link_to_iks (TAtomLink *link)
+{
+  iks *lnk;
+  char *href;
+  lnk = iks_new ("link");
+  href = t_iri_to_string (link->href);
+  iks_insert_attrib (lnk, "href", href);
+  free (href);
+  if (link->rel)
+    iks_insert_attrib (lnk, "rel", link->rel);
+  if (link->title)
+    iks_insert_attrib (lnk, "title", link->title);
+  if (link->type)
+    iks_insert_attrib (lnk, "type", link->type);
+  if (link->length)
+    iks_insert_attrib (lnk, "length", link->length);
+  return lnk;
+}
+
+char *
+t_atom_link_to_string (TAtomLink *link)
+{
+  iks *ik = t_atom_link_to_iks (link);
+  return iks_string (iks_stack (ik), ik);
+}
+
+TIri *
+t_atom_link_get_href (TAtomLink *link)
+{
+  return link->href;
+}
+
+void
+t_atom_link_set_href (TAtomLink *link,
+                      TIri      *href)
+{
+  if (link->href)
+    t_iri_free (link->href);
+  link->href = href;
+}
+
+const char *
+t_atom_link_get_title (TAtomLink *link)
+{
+  return link->title;
+}
+
+void
+t_atom_link_set_title (TAtomLink  *link,
+                       const char *title)
+{
+  if (link->title)
+    free (link->title);
+  link->title = strdup (title);
+}
+
+const char *
+t_atom_link_get_rel (TAtomLink *link)
+{
+  return link->rel;
+}
+
+void
+t_atom_link_set_rel (TAtomLink  *link,
+                     const char *rel)
+{
+  if (link->rel)
+    free (link->rel);
+  link->rel = strdup (rel);
+}
+
+const char *
+t_atom_link_get_type (TAtomLink *link)
+{
+  return link->type;
+}
+
+void
+t_atom_link_set_type (TAtomLink  *link,
+                      const char *type)
+{
+  if (link->type)
+    free (link->type);
+  link->type = strdup (type);
+}
+
+const char *
+t_atom_link_get_length (TAtomLink *link)
+{
+  return link->length;
+}
+
+void
+t_atom_link_set_length (TAtomLink  *link,
+                        const char *length)
+{
+  if (link->length)
+    free (link->length);
+  link->length = strdup (length);
+}
 
 /* TAtomContent */
 
@@ -691,6 +835,13 @@ t_atom_entry_to_iks (TAtomEntry *entry)
           t_atom_category_to_iks (g_ptr_array_index (entry->categories, i));
         iks_insert_node (ik, categories);
       }
+  if (entry->links)
+    for (i = 0; i < entry->links->len; i++)
+      {
+        iks *links =
+          t_atom_link_to_iks (g_ptr_array_index (entry->links, i));
+        iks_insert_node (ik, links);
+      }
   if (entry->summary)
     iks_insert_cdata (iks_insert (ik, "summary"), entry->summary, 0);
   if (entry->content)
@@ -852,6 +1003,41 @@ t_atom_entry_del_categories (TAtomEntry *entry)
   for (i = 0; i < entry->categories->len; i++)
     t_atom_category_free (g_ptr_array_index (entry->categories, i));
   g_ptr_array_free (entry->categories, TRUE);
+}
+
+void
+t_atom_entry_get_links (TAtomEntry  *entry,
+                        TAtomLink ***links,
+                        int         *len)
+{
+  if (entry->links)
+    {
+      *len = entry->links->len;
+      *links = (TAtomLink **) entry->links->pdata;
+    }
+  else
+    {
+      *len = 0;
+      *links = NULL;
+    }
+}
+
+void
+t_atom_entry_add_link (TAtomEntry *entry,
+                       TAtomLink  *link)
+{
+  if (entry->links == NULL)
+    entry->links = g_ptr_array_new ();
+  g_ptr_array_add (entry->links, link);
+}
+
+void
+t_atom_entry_del_links (TAtomEntry *entry)
+{
+  int i;
+  for (i = 0; i < entry->links->len; i++)
+    t_atom_link_free (g_ptr_array_index (entry->links, i));
+  g_ptr_array_free (entry->links, TRUE);
 }
 
 const char *
@@ -1194,6 +1380,41 @@ t_atom_feed_del_categories (TAtomFeed *feed)
   for (i = 0; i < feed->categories->len; i++)
     t_atom_category_free (g_ptr_array_index (feed->categories, i));
   g_ptr_array_free (feed->categories, TRUE);
+}
+
+void
+t_atom_feed_get_links (TAtomFeed   *feed,
+                       TAtomLink ***links,
+                       int         *len)
+{
+  if (feed->links)
+    {
+      *len = feed->links->len;
+      *links = (TAtomLink **) feed->links->pdata;
+    }
+  else
+    {
+      *len = 0;
+      *links = NULL;
+    }
+}
+
+void
+t_atom_feed_add_link (TAtomFeed  *feed,
+                      TAtomLink  *link)
+{
+  if (feed->links == NULL)
+    feed->links = g_ptr_array_new ();
+  g_ptr_array_add (feed->links, link);
+}
+
+void
+t_atom_feed_del_links (TAtomFeed *feed)
+{
+  int i;
+  for (i = 0; i < feed->links->len; i++)
+    t_atom_link_free (g_ptr_array_index (feed->links, i));
+  g_ptr_array_free (feed->links, TRUE);
 }
 
 void
