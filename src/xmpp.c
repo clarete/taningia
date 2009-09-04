@@ -459,7 +459,10 @@ _t_xmpp_hook (void *data, int type, iks *node)
       from = iks_find_attrib (node, "from");
       body = iks_find_cdata (node, "body");
       t_filter_call (ctx->events, "message", node);
-      t_log_info (ctx->log, "Xmpp message from '%s':\n%s", from, body);
+      if (body)
+        t_log_info (ctx->log, "Xmpp message from '%s':\n%s", from, body);
+      else
+        t_log_info (ctx->log, "Xmpp message from '%s'", from);
     }
   else if (!iks_strcmp (name, "stream:features"))
     {
