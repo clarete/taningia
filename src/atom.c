@@ -789,10 +789,16 @@ t_atom_entry_get_authors (TAtomEntry    *entry,
                           TAtomPerson ***authors,
                           int           *len)
 {
-  if (len)
-    *len = entry->authors->len;
-  if (authors)
-    *authors = (TAtomPerson **) entry->authors->pdata;
+  if (entry->authors)
+    {
+      *len = entry->authors->len;
+      *authors = (TAtomPerson **) entry->authors->pdata;
+    }
+  else
+    {
+      *len = 0;
+      *authors = NULL;
+    }
 }
 
 void
@@ -818,10 +824,16 @@ t_atom_entry_get_categories (TAtomEntry      *entry,
                              TAtomCategory ***categories,
                              int             *len)
 {
-  if (len)
-    *len = entry->categories->len;
-  if (categories)
-    *categories = (TAtomCategory **) entry->categories->pdata;
+  if (entry->categories)
+    {
+      *len = entry->categories->len;
+      *categories = (TAtomCategory **) entry->categories->pdata;
+    }
+  else
+    {
+      *len = 0;
+      *categories = NULL;
+    }
 }
 
 void
