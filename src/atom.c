@@ -566,6 +566,7 @@ t_atom_entry_new (const char *title)
   entry->rights = NULL;
   entry->authors = NULL;
   entry->categories = NULL;
+  entry->links = NULL;
   entry->summary = NULL;
   entry->content = NULL;
   return entry;
