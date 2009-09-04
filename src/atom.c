@@ -588,7 +588,7 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
                            iks        *ik)
 {
   TIri *eid;
-  iks *child;
+  iks *child, *content;
   char *id, *title, *updated, *published, *summary, *rights;
 
   if (strcmp (iks_name (ik), "entry") ||
@@ -644,6 +644,54 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
   rights = iks_find_cdata (ik, "rights");
   if (rights)
     t_atom_entry_set_rights (entry, rights);
+
+  content = iks_find (ik, "content");
+  if (content)
+    {
+      TAtomContent *ct;
+      char *type = NULL, *src = NULL, *scontent = NULL;
+      int content_len = 0;
+      type = iks_find_attrib (content, "type");
+      src = iks_find_attrib (content, "src");
+      scontent = iks_cdata (iks_child (content));
+      if (!type)
+        {
+          printf ("No type attribute specified for content");
+          return 0;
+        }
+
+      /* When content is filled, entry content should have no src
+       * attribute */
+      if (src && scontent)
+        {
+          printf ("Invalid content, it has src "
+                  "attribute and content is filled\n");
+          return 0;
+        }
+      if (!src && !scontent)
+        {
+          printf ("No src attribute or content in content tag");
+          return 0;
+        }
+      if (scontent)
+        content_len = iks_cdata_size (iks_child (content));
+      ct = t_atom_content_new (type, scontent, content_len);
+      if (src)
+        {
+          TIri *srci;
+          srci = t_iri_new (src);
+          if (!srci)
+            {
+              printf ("Invalid iri in content src attribute");
+              t_atom_content_free (ct);
+              return 0;
+            }
+          t_atom_content_set_src (ct, srci);
+        }
+      if (scontent)
+        t_atom_content_set_content (ct, scontent, content_len);
+      t_atom_entry_set_content (entry, ct);
+    }
 
   /* Looking for more structured data */
   for (child = iks_child (ik); child; child = iks_next (child))
@@ -701,52 +749,6 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
             }
           cat = t_atom_category_new (term, label, iri);
           t_atom_entry_add_category (entry, cat);
-        }
-      if (!strcmp (iks_name (child), "content"))
-        {
-          TAtomContent *ct;
-          char *type = NULL, *src = NULL, *content = NULL;
-          int content_len = 0;
-          type = iks_find_attrib (child, "type");
-          src = iks_find_attrib (child, "src");
-          content = iks_cdata (iks_child (child));
-          if (!type)
-            {
-              printf ("No type attribute specified for content");
-              return 0;
-            }
-
-          /* When content is filled, entry content should have no src
-           * attribute */
-          if (src && content)
-            {
-              printf ("Invalid content, it has src "
-                      "attribute and content is filled\n");
-              return 0;
-            }
-          if (!src && !content)
-            {
-              printf ("No src attribute or content in content tag");
-              return 0;
-            }
-          if (content)
-            content_len = iks_cdata_size (iks_child (child));
-          ct = t_atom_content_new (type, content, content_len);
-          if (src)
-            {
-              TIri *srci;
-              srci = t_iri_new (src);
-              if (!srci)
-                {
-                  printf ("Invalid iri in content src attribute");
-                  t_atom_content_free (ct);
-                  return 0;
-                }
-              t_atom_content_set_src (ct, srci);
-            }
-          if (content)
-            t_atom_content_set_content (ct, content, content_len);
-          t_atom_entry_set_content (entry, ct);
         }
     }
   return 1;
