@@ -302,6 +302,9 @@ _t_iri_set_from_string (TIri *iri, const char *string)
 
   p = string;
 
+  if (!isalpha(p[0]))
+    return 0;
+
   /* Getting "scheme" part */
   while (1)
     {
@@ -324,11 +327,15 @@ _t_iri_set_from_string (TIri *iri, const char *string)
   query = strchr (p, '?');
   if (query)
     {
+      /* Removing the `?' char */
+      query++;
       fragment = strchr (query, '#');
       if (fragment)
         {
-          iri->query = strndup (query+1, fragment - query - 1);
-          iri->fragment = strdup (fragment+1);
+          /* Removing number sign (#) */
+          fragment++;
+          iri->query = strndup (query, fragment-1 - query);
+          iri->fragment = strdup (fragment);
         }
       else
         iri->query = strdup (query);
@@ -353,19 +360,25 @@ _t_iri_set_from_string (TIri *iri, const char *string)
       ihier_part[1] == '/')
     {
       const char *userinfo, *port, *path;
+      const char *port_start;
       char *port_str;
       size_t port_len = 0;
 
-      /* Removing unuseful chars */
-      ihier_part+=2;
+      /* Removing slashes */
+      ihier_part += 2;
 
       /* iuserinfo */
-      userinfo = strchr (ihier_part, '@');
+      userinfo = strrchr (ihier_part, '@');
       if (userinfo)
-        iri->user = strndup (ihier_part, userinfo - ihier_part);
+        {
+          iri->user = strndup (ihier_part, userinfo - ihier_part);
+          port_start = userinfo+1;
+        }
+      else
+        port_start = ihier_part;
 
       /* Port */
-      port = strchr (ihier_part, ':');
+      port = strchr (port_start, ':');
       if (port)
         {
           const char *pp;
@@ -433,6 +446,18 @@ _t_iri_set_from_string (TIri *iri, const char *string)
                            (port ? port : path) -
                            (userinfo ? userinfo : ihier_part - 1) -
                            1);
+    }
+  else
+    {
+      if (query)
+        {
+          int end = query - 1 - ihier_part;
+          iri->path = strndup (ihier_part, end);
+        }
+      else if (!query && fragment)
+        iri->path = strndup (ihier_part, fragment - ihier_part);
+      else
+        iri->path = strdup (ihier_part);
     }
 
   return 1;
