@@ -312,8 +312,8 @@ _t_iri_set_from_string (TIri *iri, const char *string)
       if (c == ':')
         break;
       /* As said in the IRI rfc, the scheme part only accept
-       * a-Z+.- chars*/
-      if (!isalpha (c) &&
+       * a-Z0-9+.- chars*/
+      if (!isalnum (c) &&
           !(c == '-' || c == '+' || c == '.'))
         return 0;
       c = *p++;
