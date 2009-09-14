@@ -124,7 +124,7 @@ _call_py_filter_callback (void *data1, void *data2, void *data3)
   tmp = t_filter_get_data (self->inner);
   if (tmp)
     {
-      p1 = Py_Xmpp_FromXmpp (tmp);
+      p1 = Py_None; /* Py_Xmpp_FromXmpp (tmp); */
       Py_INCREF (p1);
     }
   else

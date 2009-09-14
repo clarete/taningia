@@ -44,11 +44,21 @@ RETURN_MAP = {
     'iks *':         'Py_BuildValue ("O", ret ? PyIks_FromIks (ret) : Py_None)',
 }
 
+LOCALDEP_MAP = {
+    'atom': ['error', 'iri'],
+    'error': [],
+    'filter': ['error', 'log'],
+    'iri': ['error'],
+    'log': ['error'],
+    'pubsub': ['error', 'log'],
+    'xmpp': ['error', 'log', 'filter']
+}
+
 # ---- .h file templates ----
 
 TEMPLATE_H_FILE_HEADER = '''
-#ifndef _PY_%(libupper)s_H_
-#define _PY_%(libupper)s_H_
+#ifndef _PY_%(mnameupper)s_H_
+#define _PY_%(mnameupper)s_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,48 +67,60 @@ extern "C" {
 #include <Python.h>
 %(includes)s
 
-#ifndef Py%(libcamel)sBUILD_CORE
+#ifndef Py%(mnamecamel)s_BUILD_CORE
 
-#define Py%(libcamel)s_IMPORT \\
-  Py%(libcamel)sAPI = \\
-    (Py%(libcamel)s_CAPI*) PyCObject_Import ("%(lib)s", "%(lib)s_CAPI")
+#define Py%(mnamecamel)s_IMPORT \\
+  Py%(mnamecamel)sAPI = \\
+    (Py%(mnamecamel)s_CAPI*) PyCObject_Import ("%(lib)s.%(mname)s", "_C_API")
 
-#endif /* Py%(libcamel)sBUILD_CORE*/
+#endif /* Py%(mnamecamel)s_BUILD_CORE */
 '''
 
-TEMPLATE_H_MACROS = '''#define Py%(type)s_AS_%(type_upper)s(op) \\
+TEMPLATE_H_MACROS = '''/* Useful macros for %(type)s python type */
+
+#define Py%(type)s_AS_%(type_upper)s(op) \\
   (((Py%(type)sObject *) op)->inner)
 
+#ifndef Py%(mnamecamel)s_BUILD_CORE
+
+#define Py_%(type)s_From%(type)s(o) \\
+  Py%(mnamecamel)sAPI->Py%(type)s_From%(type)s(o, Py%(mnamecamel)sAPI->Py%(type)sType)
+
+#define Py%(type)sObject_Check(op) \\
+  PyObject_TypeCheck(op, Py%(mnamecamel)sAPI->Py%(type)sType)
+
+#else
+
 #define Py%(type)s_From%(type)s(o) \\
-  Py%(libcamel)sAPI->Py%(type)s_From%(type)s(o, Py%(libcamel)sAPI->%(type)sType)
+  Py%(mnamecamel)sAPI->Py%(type)s_From%(type)s(o, &Py%(type)sType)
 
 #define Py%(type)sObject_Check(op) \\
   PyObject_TypeCheck(op, &Py%(type)sType)
 
+#endif /* Py%(mnamecamel)s_BUILD_CORE */
 '''
 
 TEMPLATE_H_TYPES = '''typedef struct {
   PyObject_HEAD
-  %(cname)s *inner;
-%(extra)s
+  %(cname)s *inner;%(extra)s
 } %(pytype)s;
 '''
 
 TEMPLATE_H_CAPI = '''/* Define struct for the C API. */
 typedef struct {
 %(types)s
-} Py%(libcamel)s_CAPI;
+} Py%(mnamecamel)s_CAPI;
 '''
 
-TEMPLATE_H_FILE_FOOTER = '''#ifndef Py%(libcamel)sBUILD_CORE
-static Py%(libcamel)s_CAPI *Py%(libcamel)sAPI;
-#endif /* Py%(libcamel)sBUILD_CORE*/
+TEMPLATE_H_FILE_FOOTER = '''#ifndef Py%(mnamecamel)s_BUILD_CORE
+static Py%(mnamecamel)s_CAPI *Py%(mnamecamel)sAPI;
+#endif /* Py%(mnamecamel)s_BUILD_CORE*/
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* _PY_%(libupper)s_H_ */
+#endif /* _PY_%(mnameupper)s_H_ */
 '''
 
 # ---- .c file templates ----
@@ -112,7 +134,7 @@ TEMPLATE_C_MACROS = '''
 '''
 
 TEMPLATE_C_CAPI = '''/* C API definition */
-static Py%(libcamel)s_CAPI CAPI = {
+static Py%(mnamecamel)s_CAPI CAPI = {
 %(definitions)s
 };
 '''
@@ -355,18 +377,23 @@ init%(mname)s (void)
   PyIks_IMPORT;                 /* To use iksemel bindings */
   PyDateTime_IMPORT;
 
+  /* Library imports */
+
+%(imports)s
+
   m = Py_InitModule3 ("%(mname)s", NULL, "%(doc)s");
 
   capi = PyCObject_FromVoidPtr (&CAPI, NULL);
   if (capi == NULL)
     return;
-  PyModule_AddObject (m, "%(mname)s_CAPI", capi);
+  PyModule_AddObject (m, "_C_API", capi);
 
   /* Enums */
 
 %(enums)s
 
   /* Module declaration */
+
 %(modules)s
 }
 '''
@@ -396,13 +423,20 @@ def macro_py2c(name):
 class Helper(object):
     cyclegctypes = []
 
-    def __init__(self, defs):
+    def __init__(self, defs, module):
         self.defs = defs
+        self.module = module
         self.lib = self.defs['name']
         self.libcamel = self.defs['name'].capitalize()
         self.libupper = self.defs['name'].upper()
         self.alltypes = []
         self.allenums = []
+
+        if module:
+            self.mname = module['name']
+            self.mnameupper = self.mname.upper()
+            self.mnamecamel = self.mname.capitalize()
+
         for i in self.defs['modules']:
             for e in i['enums']:
                 self.allenums.append(e['name'])
@@ -413,6 +447,10 @@ class Helper(object):
             'lib': self.lib,
             'libcamel': self.libcamel,
             'libupper': self.libupper,
+            'mname': self.mname,
+            'mnamecamel': self.mnamecamel,
+            'mnameupper': self.mnameupper,
+            'allenums': self.allenums,
             'alltypes': self.alltypes,
             }
 
@@ -436,7 +474,8 @@ class Helper(object):
 
 # ---- file generators ----
 
-class HFile(Helper):
+class Header(Helper):
+
     def header(self):
         includes = []
         for module in self.defs['modules']:
@@ -445,71 +484,70 @@ class HFile(Helper):
         for dep in self.defs['dependencies']['public']:
             includes.append('#include <%s>' % dep)
         return TEMPLATE_H_FILE_HEADER % self.uctx({
-            'includes': '\n'.join(includes),
-            })
+                'includes': '\n'.join(includes),
+                })
 
     def macros(self):
         ret = []
         app = ret.append
-        for module in self.defs['modules']:
-            for ctype in module['types']:
-                app(TEMPLATE_H_MACROS % self.uctx({
-                            'type': self.name_from_cname(ctype['cname']),
-                            'type_upper': ctype['name'].upper(),
-                            }))
+        for ctype in self.module['types']:
+            app(TEMPLATE_H_MACROS % self.uctx({
+                        'type': self.name_from_cname(ctype['cname']),
+                        'type_upper': ctype['name'].upper(),
+                        }))
         return '\n'.join(ret)
 
     def types(self):
         ret = []
         app = ret.append
-        for module in self.defs['modules']:
-            for ctype in module['types']:
-                extra = []
-                pname = pyname(ctype['name'])
+        for ctype in self.module['types']:
+            extra = []
+            pname = pyname(ctype['name'])
 
-                # Overriding a type means add more items to its
-                # struct. Currently, only PyObjects can be
-                # added. Because the overriding function right now
-                # returns a list of item names to be added to the
-                # struct.
-                #
-                # The idea here is simple. Since we have a PyObject*
-                # field in the type struct, this type should support
-                # "Cyclic GC", so a new entry in `self.cyclegctypes'
-                # that will be readed in the type generation
-                # function. This new entry contains the customized
-                # items. It is importanto to generate _new and _clean
-                # functions.
-                if pname in OVERRIDES:
-                    subitems = OVERRIDES[pname]()
-                    if subitems:
-                        self.cyclegctypes.append({
-                                'type': pname,
-                                'childs': subitems,
-                                })
-                    for sitem in subitems:
-                        extra.append('  PyObject *%s;' % sitem)
+            # Overriding a type means add more items to its
+            # struct. Currently, only PyObjects can be added. Because
+            # the overriding function right now returns a list of item
+            # names to be added to the struct.
+            #
+            # The idea here is simple. Since we have a PyObject* field
+            # in the type struct, this type should support "Cyclic
+            # GC", so a new entry in `self.cyclegctypes' that will be
+            # readed in the type generation function. This new entry
+            # contains the customized items. It is importanto to
+            # generate _new and _clean functions.
+            if pname in OVERRIDES:
+                subitems = OVERRIDES[pname]()
+                if subitems:
+                    self.cyclegctypes.append({
+                            'type': pname,
+                            'childs': subitems,
+                            })
+                for sitem in subitems:
+                    extra.append('  PyObject *%s;' % sitem)
 
-                # Just filling the type template. All bizarre cyclic
-                # gc stuff ends right above here!
-                app(TEMPLATE_H_TYPES % self.uctx({
-                            'cname': ctype['cname'],
-                            'pytype': pname,
-                            'extra': '\n'.join(extra),
-                            }))
+            # Just to make generated code better
+            if extra:
+                extra.insert(0, '\n')
+
+            # Just filling the type template. All bizarre cyclic gc
+            # stuff ends right above here!
+            app(TEMPLATE_H_TYPES % self.uctx({
+                        'cname': ctype['cname'],
+                        'pytype': pname,
+                        'extra': '\n'.join(extra),
+                        }))
         return '\n'.join(ret)
 
     def capi(self):
         ret = []
         app = ret.append
         pytypes = []
-        for module in self.defs['modules']:
-            for ctype in module['types']:
-                pytypes.append('  PyTypeObject *%s;' % pytypename(ctype['name']))
-                pytypes.append('  PyObject *(*Py%(type)s_From%(type)s) '
-                               '(%(ctype)s *, PyTypeObject *);' %
-                               {'type': ctype['name'],
-                                'ctype': ctype['cname']})
+        for ctype in self.module['types']:
+            pytypes.append('  PyTypeObject *%s;' % pytypename(ctype['name']))
+            pytypes.append('  PyObject *(*Py%(type)s_From%(type)s) '
+                           '(%(ctype)s *, PyTypeObject *);' %
+                           {'type': ctype['name'],
+                            'ctype': ctype['cname']})
         app(TEMPLATE_H_CAPI % self.uctx({
                     'types': '\n'.join(pytypes),
                     }))
@@ -527,7 +565,7 @@ class HFile(Helper):
         parts.append(self.footer())
         return '\n'.join(parts)
 
-class CFile(Helper):
+class Module(Helper):
 
     def parse_args(self, obj, method):
         args = []
@@ -706,10 +744,13 @@ class CFile(Helper):
         app('#include <structmember.h>')
         app('#include <time.h>')
         for dep in self.defs['dependencies']['public']:
-            includes.append('#include <%s>' % dep)
+            app.append('#include <%s>' % dep)
         for dep in self.defs['dependencies']['priv']:
             app('#include <%s>' % dep)
-        app('#include "%smodule.h"' % self.defs['name'])
+
+        app('#include "%smodule.h"' % self.module['name'])
+        for dep in LOCALDEP_MAP.get(self.module['name'], []):
+            app('#include "%smodule.h"' % dep)
         app(TEMPLATE_C_MACROS)
         return '\n'.join(parts)
 
@@ -718,19 +759,8 @@ class CFile(Helper):
         app = parts.append
         app('/* Useful macros for creating new pyobjects from our binded\n'
             ' * types. */')
-        for module in self.defs['modules']:
-            for ctype in module['types']:
-                app(macro_py2c(ctype['name']))
-        app('')
-        return '\n'.join(parts)
-
-    def types(self):
-        parts = []
-        app = parts.append
-        app('/* Defining types to forward using. */')
-        for module in self.defs['modules']:
-            for ctype in module['types']:
-                app('static PyTypeObject %s;' % pytypename(ctype['name']))
+        for ctype in self.module['types']:
+            app(macro_py2c(ctype['name']))
         app('')
         return '\n'.join(parts)
 
@@ -738,37 +768,31 @@ class CFile(Helper):
         parts = []
         app = parts.append
         app('/* Prototypes for python type creation */')
-        for module in self.defs['modules']:
-            for ctype in module['types']:
-                app('static PyObject *%s (%s *ctype, PyTypeObject *type);' % (
-                        prototypename(ctype['name']),
-                        ctype['cname']))
+        for ctype in self.module['types']:
+            app('static PyObject *%s (%s *ctype, PyTypeObject *type);' % (
+                    prototypename(ctype['name']),
+                    ctype['cname']))
         app('')
-        return '\n'.join(parts)
-
-    def capi(self):
-        parts = []
-        defs = []
-        app = parts.append
-        for module in self.defs['modules']:
-            for ctype in module['types']:
-                defs.append('  &%s' % pytypename(ctype['name']))
-                defs.append('  %s' % prototypename(ctype['name']))
-        app(TEMPLATE_C_CAPI % self.uctx({
-                    'definitions': ',\n'.join(defs),
-                    }))
         return '\n'.join(parts)
 
     def newfuncs(self):
         parts = []
         app = parts.append
-        for module in self.defs['modules']:
-            for ctype in module['types']:
-                app(TEMPLATE_C_NEWFUNC % {
-                        'proto': prototypename(ctype['name']),
-                        'pyname': pyname(ctype['name']),
-                        'cname': ctype['cname'],
-                        })
+        for ctype in self.module['types']:
+            app(TEMPLATE_C_NEWFUNC % {
+                    'proto': prototypename(ctype['name']),
+                    'pyname': pyname(ctype['name']),
+                    'cname': ctype['cname'],
+                    })
+        return '\n'.join(parts)
+
+    def types(self):
+        parts = []
+        app = parts.append
+        app('/* Defining types to forward using. */')
+        for ctype in self.module['types']:
+            app('static PyTypeObject %s;' % pytypename(ctype['name']))
+        app('')
         return '\n'.join(parts)
 
     def constructor(self, ctype):
@@ -891,8 +915,16 @@ class CFile(Helper):
             tp_new = '%s_new' % cpyname
             tp_members = '%s_members' % cpyname
 
+        mname = self.module['name']
+        name = ctype['name']
+        msize = len(mname)
+        if len(name) > msize:
+            pymodname = name[msize:]
+        else:
+            pymodname = name
+
         return TEMPLATE_C_TYPE % {
-            'name': ctype['name'],
+            'name': '%s.%s.%s' % (self.lib, mname, pymodname),
             'pyname': pyname(ctype['name']),
             'type': pytypename(ctype['name']),
             'tp_flags': ' | ' .join(tp_flags),
@@ -903,64 +935,104 @@ class CFile(Helper):
             'tp_members': tp_members,
             }
 
+    def methods(self):
+        parts = []
+        app = parts.append
+        for ctype in self.module['types']:
+            app(self.constructor(ctype))
+            for method in ctype['methods']:
+                app(self.method(ctype, method))
+            app(self.destructor(ctype))
+            app(self.method_defs(ctype))
+            app(self.cgc(ctype))
+            app(self.pytype(ctype))
+        return '\n'.join(parts)
+
     def enums(self, module):
         enums = []
         for enum in module['enums']:
-            enums.append('  /* %s */' % enum['name'])
             for entry in enum['entries']:
                 enums.append('  PyModule_AddIntConstant (m, "%s", %s);' % (
                         entry, entry))
         return '\n'.join(enums)
 
+    def capi(self):
+        parts = []
+        defs = []
+        app = parts.append
+        for ctype in self.module['types']:
+                defs.append('  &%s' % pytypename(ctype['name']))
+                defs.append('  %s' % prototypename(ctype['name']))
+        app(TEMPLATE_C_CAPI % self.uctx({
+                    'definitions': ',\n'.join(defs),
+                    }))
+        return '\n'.join(parts)
+
     def modinit(self):
         ctypes = []
-        enums = []
-        for module in self.defs['modules']:
-            if module['enums']:
-                enums.append(self.enums(module))
-            for ctype in module['types']:
-                ctypes.append(TEMPLATE_C_MODULE_INIT % {
-                        'name': ctype['name'],
-                        'pytype': pytypename(ctype['name'])
-                        })
+        module = self.module
+        mname  = module['name']
+        msize = len(mname)
+        args = (mname, mname)
 
-        return TEMPLATE_C_MODULE_INITFUNC % {
-            'mname': self.lib,
-            'modules': '\n'.join(ctypes),
-            'enums': '\n'.join(enums),
-            'doc': self.defs.get('doc', ''),
-            }
+        for ctype in module['types']:
+            name = ctype['name']
+            if len(name) > msize:
+                pymodname = name[msize:]
+            else:
+                pymodname = name
+            ctypes.append(TEMPLATE_C_MODULE_INIT % {
+                    'mname': module['name'].lower(),
+                    'name': pymodname,
+                    'pytype': pytypename(ctype['name'])
+                    })
 
-    def methods(self):
-        parts = []
-        app = parts.append
-        for module in self.defs['modules']:
-            for ctype in module['types']:
-                app(self.constructor(ctype))
-                for method in ctype['methods']:
-                    app(self.method(ctype, method))
-                app(self.destructor(ctype))
-                app(self.method_defs(ctype))
-                app(self.cgc(ctype))
-                app(self.pytype(ctype))
-        return '\n'.join(parts)
+        imports = []
+        for dep in LOCALDEP_MAP.get(module['name'], []):
+            imports.append('  Py%s_IMPORT;' % dep.capitalize())
+        return TEMPLATE_C_MODULE_INITFUNC % self.uctx({
+                'imports': '\n'.join(imports),
+                'enums': self.enums(module),
+                'modules': '\n'.join(ctypes),
+                'doc': module.get('doc', ''),
+                })
 
     def __str__(self):
         parts = []
         parts.append(self.header())
         parts.append(self.macros())
-        parts.append(self.types())
         parts.append(self.prototypes())
-        parts.append(self.capi())
         parts.append(self.newfuncs())
+        parts.append(self.types())
         parts.append(self.methods())
+        parts.append(self.capi())
         parts.append(self.modinit())
+        return '\n'.join(parts)
+
+class HFile(Helper):
+
+    def __str__(self):
+        parts = []
+        #parts.append(self.header())
+        #parts.append(self.capi())
+        for module in self.defs['modules']:
+            parts.append(str(Header(self.defs, module)))
+        #parts.append(self.footer())
+        return '\n'.join(parts)
+
+class CFile(Helper):
+
+    def __str__(self):
+        parts = []
+        for module in self.defs['modules']:
+            parts.append(str(Module(self.defs, module)))
         return '\n'.join(parts)
 
 def main(args):
     defs = simplejson.loads(open(args[1]).read())
-    open('%smodule.h' % defs['name'], 'w').write(str(HFile(defs)))
-    open('%smodule.c' % defs['name'], 'w').write(str(CFile(defs)))
+    for module in defs['modules']:
+        open('%smodule.h' % module['name'], 'w').write(str(Header(defs, module)))
+        open('%smodule.c' % module['name'], 'w').write(str(Module(defs, module)))
 
 if __name__ == '__main__':
     main(sys.argv)

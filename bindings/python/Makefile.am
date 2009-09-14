@@ -1,14 +1,91 @@
 DEFSDIR = $(top_srcdir)/bindings/defs
 DEFSFILE = $(DEFSDIR)/$(PACKAGE).json
 
-pyexecdir = $(pythondir)
-pyexec_LTLIBRARIES = taningia.la
+pyexecdir = $(pythondir)/taningia
+pyexec_LTLIBRARIES = atom.la error.la filter.la iri.la log.la pubsub.la xmpp.la
+pyexec_SCRIPTS = __init__.py
 
-taningia_la_SOURCES = \
-	taningiamodule.c \
-	taningiamodule.h
+atom_la_SOURCES = \
+	atommodule.c \
+	atommodule.h
 
-taningiamodule.c:
+atom_la_CFLAGS = \
+	-DPyAtom_BUILD_CORE \
+	-DPyFilter_BUILD_CORE \
+	-DPyLog_BUILD_CORE \
+	-DPyPubsub_BUILD_CORE \
+	-DPyXmpp_BUILD_CORE
+
+error_la_SOURCES = \
+	errormodule.c \
+	errormodule.h
+
+error_la_CFLAGS = \
+	-DPyAtom_BUILD_CORE \
+	-DPyError_BUILD_CORE \
+	-DPyFilter_BUILD_CORE \
+	-DPyIri_BUILD_CORE \
+	-DPyLog_BUILD_CORE \
+	-DPyPubsub_BUILD_CORE \
+	-DPyXmpp_BUILD_CORE
+
+filter_la_SOURCES = \
+	filtermodule.c \
+	filtermodule.h
+
+filter_la_CFLAGS = \
+	-DPyAtom_BUILD_CORE \
+	-DPyFilter_BUILD_CORE \
+	-DPyIri_BUILD_CORE \
+	-DPyPubsub_BUILD_CORE \
+	-DPyXmpp_BUILD_CORE
+
+iri_la_SOURCES = \
+	irimodule.c \
+	irimodule.h
+
+iri_la_CFLAGS = \
+	-DPyAtom_BUILD_CORE \
+	-DPyFilter_BUILD_CORE \
+	-DPyIri_BUILD_CORE \
+	-DPyLog_BUILD_CORE \
+	-DPyPubsub_BUILD_CORE \
+	-DPyXmpp_BUILD_CORE
+
+log_la_SOURCES = \
+	logmodule.c \
+	logmodule.h
+
+log_la_CFLAGS = \
+	-DPyAtom_BUILD_CORE \
+	-DPyFilter_BUILD_CORE \
+	-DPyIri_BUILD_CORE \
+	-DPyLog_BUILD_CORE \
+	-DPyPubsub_BUILD_CORE \
+	-DPyXmpp_BUILD_CORE
+
+pubsub_la_SOURCES = \
+	pubsubmodule.c \
+	pubsubmodule.h
+
+pubsub_la_CFLAGS = \
+	-DPyAtom_BUILD_CORE \
+	-DPyFilter_BUILD_CORE \
+	-DPyIri_BUILD_CORE \
+	-DPyPubsub_BUILD_CORE \
+	-DPyXmpp_BUILD_CORE
+
+xmpp_la_SOURCES = \
+	xmppmodule.c \
+	xmppmodule.h
+
+xmpp_la_CFLAGS = \
+	-DPyAtom_BUILD_CORE \
+	-DPyIri_BUILD_CORE \
+	-DPyPubsub_BUILD_CORE \
+	-DPyXmpp_BUILD_CORE
+
+%module.c:
 	PYTHONPATH=$(DEFSDIR) $(PYTHON) writer.py $(DEFSFILE)
 
 AM_CPPFLAGS = \
@@ -16,8 +93,7 @@ AM_CPPFLAGS = \
 	$(IKSEMEL_CFLAGS) \
 	$(PYTHON_CFLAGS) \
 	$(PYIKSEMEL_CFLAGS) \
-	-I$(top_srcdir)/include \
-	-DPyTaningiaBUILD_CORE
+	-I$(top_srcdir)/include
 
 AM_LDFLAGS = \
 	-module -avoid-version \
@@ -27,6 +103,20 @@ AM_LDFLAGS = \
 	$(PYIKSEMEL_LIBS) \
 	$(top_builddir)/src/libtaningia.la
 
-EXTRA_DIST = $(taningia_la_SOURCES) writer.py overrides.py
+EXTRA_DIST = writer.py overrides.py \
+	$(atom_la_SOURCES) \
+	$(error_la_SOURCES) \
+	$(filter_la_SOURCES) \
+	$(iri_la_SOURCES) \
+	$(log_la_SOURCES) \
+	$(pubsub_la_SOURCES) \
+	$(xmpp_la_SOURCES)
 
-CLEANFILES = $(taningia_la_SOURCES)
+CLEANFILES = \
+	$(atom_la_SOURCES) \
+	$(error_la_SOURCES) \
+	$(filter_la_SOURCES) \
+	$(iri_la_SOURCES) \
+	$(log_la_SOURCES) \
+	$(pubsub_la_SOURCES) \
+	$(xmpp_la_SOURCES)

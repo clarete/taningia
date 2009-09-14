@@ -1,5 +1,7 @@
 General
 
+ * Use TError objects in all places that errors should be set.
+
  * Write functions to parse pubsub answers.
 
  * Write tests.
@@ -19,7 +21,7 @@ Python bindings
 
  * Fix memmory leaks
 
- * Divide library modules in separated python modules.
+ * Raise exceptions based on TError handling.
 
  * Handle varargs parameters.
 
