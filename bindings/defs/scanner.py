@@ -52,6 +52,10 @@ def clear_params(params):
     params = params.replace('\n', '')
     eparams = params.split(',')
 
+    # Handling unique void param
+    if len(eparams) == 1 and eparams[0] == 'void':
+        return []
+
     # Params dict has the following fields: name, type and
     # modifiers. These `modifiers' are empty macros declared after the
     # param name to give some more info about the parameter. The

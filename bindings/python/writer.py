@@ -179,7 +179,8 @@ TEMPLATE_C_DESTRUCTOR = '''static void
 TEMPLATE_C_METHOD = '''static PyObject *
 %(pyname)s_%(name)s (%(pyname)s *self, PyObject *args)
 {
-  %(rtype)s ret;%(params)s
+  %(rtype)s ret;
+%(params)s
   ret = %(cname)s (%(param_names)s);
   return %(ret)s;
 }
@@ -575,7 +576,8 @@ class Module(Helper):
         tests = []
 
         # We don't need to parse the `self' parameter
-        if params[0]['type'] in (obj['cname'], '%s *' % obj['cname']):
+        if params and params[0]['type'] in \
+                (obj['cname'], '%s *' % obj['cname']):
             params = params[1:]
 
         if params:
@@ -654,13 +656,16 @@ class Module(Helper):
 
         # Calling python api function that parse arguments from the
         # args list.
+        pnames = ''
         if svars:
-            app('  if (!PyArg_ParseTuple (args, "%s", %s))' % (
-                    types, ', '.join(svars)))
-            if method['name'] == 'new': # Handling constructor
-                app('    return -1;')
-            else:
-                app('    return NULL;')
+            pnames = ', ' + ', '.join(svars)
+
+        app('  if (!PyArg_ParseTuple (args, "%s"%s))' % (
+                types, pnames))
+        if method['name'] == 'new': # Handling constructor
+            app('    return -1;')
+        else:
+            app('    return NULL;')
 
         # Testing for known type parameters
         for pname, name in tests:
@@ -682,7 +687,8 @@ class Module(Helper):
     def parse_arg_names(self, obj, method):
         params = method['params']
         newparams = []
-        if params[0]['type'] in (obj['cname'], '%s *' % obj['cname']):
+        if params and params[0]['type'] in \
+                (obj['cname'], '%s *' % obj['cname']):
             newparams.append('self->inner')
             params = params[1:]
 
