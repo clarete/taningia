@@ -604,10 +604,11 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
       printf ("No id\n");
       return 0;
     }
-  eid = t_iri_new (id);
-  if (!eid)
+  eid = t_iri_new ();
+  if (!t_iri_set_from_string (eid, id))
     {
       printf ("Invalid id iri\n");
+      t_iri_free (eid);
       return 0;
     }
   title = iks_find_cdata (ik, "title");
@@ -679,10 +680,11 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
       if (src)
         {
           TIri *srci;
-          srci = t_iri_new (src);
-          if (!srci)
+          srci = t_iri_new ();
+          if (!t_iri_set_from_string (srci, src))
             {
               printf ("Invalid iri in content src attribute");
+              t_iri_free (srci);
               t_atom_content_free (ct);
               return 0;
             }
@@ -712,14 +714,14 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
             }
           email = iks_find_cdata (child, "email");
           uri = iks_find_cdata (child, "uri");
-          if (uri)
-            iri = t_iri_new (uri);
+          iri = t_iri_new ();
 
           /* Like above, specification denies invalid iris in an atom
            * person. */
-          if (uri && !iri)
+          if (uri && !t_iri_set_from_string (iri, uri))
             {
               printf ("Author with an invalid iri in uri field\n");
+              t_iri_free (iri);
               return 0;
             }
           author = t_atom_person_new (name, email, iri);
@@ -740,10 +742,11 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
             }
           if (scheme)
             {
-              iri = t_iri_new (scheme);
-              if (!iri)
+              iri = t_iri_new ();
+              if (!t_iri_set_from_string (iri, scheme))
                 {
                   printf ("Category scheme attribute is not a valid iri");
+                  t_iri_free (iri);
                   return 0;
                 }
             }
@@ -1116,10 +1119,11 @@ t_atom_feed_set_from_file (TAtomFeed  *feed,
       printf ("No id\n");
       return 0;
     }
-  eid = t_iri_new (id);
-  if (!eid)
+  eid = t_iri_new ();
+  if (!t_iri_set_from_string (eid, id))
     {
       printf ("Invalid id iri\n");
+      t_iri_free (eid);
       return 0;
     }
   title = iks_find_cdata (ik, "title");
@@ -1160,14 +1164,16 @@ t_atom_feed_set_from_file (TAtomFeed  *feed,
             }
           email = iks_find_cdata (child, "email");
           uri = iks_find_cdata (child, "uri");
+          iri = t_iri_new ();
           if (uri)
-            iri = t_iri_new (uri);
+            t_iri_set_from_string (iri, uri);
 
           /* Like above, specification denies invalid iris in an atom
            * person. */
-          if (uri && !iri)
+          if (uri && !t_iri_set_from_string (iri, uri))
             {
               printf ("Author with an invalid iri in uri field\n");
+              t_iri_free (iri);
               return 0;
             }
           author = t_atom_person_new (name, email, iri);
@@ -1188,10 +1194,11 @@ t_atom_feed_set_from_file (TAtomFeed  *feed,
             }
           if (scheme)
             {
-              iri = t_iri_new (scheme);
-              if (!iri)
+              iri = t_iri_new ();
+              if (!t_iri_set_from_string (iri, scheme))
                 {
                   printf ("Category scheme attribute is not a valid iri");
+                  t_iri_free (iri);
                   return 0;
                 }
             }

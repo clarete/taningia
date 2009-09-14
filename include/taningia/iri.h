@@ -24,7 +24,7 @@
 
 typedef struct _TIri TIri;
 
-TIri        *t_iri_new          (const char *striri _optional_);
+TIri        *t_iri_new          (void);
 
 void         t_iri_free         (TIri *iri);
 
@@ -57,5 +57,7 @@ const char  *t_iri_get_fragment (TIri *iri);
 void         t_iri_set_fragment (TIri *iri, const char *fragment);
 
 char        *t_iri_to_string    (TIri *iri);
+
+int          t_iri_set_from_string (TIri *iri, const char *iristr);
 
 #endif /* _TANINGIA_IRI_H_ */

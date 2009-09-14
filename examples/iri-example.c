@@ -28,7 +28,7 @@ main (int argc, char **argv)
 {
   TIri *iri;
   char *iri_string;
-  iri = t_iri_new (NULL);
+  iri = t_iri_new ();
 
   t_iri_set_scheme (iri, "http");
   t_iri_set_user (iri, "lincoln");
@@ -52,8 +52,8 @@ main (int argc, char **argv)
     {
       TIri *myiri;
       char *mystr;
-      myiri = t_iri_new (argv[1]);
-      if (myiri)
+      myiri = t_iri_new ();
+      if (t_iri_set_from_string (myiri, argv[1]))
         {
           printf ("scheme:     %s\n", t_iri_get_scheme (iri));
           printf ("user:       %s\n", t_iri_get_user (iri));
@@ -69,6 +69,7 @@ main (int argc, char **argv)
               printf ("built IRI:  %s\n", mystr);
               free (mystr);
             }
+          t_iri_free (myiri);
         }
       else
         fprintf (stderr, "Invalid iri\n");

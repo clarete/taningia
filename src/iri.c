@@ -35,10 +35,8 @@ struct _TIri
   char *fragment;
 };
 
-int _t_iri_set_from_string (TIri *, const char *); /* Forward... */
-
 TIri *
-t_iri_new (const char *striri)
+t_iri_new (void)
 {
   TIri *iri;
   iri = malloc (sizeof (TIri));
@@ -49,20 +47,6 @@ t_iri_new (const char *striri)
   iri->path = NULL;
   iri->query = NULL;
   iri->fragment = NULL;
-
-  if (striri)
-    {
-      int res;
-      res = _t_iri_set_from_string (iri, striri);
-
-      /* There is something wrong with passed iri string, so if we
-       * can't parse it, we can't return incomplete or wrong data */
-      if (res == 0)
-        {
-          free (iri);
-          return NULL;
-        }
-    }
   return iri;
 }
 
@@ -288,7 +272,8 @@ t_iri_to_string (TIri *iri)
 }
 
 int
-_t_iri_set_from_string (TIri *iri, const char *string)
+t_iri_set_from_string (TIri *iri, const char *string)
+
 {
   const char *p, *ihier_part, *query, *fragment;
   char c;
