@@ -24,7 +24,7 @@
 
 typedef struct _TError TError;
 
-TError      *t_error_new          (const char *domain_name);
+TError      *t_error_new          (void);
 
 void         t_error_free         (TError *error);
 
@@ -32,8 +32,15 @@ int          t_error_get_code     (TError *error);
 
 void         t_error_set_code     (TError *error, int code);
 
+const char  *t_error_get_name     (TError *error);
+
+void         t_error_set_name     (TError *error, const char *name);
+
 const char  *t_error_get_message  (TError *error);
 
 void         t_error_set_message  (TError *error, const char *message, ...);
+
+void         t_error_set_full     (TError *error, int code, const char *name,
+                                   const char *message, ...);
 
 #endif /* _TANINGIA_ERROR_H_ */

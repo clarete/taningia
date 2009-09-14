@@ -22,6 +22,7 @@
 #include <string.h>             /* strcmp() */
 #include <assert.h>             /* assert() */
 #include <taningia/iri.h>
+#include <taningia/error.h>
 
 int
 main (int argc, char **argv)
@@ -72,7 +73,13 @@ main (int argc, char **argv)
           t_iri_free (myiri);
         }
       else
-        fprintf (stderr, "Invalid iri\n");
+        {
+          TError *error;
+          error = t_iri_get_error (myiri);
+          fprintf (stderr, "%s: %s\n",
+                   t_error_get_name (error),
+                   t_error_get_message (error));
+        }
     }
   return 0;
 }

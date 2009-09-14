@@ -19,7 +19,6 @@
 
 #define _GNU_SOURCE
 #define _XOPEN_SOURCE       /* glibc 2.0 needs this to use strptime */
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -27,6 +26,7 @@
 #include <glib.h>               /* to g_time_val_to_iso8601 */
 #include <taningia/atom.h>
 #include <taningia/iri.h>
+#include <taningia/error.h>
 
 struct _TAtomLink
 {
@@ -71,6 +71,7 @@ struct _TAtomEntry
   GPtrArray    *links;
   char         *summary;
   TAtomContent *content;
+  TError       *error;
 };
 
 struct _TAtomFeed
@@ -82,6 +83,7 @@ struct _TAtomFeed
   GPtrArray    *categories;
   GPtrArray    *entries;
   GPtrArray    *links;
+  TError       *error;
 };
 
 /* Forward prototypes */
@@ -569,6 +571,7 @@ t_atom_entry_new (const char *title)
   entry->links = NULL;
   entry->summary = NULL;
   entry->content = NULL;
+  entry->error = NULL;
   return entry;
 }
 
@@ -579,7 +582,24 @@ t_atom_entry_set_from_file (TAtomEntry *entry,
   iks *ik;
   int err;
   if ((err = iks_load (fname, &ik)) != IKS_OK)
-    return 0;
+    {
+      if (entry->error)
+        t_error_free (entry->error);
+      entry->error = t_error_new ();
+      switch (err)
+        {
+        case IKS_NOMEM:
+          t_error_set_full (entry->error, ATOM_LOAD_ERROR, "LoadError",
+                            "Not enough memory to load file");
+        case IKS_BADXML:
+          t_error_set_full (entry->error, ATOM_LOAD_ERROR, "LoadError",
+                            "Unable to parse xml file");
+        default:
+          t_error_set_full (entry->error, ATOM_LOAD_ERROR, "LoadError",
+                            "Unknown error");
+        }
+      return 0;
+    }
   return t_atom_entry_set_from_iks (entry, ik);
 }
 
@@ -595,26 +615,42 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
       !iks_has_children (ik))
     {
       iks_delete (ik);
-      printf ("Wrong root entry element\n");
+      if (entry->error)
+        t_error_free (entry->error);
+      entry->error = t_error_new ();
+      t_error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
+                        "Wrong root entry element");
       return 0;
     }
   id = iks_find_cdata (ik, "id");
   if (!id)
     {
-      printf ("No id\n");
+      if (entry->error)
+        t_error_free (entry->error);
+      entry->error = t_error_new ();
+      t_error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
+                        "No <id> element found");
       return 0;
     }
   eid = t_iri_new ();
   if (!t_iri_set_from_string (eid, id))
     {
-      printf ("Invalid id iri\n");
+      if (entry->error)
+        t_error_free (entry->error);
+      entry->error = t_error_new ();
+      t_error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
+                        "Invalid <id> iri");
       t_iri_free (eid);
       return 0;
     }
   title = iks_find_cdata (ik, "title");
   if (!title)
     {
-      printf ("No title\n");
+      if (entry->error)
+        t_error_free (entry->error);
+      entry->error = t_error_new ();
+      t_error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
+                        "No <title> element found");
       return 0;
     }
 
@@ -657,7 +693,12 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
       scontent = iks_cdata (iks_child (content));
       if (!type)
         {
-          printf ("No type attribute specified for content");
+          if (entry->error)
+            t_error_free (entry->error);
+          entry->error = t_error_new ();
+          t_error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
+                            "No \"type\" attribute specified for content "
+                            "element");
           return 0;
         }
 
@@ -665,13 +706,21 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
        * attribute */
       if (src && scontent)
         {
-          printf ("Invalid content, it has src "
-                  "attribute and content is filled\n");
+          if (entry->error)
+            t_error_free (entry->error);
+          entry->error = t_error_new ();
+          t_error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
+                            "Invalid content, it has the src attribute set "
+                            "and content tag is filled");
           return 0;
         }
       if (!src && !scontent)
         {
-          printf ("No src attribute or content in content tag");
+          if (entry->error)
+            t_error_free (entry->error);
+          entry->error = t_error_new ();
+          t_error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
+                            "No src attribute or content in content tag");
           return 0;
         }
       if (scontent)
@@ -683,7 +732,11 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
           srci = t_iri_new ();
           if (!t_iri_set_from_string (srci, src))
             {
-              printf ("Invalid iri in content src attribute");
+              if (entry->error)
+                t_error_free (entry->error);
+              entry->error = t_error_new ();
+              t_error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
+                                "Invalid iri in content src attribute");
               t_iri_free (srci);
               t_atom_content_free (ct);
               return 0;
@@ -709,18 +762,26 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
            * have a name. */
           if (!name)
             {
-              printf ("Author with no name\n");
+              if (entry->error)
+                t_error_free (entry->error);
+              entry->error = t_error_new ();
+              t_error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
+                                "Author with no name");
               return 0;
             }
           email = iks_find_cdata (child, "email");
           uri = iks_find_cdata (child, "uri");
           iri = t_iri_new ();
 
-          /* Like above, specification denies invalid iris in an atom
-           * person. */
+          /* Like above, specification denies invalid iris in an uri
+           * of a person object. */
           if (uri && !t_iri_set_from_string (iri, uri))
             {
-              printf ("Author with an invalid iri in uri field\n");
+              if (entry->error)
+                t_error_free (entry->error);
+              entry->error = t_error_new ();
+              t_error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
+                                "Author with an invalid iri in uri field");
               t_iri_free (iri);
               return 0;
             }
@@ -737,7 +798,11 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
           scheme = iks_find_attrib (child, "scheme");
           if (!term)
             {
-              printf ("Category with no term attribute\n");
+              if (entry->error)
+                t_error_free (entry->error);
+              entry->error = t_error_new ();
+              t_error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
+                                "Category with no term attribute");
               return 0;
             }
           if (scheme)
@@ -745,7 +810,11 @@ t_atom_entry_set_from_iks (TAtomEntry *entry,
               iri = t_iri_new ();
               if (!t_iri_set_from_string (iri, scheme))
                 {
-                  printf ("Category scheme attribute is not a valid iri");
+                  if (entry->error)
+                    t_error_free (entry->error);
+                  entry->error = t_error_new ();
+                  t_error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
+                                    "Category scheme attribute is not a valid iri");
                   t_iri_free (iri);
                   return 0;
                 }
@@ -774,7 +843,15 @@ t_atom_entry_free (TAtomEntry *entry)
     free (entry->summary);
   if (entry->content)
     t_atom_content_free (entry->content);
+  if (entry->error)
+    t_error_free (entry->error);
   free (entry);
+}
+
+TError *
+t_atom_entry_get_error (TAtomEntry *entry)
+{
+  return entry->error;
 }
 
 static char *
@@ -1110,26 +1187,42 @@ t_atom_feed_set_from_file (TAtomFeed  *feed,
       !iks_has_children (ik))
     {
       iks_delete (ik);
-      printf ("Wrong root feed element\n");
+      if (feed->error)
+        t_error_free (feed->error);
+      feed->error = t_error_new ();
+      t_error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
+                        "Wrong root feed element");
       return 0;
     }
   id = iks_find_cdata (ik, "id");
   if (!id)
     {
-      printf ("No id\n");
+      if (feed->error)
+        t_error_free (feed->error);
+      feed->error = t_error_new ();
+      t_error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
+                        "No <id> element found");
       return 0;
     }
   eid = t_iri_new ();
   if (!t_iri_set_from_string (eid, id))
     {
-      printf ("Invalid id iri\n");
+      if (feed->error)
+        t_error_free (feed->error);
+      feed->error = t_error_new ();
+      t_error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
+                        "Invalid <id> iri");
       t_iri_free (eid);
       return 0;
     }
   title = iks_find_cdata (ik, "title");
   if (!title)
     {
-      printf ("No title\n");
+      if (feed->error)
+        t_error_free (feed->error);
+      feed->error = t_error_new ();
+      t_error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
+                        "No <title> element found");
       return 0;
     }
 
@@ -1159,7 +1252,11 @@ t_atom_feed_set_from_file (TAtomFeed  *feed,
            * have a name. */
           if (!name)
             {
-              printf ("Author with no name\n");
+              if (feed->error)
+                t_error_free (feed->error);
+              feed->error = t_error_new ();
+              t_error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
+                                "Author with no name");
               return 0;
             }
           email = iks_find_cdata (child, "email");
@@ -1172,7 +1269,11 @@ t_atom_feed_set_from_file (TAtomFeed  *feed,
            * person. */
           if (uri && !t_iri_set_from_string (iri, uri))
             {
-              printf ("Author with an invalid iri in uri field\n");
+              if (feed->error)
+                t_error_free (feed->error);
+              feed->error = t_error_new ();
+              t_error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
+                                "Author with an invalid iri in uri field");
               t_iri_free (iri);
               return 0;
             }
@@ -1189,7 +1290,11 @@ t_atom_feed_set_from_file (TAtomFeed  *feed,
           scheme = iks_find_attrib (child, "scheme");
           if (!term)
             {
-              printf ("Category with no term attribute\n");
+              if (feed->error)
+                t_error_free (feed->error);
+              feed->error = t_error_new ();
+              t_error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
+                                "Category with no term attribute");
               return 0;
             }
           if (scheme)
@@ -1197,7 +1302,11 @@ t_atom_feed_set_from_file (TAtomFeed  *feed,
               iri = t_iri_new ();
               if (!t_iri_set_from_string (iri, scheme))
                 {
-                  printf ("Category scheme attribute is not a valid iri");
+                  if (feed->error)
+                    t_error_free (feed->error);
+                  feed->error = t_error_new ();
+                  t_error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
+                                    "Category scheme attribute is not a valid iri");
                   t_iri_free (iri);
                   return 0;
                 }
@@ -1222,7 +1331,15 @@ t_atom_feed_free (TAtomFeed *feed)
     t_atom_feed_del_categories (feed);
   if (feed->entries)
     t_atom_feed_del_entries (feed);
+  if (feed->error)
+    t_error_free (feed->error);
   free (feed);
+}
+
+TError *
+t_atom_feed_get_error (TAtomFeed *feed)
+{
+  return feed->error;
 }
 
 iks *

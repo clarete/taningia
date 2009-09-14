@@ -206,9 +206,10 @@ t_xmpp_send (TXmpp *ctx, iks *node)
           t_error_free (ctx->error);
           ctx->error = NULL;
         }
-      ctx->error = t_error_new ("xmpp");
+      ctx->error = t_error_new ();
+      t_error_set_name (ctx->error, "NetworkError");
       t_error_set_message (ctx->error,
-                           "Failed to send package through theclient");
+                           "Failed to send package through the client");
       t_error_set_code (ctx->error, err);
     }
   return err;
@@ -234,7 +235,8 @@ t_xmpp_run (TXmpp *ctx)
           t_error_free (ctx->error);
           ctx->error = NULL;
         }
-      ctx->error = t_error_new ("xmpp");
+      ctx->error = t_error_new ();
+      t_error_set_name (ctx->error, "ConnectionError");
       t_error_set_message (ctx->error,
                            "Unable to connect to: %s:%d",
                            ctx->host, ctx->port);
@@ -502,7 +504,8 @@ _t_xmpp_hook (void *data, int type, iks *node)
               t_error_free (ctx->error);
               ctx->error = NULL;
             }
-          ctx->error = t_error_new ("xmpp");
+          ctx->error = t_error_new ();
+          t_error_set_name (ctx->error, "UnknownHost");
           t_error_set_message (ctx->error,
                                "Unknown host, aborting main loop");
           t_error_set_code (ctx->error, 1);

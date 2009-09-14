@@ -24,6 +24,7 @@
 #include <iksemel.h>
 #include <taningia/taningia.h>
 #include <taningia/iri.h>
+#include <taningia/error.h>
 
 #define J_ATOM_NS "http://www.w3.org/2005/Atom"
 
@@ -33,6 +34,12 @@ typedef struct _TAtomCategory TAtomCategory;
 typedef struct _TAtomPerson   TAtomPerson;
 typedef struct _TAtomContent  TAtomContent;
 typedef struct _TAtomLink     TAtomLink;
+
+typedef enum
+{
+  ATOM_LOAD_ERROR,
+  ATOM_PARSING_ERROR
+} TAtomError;
 
 /* TAtomLink */
 
@@ -123,6 +130,9 @@ int                 t_atom_entry_set_from_file     (TAtomEntry       *entry,
                                                     const char       *fname);
 int                 t_atom_entry_set_from_iks      (TAtomEntry       *entry,
                                                     iks              *ik);
+
+TError             *t_atom_entry_get_error         (TAtomEntry       *entry);
+
 void                t_atom_entry_free              (TAtomEntry       *entry);
 iks                *t_atom_entry_to_iks            (TAtomEntry       *entry);
 char               *t_atom_entry_to_string         (TAtomEntry       *entry);
@@ -181,6 +191,8 @@ iks                *t_atom_feed_to_iks             (TAtomFeed        *feed);
 char               *t_atom_feed_to_string          (TAtomFeed        *feed);
 int                 t_atom_feed_to_file            (TAtomFeed        *feed,
                                                     const char       *fname);
+
+TError             *t_atom_feed_get_error          (TAtomFeed        *feed);
 
 const char         *t_atom_feed_get_title          (TAtomFeed        *feed);
 void                t_atom_feed_set_title          (TAtomFeed        *feed,

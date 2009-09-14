@@ -23,6 +23,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <taningia/iri.h>
+#include <taningia/error.h>
 
 struct _TIri
 {
@@ -33,6 +34,7 @@ struct _TIri
   char *path;
   char *query;
   char *fragment;
+  TError *error;
 };
 
 TIri *
@@ -47,6 +49,7 @@ t_iri_new (void)
   iri->path = NULL;
   iri->query = NULL;
   iri->fragment = NULL;
+  iri->error = NULL;
   return iri;
 }
 
@@ -61,7 +64,15 @@ t_iri_free (TIri *iri)
     free (iri->host);
   if (iri->path)
     free (iri->path);
+  if (iri->error)
+    t_error_free (iri->error);
   free (iri);
+}
+
+TError *
+t_iri_get_error (TIri *iri)
+{
+  return iri->error;
 }
 
 const char *
@@ -288,7 +299,14 @@ t_iri_set_from_string (TIri *iri, const char *string)
   p = string;
 
   if (!isalpha(p[0]))
-    return 0;
+    {
+      if (iri->error)
+        t_error_free (iri->error);
+      iri->error = t_error_new ();
+      t_error_set_full (iri->error, IRI_PARSING_ERROR, "ParsingError",
+                        "Schema should start with an alpha char");
+      return 0;
+    }
 
   /* Getting "scheme" part */
   while (1)
@@ -300,7 +318,14 @@ t_iri_set_from_string (TIri *iri, const char *string)
        * a-Z0-9+.- chars*/
       if (!isalnum (c) &&
           !(c == '-' || c == '+' || c == '.'))
-        return 0;
+        {
+          if (iri->error)
+            t_error_free (iri->error);
+          iri->error = t_error_new ();
+          t_error_set_full (iri->error, IRI_PARSING_ERROR, "ParsingError",
+                            "Schema should only have the following chars: [a-Z][0-9][-+.]");
+          return 0;
+        }
       c = *p++;
     }
   size = p - string;
@@ -385,7 +410,14 @@ t_iri_set_from_string (TIri *iri, const char *string)
            * to pass us a port to parse. If no digit is found, there
            * is something wrong, so we can abort parsing the IRI. */
           if (port_len == 0)
-            return 0;
+            {
+              if (iri->error)
+                t_error_free (iri->error);
+              iri->error = t_error_new ();
+              t_error_set_full (iri->error, IRI_PARSING_ERROR, "ParsingError",
+                                "Invalid port number");
+              return 0;
+            }
 
           port_str = strndup (port+1, port_len);
           port_str[port_len] = '\0';
@@ -404,7 +436,15 @@ t_iri_set_from_string (TIri *iri, const char *string)
        *
        */
       if (path && path[0] != '/')
-        return 0;
+        {
+          if (iri->error)
+            t_error_free (iri->error);
+          iri->error = t_error_new ();
+          t_error_set_full (iri->error, IRI_PARSING_ERROR, "ParsingError",
+                            "Path should start with a '/' since authority "
+                            "section was filled");
+          return 0;
+        }
       if (path)
         {
           const char *pathp;

@@ -21,8 +21,14 @@
 #define _TANINGIA_IRI_H_
 
 #include <taningia/taningia.h>
+#include <taningia/error.h>
 
 typedef struct _TIri TIri;
+
+typedef enum
+{
+  IRI_PARSING_ERROR
+} TIriError;
 
 TIri        *t_iri_new          (void);
 
@@ -57,6 +63,8 @@ const char  *t_iri_get_fragment (TIri *iri);
 void         t_iri_set_fragment (TIri *iri, const char *fragment);
 
 char        *t_iri_to_string    (TIri *iri);
+
+TError      *t_iri_get_error    (TIri *iri);
 
 int          t_iri_set_from_string (TIri *iri, const char *iristr);
 
