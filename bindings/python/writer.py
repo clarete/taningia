@@ -728,10 +728,11 @@ class Module(Helper):
 
         # Looking in our registered types for an already known one
         for i in self.alltypes:
-            if rtype == i + ' *':
-                bval = 'ret ? Py_BuildValue ("O", %s (ret)) : ' \
+            known = False
+            if rtype in (i + ' *', 'const ' + i + '*'):
+                bval = 'ret ? Py_BuildValue ("O", %s ((%s *) ret)) : ' \
                        'Py_BuildValue ("O", Py_None)' % \
-                    macroname(self.name_from_cname(i))
+                    (macroname(self.name_from_cname(i)), i)
 
         # Now is the time to look in our enum registry.
         for i in self.allenums:
