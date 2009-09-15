@@ -54,7 +54,7 @@ main (int argc, char **argv)
 
   /* As explained in the `handler' function declaration, this is the
    * way for attaching a handler callback in the log object. */
-  t_log_set_handler (log, (TLogHandlerFunc) handler, (void *)argc);
+  t_log_set_handler (log, (TLogHandlerFunc) handler, &argc);
 
   /* Default log level is TLOG_CRITICAL | TLOG_ERROR | TLOG_WARN, to
    * receive info and debug messages I'll just extend the flag
