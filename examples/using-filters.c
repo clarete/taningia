@@ -48,7 +48,7 @@ callback (void *p1, void *p2, void *p3)
 int
 main (int argc, char **argv)
 {
-  TXmpp *xmpp;
+  TXmppClient *xmpp;
   TLog *logger;
   TFilter *filter;
   const char *jid, *passwd, *host;
@@ -67,18 +67,18 @@ main (int argc, char **argv)
   /* To initialize a client, you can pass the jid, password, host and
    * port number. Host can be NULL, in this case the domain part of
    * jid will be used. And if port is 0, it will default to 5222 */
-  xmpp = t_xmpp_new (jid, passwd, host, 5222);
+  xmpp = t_xmpp_client_new (jid, passwd, host, 5222);
 
   /* You can access and configure log object attached to the brand new
    * xmpp client instance. To know more about the log object, look at
    * the `log-system.c' example */
-  logger = t_xmpp_get_logger (xmpp);
+  logger = t_xmpp_client_get_logger (xmpp);
   t_log_set_level (logger, t_log_get_level (logger) | TLOG_INFO | TLOG_DEBUG);
   t_log_set_use_colors (logger, 1);
 
   /* Connecting to the the server and detaching the main loop
    * thread. */
-  if (t_xmpp_run (xmpp) != IKS_OK)
+  if (t_xmpp_client_run (xmpp) != IKS_OK)
     {
       fprintf (stderr, "Unable to run client\n");
       return 1;
@@ -89,7 +89,7 @@ main (int argc, char **argv)
    * answers, use the "ids" filter, otherwise use the "events" filter.
    * In this example, we'll listen to a stanza type based answer, so
    * let's move on: */
-  filter = t_xmpp_get_filter_events (xmpp);
+  filter = t_xmpp_client_get_filter_events (xmpp);
 
   /* After getting the filter, add your handler with the name that you
    * want to listent to and a callback to process the answer. So, in
@@ -100,6 +100,6 @@ main (int argc, char **argv)
   sleep (10);
 
   /* Cleaning up things */
-  t_xmpp_free (xmpp);
+  t_xmpp_client_free (xmpp);
   return 0;
 }

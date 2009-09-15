@@ -27,7 +27,7 @@
 #include <taningia/filter.h>
 #include <taningia/log.h>
 
-struct _TXmpp {
+struct _TXmppClient {
   iksparser *parser;
   iksid *id;
   char *jid;
@@ -43,12 +43,12 @@ struct _TXmpp {
 
 /* Prototypes of some local functions */
 
-static int      _t_xmpp_hook       (void *data, int type, iks *node);
+static int      _t_xmpp_client_hook       (void *data, int type, iks *node);
 
-static void    *_t_xmpp_do_run     (void *user_data);
+static void    *_t_xmpp_client_do_run     (void *user_data);
 
 static void
-_t_xmpp_log_hook (void *user_data, const char *data, size_t size, int is_incoming)
+_t_xmpp_client_log_hook (void *user_data, const char *data, size_t size, int is_incoming)
 {
   /* fprintf (stderr, "%s %s\n", is_incoming ? "[in]" : "[out]", data); */
 }
@@ -57,17 +57,17 @@ _t_xmpp_log_hook (void *user_data, const char *data, size_t size, int is_incomin
  * Allocate memory and initialize stuff necessary to create a new
  * XmppContext.
  */
-TXmpp *
-t_xmpp_new (const char *jid,
+TXmppClient *
+t_xmpp_client_new (const char *jid,
             const char *password,
             const char *host,
             int         port)
 {
-  TXmpp *ctx;
-  ctx = malloc (sizeof (TXmpp));
+  TXmppClient *ctx;
+  ctx = malloc (sizeof (TXmppClient));
   ctx->jid = strdup (jid);
   ctx->password = strdup (password);
-  ctx->parser = iks_stream_new (IKS_NS_CLIENT, ctx, _t_xmpp_hook);
+  ctx->parser = iks_stream_new (IKS_NS_CLIENT, ctx, _t_xmpp_client_hook);
   ctx->id = iks_id_new (iks_parser_stack (ctx->parser), ctx->jid);
   ctx->events = t_filter_new (ctx);
   ctx->ids = t_filter_new (ctx);
@@ -89,7 +89,7 @@ t_xmpp_new (const char *jid,
 
   /* Useful for debugging */
 
-  iks_set_log_hook (ctx->parser, _t_xmpp_log_hook);
+  iks_set_log_hook (ctx->parser, _t_xmpp_client_log_hook);
   return ctx;
 }
 
@@ -97,7 +97,7 @@ t_xmpp_new (const char *jid,
  * Free the memory used by a XmppContext struct.
  */
 void
-t_xmpp_free (TXmpp *ctx)
+t_xmpp_client_free (TXmppClient *ctx)
 {
   free (ctx->jid);
   free (ctx->password);
@@ -111,13 +111,13 @@ t_xmpp_free (TXmpp *ctx)
 }
 
 const char *
-t_xmpp_get_jid (TXmpp *ctx)
+t_xmpp_client_get_jid (TXmppClient *ctx)
 {
   return ctx->jid;
 }
 
 void
-t_xmpp_set_jid (TXmpp *ctx, const char *jid)
+t_xmpp_client_set_jid (TXmppClient *ctx, const char *jid)
 {
   if (ctx->jid)
     free (ctx->jid);
@@ -125,13 +125,13 @@ t_xmpp_set_jid (TXmpp *ctx, const char *jid)
 }
 
 const char *
-t_xmpp_get_password (TXmpp *ctx)
+t_xmpp_client_get_password (TXmppClient *ctx)
 {
   return ctx->password;
 }
 
 void
-t_xmpp_set_password (TXmpp *ctx, const char *password)
+t_xmpp_client_set_password (TXmppClient *ctx, const char *password)
 {
   if (ctx->password)
     free (ctx->password);
@@ -139,13 +139,13 @@ t_xmpp_set_password (TXmpp *ctx, const char *password)
 }
 
 const char *
-t_xmpp_get_host (TXmpp *ctx)
+t_xmpp_client_get_host (TXmppClient *ctx)
 {
   return ctx->host;
 }
 
 void
-t_xmpp_set_host (TXmpp *ctx, const char *host)
+t_xmpp_client_set_host (TXmppClient *ctx, const char *host)
 {
   if (ctx->host)
     free (ctx->host);
@@ -153,54 +153,54 @@ t_xmpp_set_host (TXmpp *ctx, const char *host)
 }
 
 int
-t_xmpp_get_port (TXmpp *ctx)
+t_xmpp_client_get_port (TXmppClient *ctx)
 {
   return ctx->port;
 }
 
 void
-t_xmpp_set_port (TXmpp *ctx, int port)
+t_xmpp_client_set_port (TXmppClient *ctx, int port)
 {
   ctx->port = port;
 }
 
 TFilter *
-t_xmpp_get_filter_events (TXmpp *ctx)
+t_xmpp_client_get_filter_events (TXmppClient *ctx)
 {
   return ctx->events;
 }
 
 TFilter *
-t_xmpp_get_filter_ids (TXmpp *ctx)
+t_xmpp_client_get_filter_ids (TXmppClient *ctx)
 {
   return ctx->ids;
 }
 
 TLog *
-t_xmpp_get_logger (TXmpp *ctx)
+t_xmpp_client_get_logger (TXmppClient *ctx)
 {
   return ctx->log;
 }
 
 TError *
-t_xmpp_get_error (TXmpp *ctx)
+t_xmpp_client_get_error (TXmppClient *ctx)
 {
   return ctx->error;
 }
 
 int
-t_xmpp_is_running (TXmpp *ctx)
+t_xmpp_client_is_running (TXmppClient *ctx)
 {
   return ctx->running;
 }
 
 int
-t_xmpp_send (TXmpp *ctx, iks *node)
+t_xmpp_client_send (TXmppClient *ctx, iks *node)
 {
   int err;
   if ((err = iks_send (ctx->parser, node)) != IKS_OK)
     {
-      t_log_warn (ctx->log, "Fail to send packet through t_xmpp_send");
+      t_log_warn (ctx->log, "Fail to send packet through t_xmpp_client_send");
       if (ctx->error)
         {
           t_error_free (ctx->error);
@@ -220,7 +220,7 @@ t_xmpp_send (TXmpp *ctx, iks *node)
  * thread. To avoid problems with our loved GMainLoop used by soup.
  */
 int
-t_xmpp_run (TXmpp *ctx)
+t_xmpp_client_run (TXmppClient *ctx)
 {
   int err;
   pthread_t th;
@@ -250,7 +250,7 @@ t_xmpp_run (TXmpp *ctx)
   ctx->running = 1;
 
   /* Detaching our main loop thread */
-  pthread_create (&th, NULL, _t_xmpp_do_run, (void *) ctx);
+  pthread_create (&th, NULL, _t_xmpp_client_do_run, (void *) ctx);
   pthread_detach (th);
   t_log_info (ctx->log, "Detaching the main loop thread");
 
@@ -258,7 +258,7 @@ t_xmpp_run (TXmpp *ctx)
 }
 
 void
-t_xmpp_stop (TXmpp *ctx)
+t_xmpp_client_stop (TXmppClient *ctx)
 {
   iks_disconnect (ctx->parser);
   ctx->running = 0;
@@ -266,10 +266,10 @@ t_xmpp_stop (TXmpp *ctx)
 }
 
 int
-t_xmpp_reconnect (TXmpp *ctx)
+t_xmpp_client_reconnect (TXmppClient *ctx)
 {
-  t_xmpp_stop (ctx);
-  return t_xmpp_run (ctx);
+  t_xmpp_client_stop (ctx);
+  return t_xmpp_client_run (ctx);
 }
 
 /* Static (local) functions. A very special thanks to Thadeu
@@ -355,7 +355,7 @@ xmpp_id_hook (iksparser *parser, iks *node, char *id)
 }
 
 static int
-xmpp_features_hook (TXmpp *ctx, iks *node)
+xmpp_features_hook (TXmppClient *ctx, iks *node)
 {
   iks *feat;
   char *ns;
@@ -408,7 +408,7 @@ xmpp_features_hook (TXmpp *ctx, iks *node)
 }
 
 int
-xmpp_other_hook (TXmpp *ctx, iks *node, char *ns)
+xmpp_other_hook (TXmppClient *ctx, iks *node, char *ns)
 {
   if (!iks_strcmp (ns, IKS_NS_XMPP_SASL))
     {
@@ -422,15 +422,15 @@ xmpp_other_hook (TXmpp *ctx, iks *node, char *ns)
 }
 
 static int
-_t_xmpp_hook (void *data, int type, iks *node)
+_t_xmpp_client_hook (void *data, int type, iks *node)
 {
   char *name;
   char *id;
   char *ns;
   iksparser *parser;
-  TXmpp *ctx;
+  TXmppClient *ctx;
 
-  ctx = (TXmpp *) data;
+  ctx = (TXmppClient *) data;
   parser = ctx->parser;
   name = iks_name (node);
   id = iks_find_attrib (node, "id");
@@ -498,7 +498,7 @@ _t_xmpp_hook (void *data, int type, iks *node)
        * we'll never get anything without connecting to the host. */
       if (!iks_strcmp (inner_name, "host-unknown"))
         {
-          t_xmpp_stop (ctx);
+          t_xmpp_client_stop (ctx);
           if (ctx->error)
             {
               t_error_free (ctx->error);
@@ -528,10 +528,10 @@ _t_xmpp_hook (void *data, int type, iks *node)
 
 /* The main loop of our xmpp client. */
 static void *
-_t_xmpp_do_run (void *user_data)
+_t_xmpp_client_do_run (void *user_data)
 {
   int err;
-  TXmpp *ctx = (TXmpp *) user_data;
+  TXmppClient *ctx = (TXmppClient *) user_data;
 
   while (ctx->running)
     {

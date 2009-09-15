@@ -26,52 +26,52 @@
 #include <taningia/log.h>
 #include <taningia/error.h>
 
-typedef struct _TXmpp TXmpp;
+typedef struct _TXmppClient TXmppClient;
 
-TXmpp             *t_xmpp_new                      (const char          *jid,
-                                                    const char          *password,
-                                                    const char          *host _optional_,
-                                                    int                  port _optional_);
+TXmppClient       *t_xmpp_client_new                  (const char       *jid,
+                                                       const char       *password,
+                                                       const char       *host _optional_,
+                                                       int               port _optional_);
  
-void               t_xmpp_free                     (TXmpp               *ctx);
- 
-const char        *t_xmpp_get_jid                  (TXmpp               *ctx);
+void               t_xmpp_client_free                 (TXmppClient      *ctx);
 
-void               t_xmpp_set_jid                  (TXmpp               *ctx,
-                                                    const char          *jid);
+const char        *t_xmpp_client_get_jid              (TXmppClient      *ctx);
 
-const char        *t_xmpp_get_password             (TXmpp               *ctx);
+void               t_xmpp_client_set_jid              (TXmppClient      *ctx,
+                                                       const char       *jid);
 
-void               t_xmpp_set_password             (TXmpp               *ctx,
-                                                    const char          *password);
+const char        *t_xmpp_client_get_password         (TXmppClient      *ctx);
 
-const char        *t_xmpp_get_host                 (TXmpp               *ctx);
+void               t_xmpp_client_set_password         (TXmppClient      *ctx,
+                                                       const char       *password);
 
-void               t_xmpp_set_host                 (TXmpp               *ctx,
-                                                    const char          *host);
+const char        *t_xmpp_client_get_host             (TXmppClient      *ctx);
 
-int                t_xmpp_get_port                 (TXmpp               *ctx);
+void               t_xmpp_client_set_host             (TXmppClient      *ctx,
+                                                       const char       *host);
 
-void               t_xmpp_set_port                 (TXmpp               *ctx,
-                                                    int                  port);
+int                t_xmpp_client_get_port              (TXmppClient     *ctx);
 
-TFilter           *t_xmpp_get_filter_events        (TXmpp               *ctx);
+void               t_xmpp_client_set_port              (TXmppClient     *ctx,
+                                                        int              port);
 
-TFilter           *t_xmpp_get_filter_ids           (TXmpp               *ctx);
+TFilter           *t_xmpp_client_get_filter_events     (TXmppClient     *ctx);
 
-TLog              *t_xmpp_get_logger               (TXmpp               *ctx);
+TFilter           *t_xmpp_client_get_filter_ids        (TXmppClient     *ctx);
 
-TError            *t_xmpp_get_error                (TXmpp               *ctx);
+TLog              *t_xmpp_client_get_logger            (TXmppClient     *ctx);
 
-int                t_xmpp_send                     (TXmpp               *ctx,
-                                                    iks                 *node);
+TError            *t_xmpp_client_get_error             (TXmppClient     *ctx);
 
-int                t_xmpp_run                      (TXmpp               *ctx);
+int                t_xmpp_client_send                  (TXmppClient     *ctx,
+                                                        iks             *node);
 
-void               t_xmpp_stop                     (TXmpp               *ctx);
+int                t_xmpp_client_run                   (TXmppClient     *ctx);
 
-int                t_xmpp_reconnect                (TXmpp               *ctx);
+void               t_xmpp_client_stop                  (TXmppClient     *ctx);
 
-int                t_xmpp_is_running               (TXmpp               *ctx);
+int                t_xmpp_client_reconnect             (TXmppClient     *ctx);
 
-#endif /* _TANINGIA_XMPP_H_ */
+int                t_xmpp_client_is_running            (TXmppClient     *ctx);
+
+#endif /* _TANINGIA_XMPP_CLIENT_H_ */
