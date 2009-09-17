@@ -1,4 +1,4 @@
-noinst_PROGRAMS = xmpp-client log-system using-filters iri-example
+noinst_PROGRAMS = xmpp-client log-system using-filters iri-example atom-example
 
 xmpp_client_SOURCES = xmpp-client.c
 xmpp_client_CFLAGS = -I$(top_srcdir)/include
@@ -15,3 +15,7 @@ using_filters_LDFLAGS = $(top_builddir)/src/libtaningia.la
 iri_example_SOURCES = iri-example.c
 iri_example_CFLAGS = -I$(top_srcdir)/include
 iri_example_LDFLAGS = $(top_builddir)/src/libtaningia.la
+
+atom_example_SOURCES = atom-example.c
+atom_example_CFLAGS = -I$(top_srcdir)/include
+atom_example_LDFLAGS = $(top_builddir)/src/libtaningia.la
