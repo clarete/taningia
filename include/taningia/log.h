@@ -36,43 +36,43 @@ typedef int *(*ta_log_handler_func_t) (ta_log_t *, ta_log_level_t, const char *,
 
 /**
  * @name: ta_log_new
- * @type: constructor log
+ * @type: constructor ta_log
  */
 ta_log_t *ta_log_new (const char *domain_name);
 
 /**
  * @name: ta_log_free
- * @type: destructor log
+ * @type: destructor ta_log
  */
 void ta_log_free (ta_log_t *log);
 
 /**
  * @name: ta_log_set_use_colors
- * @type: setter log:use_colors
+ * @type: setter ta_log:use_colors
  */
 void ta_log_set_use_colors (ta_log_t *log, int use_colors);
 
 /**
  * @name: ta_log_get_use_colors
- * @type: getter log:use_colors
+ * @type: getter ta_log:use_colors
  */
 int ta_log_get_use_colors (ta_log_t *log);
 
 /**
  * @name: ta_log_set_level
- * @type: setter log:level
+ * @type: setter ta_log:level
  */
 void ta_log_set_level (ta_log_t *log, ta_log_level_t level);
 
 /**
  * @name: ta_log_get_level
- * @type: getter log:level
+ * @type: getter ta_log:level
  */
 ta_log_level_t ta_log_get_level (ta_log_t *log);
 
 /**
  * @name: ta_log_set_handler
- * @type: method log
+ * @type: method ta_log
  * @param handler: The handler function
  * @param user_data: Parameter to be passed to the handler function
  *
@@ -83,7 +83,7 @@ void ta_log_set_handler (ta_log_t *log, ta_log_handler_func_t handler, void *use
 
 /**
  * @name: ta_log_info
- * @type: method log
+ * @type: method ta_log
  *
  * Log an info message.
  */
@@ -91,7 +91,7 @@ void ta_log_info (ta_log_t *log, const char *fmt, ...);
 
 /**
  * @name: ta_log_warn
- * @type: method log
+ * @type: method ta_log
  *
  * Log a warning.
  */
@@ -99,7 +99,7 @@ void ta_log_warn (ta_log_t *log, const char *fmt, ...);
 
 /**
  * @name: ta_log_debug
- * @type: method log
+ * @type: method ta_log
  *
  * Log a debug message.
  */
@@ -107,7 +107,7 @@ void ta_log_debug (ta_log_t *log, const char *fmt, ...);
 
 /**
  * @name: ta_log_error
- * @type: method log
+ * @type: method ta_log
  *
  * Log an error message.
  */
@@ -115,7 +115,7 @@ void ta_log_error (ta_log_t *log, const char *fmt, ...);
 
 /**
  * @name: ta_log_critical
- * @type: method log
+ * @type: method ta_log
  *
  * Log a critical message.
  */

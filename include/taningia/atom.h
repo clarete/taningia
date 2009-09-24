@@ -66,7 +66,7 @@ void ta_atom_simple_element_free (ta_atom_simple_element_t *see);
 iks *ta_atom_simple_element_to_iks (ta_atom_simple_element_t *see);
 
 /**
- * @name: ta_atom_simple_element_to_iks
+ * @name: ta_atom_simple_element_to_string
  * @type: method ta_atom_simple_element
  *
  * Returns a string representation of a simple element.
@@ -360,7 +360,7 @@ void ta_atom_person_del_see (ta_atom_person_t *person);
  * Gets all simple extension elements associated with a person
  * instance.
  **/
-ta_list_t *t_ta_atom_person_get_see (ta_atom_person_t *person);
+ta_list_t *ta_atom_person_get_see (ta_atom_person_t *person);
 
 /* -- Ta_Atom Category -- */
 
@@ -674,7 +674,7 @@ void ta_atom_entry_del_links (ta_atom_entry_t *entry);
 ta_list_t *ta_atom_entry_get_see (ta_atom_entry_t *entry);
 
 /**
- * @name: ta_atom_entry_add_simple element
+ * @name: ta_atom_entry_add_see
  * @type: method ta_atom_entry
  * @param element: The element instance to be added.
  *
@@ -699,7 +699,7 @@ void ta_atom_entry_del_see (ta_atom_entry_t *entry);
  * @type: constructor ta_atom_feed
  * @param title (optional): The feed title
  */
-ta_atom_feed_t *ta_atom_feed_new (const char *title _optional_);
+ta_atom_feed_t *ta_atom_feed_new (const char *title);
 
 /**
  * @name: ta_atom_feed_free
