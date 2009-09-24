@@ -88,8 +88,7 @@ const char *xmpp_client_get_host (xmpp_client_t *ctx);
  * @name: xmpp_client_set_host
  * @type: setter xmpp_client:host
  */
-void xmpp_client_set_host (xmpp_client_t *ctx,
-                           const char *host);
+void xmpp_client_set_host (xmpp_client_t *ctx, const char *host);
 
 /**
  * @name: xmpp_client_get_port
