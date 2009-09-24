@@ -27,7 +27,7 @@
 #include <taningia/error.h>
 #include <taningia/list.h>
 
-#define J_ATOM_NS "http://www.w3.org/2005/Atom"
+#define ATOM_NS "http://www.w3.org/2005/Atom"
 
 typedef struct _atom_feed_t         atom_feed_t;
 typedef struct _atom_entry_t        atom_entry_t;

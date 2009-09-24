@@ -1002,7 +1002,7 @@ atom_entry_to_iks (atom_entry_t *entry)
   id_iri = iri_to_string (entry->id);
 
   ik = iks_new ("entry");
-  iks_insert_attrib (ik, "xmlns", J_ATOM_NS);
+  iks_insert_attrib (ik, "xmlns", ATOM_NS);
   iks_insert_cdata (iks_insert (ik, "id"), id_iri, 0);
   iks_insert_cdata (iks_insert (ik, "title"), entry->title, 0);
   iks_insert_cdata (iks_insert (ik, "updated"), updated, 0);
@@ -1458,7 +1458,7 @@ atom_feed_to_iks (atom_feed_t *feed)
   id_iri = iri_to_string (feed->id);
 
   ik = iks_new ("feed");
-  iks_insert_attrib (ik, "xmlns", J_ATOM_NS);
+  iks_insert_attrib (ik, "xmlns", ATOM_NS);
   iks_insert_cdata (iks_insert (ik, "id"), id_iri, 0);
   iks_insert_cdata (iks_insert (ik, "title"), feed->title, 0);
   iks_insert_cdata (iks_insert (ik, "updated"), updated, 0);
