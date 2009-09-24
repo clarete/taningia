@@ -24,7 +24,6 @@
 #include <iksemel.h>
 
 #include <taningia/xmpp.h>
-#include <taningia/filter.h>
 #include <taningia/log.h>
 
 struct _xmpp_client_t {
@@ -197,7 +196,7 @@ xmpp_client_set_port (xmpp_client_t *client, int port)
 }
 
 log_t *
-xmpp_client_gelogger (xmpp_client_t *client)
+xmpp_client_get_logger (xmpp_client_t *client)
 {
   return client->log;
 }

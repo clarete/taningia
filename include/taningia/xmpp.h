@@ -22,7 +22,6 @@
 
 #include <iksemel.h>
 #include <taningia/taningia.h>
-#include <taningia/filter.h>
 #include <taningia/log.h>
 #include <taningia/error.h>
 

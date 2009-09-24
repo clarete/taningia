@@ -21,7 +21,7 @@
 #include <taningia/log.h>
 
 /* You can attach an arbitrary code to the log system by setting a
- * callback to a log object by calling `t_log_set_handler'. As we can
+ * callback to a log object by calling `log_set_handler'. As we can
  * see, the callback receives the log instance, the level that the
  * message is being fired, the (already formatted) message and a user
  * parameter.
@@ -30,7 +30,7 @@
  * *NOT* be called.
  */
 int
-handler (TLog *log, TLogLevel level, const char *msg, void *user_data)
+handler (log_t *log, log_level_t level, const char *msg, void *user_data)
 {
   printf ("Calling handler callback\n");
 
@@ -42,33 +42,33 @@ handler (TLog *log, TLogLevel level, const char *msg, void *user_data)
 int
 main (int argc, char **argv)
 {
-  TLog *log;
+  log_t *log;
 
   /* All log instances must have a name. It will be useful when we
    * implement such a global log manager. It will provide a way for
    * retrieving an already registered logger. */
-  log = t_log_new ("blah");
+  log = log_new ("blah");
 
   /* Enabling colored outupt that is disabled by default. */
-  t_log_set_use_colors (log, 1);
+  log_set_use_colors (log, 1);
 
   /* As explained in the `handler' function declaration, this is the
    * way for attaching a handler callback in the log object. */
-  t_log_set_handler (log, (TLogHandlerFunc) handler, &argc);
+  log_set_handler (log, (log_handler_func_t) handler, &argc);
 
-  /* Default log level is TLOG_CRITICAL | TLOG_ERROR | TLOG_WARN, to
+  /* Default log level is LOG_CRITICAL | LOG_ERROR | LOG_WARN, to
    * receive info and debug messages I'll just extend the flag
    * field */
-  t_log_set_level (log, t_log_get_level (log) | TLOG_INFO | TLOG_DEBUG);
+  log_set_level (log, log_get_level (log) | LOG_INFO | LOG_DEBUG);
 
   /* Now, the messages... */
-  t_log_info (log, "Testing, 1, %d, %d, testing", 2, 3);
-  t_log_warn (log, "This is a warning message");
-  t_log_debug (log, "Hey, I'm a debug message");
-  t_log_critical (log, "hello there, I'm a critical message");
-  t_log_error (log, "Humm, something got screwd... I'm an error message");
+  log_info (log, "Testing, 1, %d, %d, testing", 2, 3);
+  log_warn (log, "This is a warning message");
+  log_debug (log, "Hey, I'm a debug message");
+  log_critical (log, "hello there, I'm a critical message");
+  log_error (log, "Humm, something got screwd... I'm an error message");
 
   /* Cleaning our log object */
-  t_log_free (log);
+  log_free (log);
   return 0;
 }
