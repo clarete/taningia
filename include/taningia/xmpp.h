@@ -25,17 +25,16 @@
 #include <taningia/log.h>
 #include <taningia/error.h>
 
-typedef enum
-{
+typedef enum {
   XMPP_CONNECTION_ERROR,
   XMPP_SEND_ERROR
-} xmpp_error_t;
+} ta_xmpp_error_t;
 
-typedef struct _xmpp_client_t xmpp_client_t;
+typedef struct _ta_xmpp_client_t ta_xmpp_client_t;
 
 /**
- * @name: xmpp_client_new
- * @type: constructor xmpp_client
+ * @name: ta_xmpp_client_new
+ * @type: constructor ta_xmpp_client
  * @param jid: XMPP jid to be used in the client connection.
  * @param password: Password of the jid.
  * @param host (optional): Host to connect to.
@@ -45,138 +44,138 @@ typedef struct _xmpp_client_t xmpp_client_t;
  * will be extracted from the jid. If port is ommited, the default
  * XMPP port (5222) will be used.
  */
-xmpp_client_t *xmpp_client_new (const char *jid, const char *password,
-                                const char *host, int port);
+ta_xmpp_client_t *ta_xmpp_client_new (const char *jid, const char *password,
+                                      const char *host, int port);
 
 /**
- * @name: xmpp_client_free
- * @type: destructor xmpp_client
+ * @name: ta_xmpp_client_free
+ * @type: destructor ta_xmpp_client
  */
-void xmpp_client_free (xmpp_client_t *ctx);
+void ta_xmpp_client_free (ta_xmpp_client_t *ctx);
 
 /**
- * @name: xmpp_client_get_jid
- * @type: getter xmpp_client:jid
+ * @name: ta_xmpp_client_get_jid
+ * @type: getter ta_xmpp_client:jid
  */
-const char *xmpp_client_get_jid (xmpp_client_t *ctx);
+const char *ta_xmpp_client_get_jid (ta_xmpp_client_t *ctx);
 
 /**
- * @name: xmpp_client_set_jid
- * @type: setter xmpp_client:jid
+ * @name: ta_xmpp_client_set_jid
+ * @type: setter ta_xmpp_client:jid
  */
-void xmpp_client_set_jid (xmpp_client_t *ctx, const char *jid);
+void ta_xmpp_client_set_jid (ta_xmpp_client_t *ctx, const char *jid);
 
 /**
- * @name: xmpp_client_get_password
- * @type: getter xmpp_client:password
+ * @name: ta_xmpp_client_get_password
+ * @type: getter ta_xmpp_client:password
  */
-const char *xmpp_client_get_password (xmpp_client_t *ctx);
+const char *ta_xmpp_client_get_password (ta_xmpp_client_t *ctx);
 
 /**
- * @name: xmpp_client_set_password
- * @type: setter xmpp_client:password
+ * @name: ta_xmpp_client_set_password
+ * @type: setter ta_xmpp_client:password
  */
-void xmpp_client_set_password (xmpp_client_t *ctx, const char *password);
+void ta_xmpp_client_set_password (ta_xmpp_client_t *ctx, const char *password);
 
 /**
- * @name: xmpp_client_get_host
- * @type: getter xmpp_client:host
+ * @name: ta_xmpp_client_get_host
+ * @type: getter ta_xmpp_client:host
  */
-const char *xmpp_client_get_host (xmpp_client_t *ctx);
+const char *ta_xmpp_client_get_host (ta_xmpp_client_t *ctx);
 
 /**
- * @name: xmpp_client_set_host
- * @type: setter xmpp_client:host
+ * @name: ta_xmpp_client_set_host
+ * @type: setter ta_xmpp_client:host
  */
-void xmpp_client_set_host (xmpp_client_t *ctx, const char *host);
+void ta_xmpp_client_set_host (ta_xmpp_client_t *ctx, const char *host);
 
 /**
- * @name: xmpp_client_get_port
- * @type: getter xmpp_client:port
+ * @name: ta_xmpp_client_get_port
+ * @type: getter ta_xmpp_client:port
  */
-int xmpp_client_get_port (xmpp_client_t *ctx);
+int ta_xmpp_client_get_port (ta_xmpp_client_t *ctx);
 
 /**
- * @name: xmpp_client_set_port
- * @type: setter xmpp_client:port
+ * @name: ta_xmpp_client_set_port
+ * @type: setter ta_xmpp_client:port
  */
-void xmpp_client_set_port (xmpp_client_t *ctx, int port);
+void ta_xmpp_client_set_port (ta_xmpp_client_t *ctx, int port);
 
 /**
- * @name: xmpp_client_get_logger
- * @type: getter xmpp_client:log
+ * @name: ta_xmpp_client_get_logger
+ * @type: getter ta_xmpp_client:log
  */
-log_t *xmpp_client_get_logger (xmpp_client_t *ctx);
+ta_log_t *ta_xmpp_client_get_logger (ta_xmpp_client_t *ctx);
 
 /**
- * @name: xmpp_client_get_error
- * @type: getter xmpp_client:error
+ * @name: ta_xmpp_client_get_error
+ * @type: getter ta_xmpp_client:error
  */
-error_t *xmpp_client_get_error (xmpp_client_t *ctx);
+ta_error_t *ta_xmpp_client_get_error (ta_xmpp_client_t *ctx);
 
 /**
- * @name: xmpp_client_get_filter
- * @type: getter xmpp_client:filter
+ * @name: ta_xmpp_client_get_filter
+ * @type: getter ta_xmpp_client:filter
  */
-iksfilter *xmpp_client_get_filter (xmpp_client_t *client);
+iksfilter *ta_xmpp_client_get_filter (ta_xmpp_client_t *client);
 
 /**
- * @name: xmpp_client_connect
- * @type: method xmpp_client
+ * @name: ta_xmpp_client_connect
+ * @type: method ta_xmpp_client
  * @raise: XMPP_CONNECTION_ERROR
  *
  * Connects the client to the host and port specified in the
  * constructor.
  */
-int xmpp_client_connect (xmpp_client_t *client);
+int ta_xmpp_client_connect (ta_xmpp_client_t *client);
 
 /**
- * @name: xmpp_client_disconnect
- * @type: method xmpp_client
+ * @name: ta_xmpp_client_disconnect
+ * @type: method ta_xmpp_client
  *
  * Disconnects the client from the host.
  */
-void xmpp_client_disconnect (xmpp_client_t *ctx);
+void ta_xmpp_client_disconnect (ta_xmpp_client_t *ctx);
 
 /**
- * @name: xmpp_client_send
- * @type: method xmpp_client
+ * @name: ta_xmpp_client_send
+ * @type: method ta_xmpp_client
  * @param node: The iks node to be sent to the XMPP server.
  *
  * Sends iks nodes to the XMPP server. Only call this function after
  * making sure that client is running properly. To do it, use the
- * `xmpp_client_is_running' function.
+ * `ta_xmpp_client_is_running' function.
  */
-int xmpp_client_send (xmpp_client_t *ctx, iks *node);
+int ta_xmpp_client_send (ta_xmpp_client_t *ctx, iks *node);
 
 /**
- * @name: xmpp_client_run
- * @type: method xmpp_client
+ * @name: ta_xmpp_client_run
+ * @type: method ta_xmpp_client
  * @param detach: Define if client's main loop will run in a separated
  * thread.
  *
  * Starts the client main loop. If `detach' is true, returns
  * -1. Otherwise returns the error code of the package read function.
  */
-int xmpp_client_run (xmpp_client_t *ctx, int detach);
+int ta_xmpp_client_run (ta_xmpp_client_t *ctx, int detach);
 
 /**
- * @name: xmpp_client_is_running
- * @type: method xmpp_client
+ * @name: ta_xmpp_client_is_running
+ * @type: method ta_xmpp_client
  * @return: bool
  *
  * Returns the state of the XMPP client, if it is running or not.
  */
-int xmpp_client_is_running (xmpp_client_t *ctx);
+int ta_xmpp_client_is_running (ta_xmpp_client_t *ctx);
 
 /* Filter callbacks */
 
-void xmpp_client_set_auth_success_cb (xmpp_client_t *client,
-                                      iksFilterHook *cb,
-                                      void *user_data);
+void ta_xmpp_client_set_auth_success_cb (ta_xmpp_client_t *client,
+                                         iksFilterHook *cb,
+                                         void *user_data);
 
-void xmpp_client_set_auth_failure_cb (xmpp_client_t *client,
-                                      iksFilterHook *cb,
-                                      void *user_data);
+void ta_xmpp_client_set_auth_failure_cb (ta_xmpp_client_t *client,
+                                         iksFilterHook *cb,
+                                         void *user_data);
 
-#endif /* _TANINGIA_XMPP_CLIENT_H_ */
+#endif /* _TANINGIA_XMPP_H_ */

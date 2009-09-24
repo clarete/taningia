@@ -23,18 +23,18 @@
 #include <string.h>
 #include <taningia/error.h>
 
-struct _error_t
+struct _ta_error_t
 {
   char *name;
   char *message;
   int code;
 };
 
-error_t *
-error_new (void)
+ta_error_t *
+ta_error_new (void)
 {
-  error_t *error;
-  error = malloc (sizeof (error_t));
+  ta_error_t *error;
+  error = malloc (sizeof (ta_error_t));
   error->name = NULL;
   error->message = NULL;
   error->code = 0;
@@ -42,7 +42,7 @@ error_new (void)
 }
 
 void
-error_free (error_t *error)
+ta_error_free (ta_error_t *error)
 {
   if (error->name)
     free (error->name);
@@ -52,25 +52,25 @@ error_free (error_t *error)
 }
 
 int
-error_get_code (error_t *error)
+ta_error_get_code (ta_error_t *error)
 {
   return error->code;
 }
 
 void
-error_set_code (error_t *error, int code)
+ta_error_set_code (ta_error_t *error, int code)
 {
   error->code = code;
 }
 
 const char *
-error_get_name (error_t *error)
+ta_error_get_name (ta_error_t *error)
 {
   return error->name;
 }
 
 void
-error_set_name (error_t *error, const char *name)
+ta_error_set_name (ta_error_t *error, const char *name)
 {
   if (error->name)
     free (error->name);
@@ -78,13 +78,13 @@ error_set_name (error_t *error, const char *name)
 }
 
 const char *
-error_get_message (error_t *error)
+ta_error_get_message (ta_error_t *error)
 {
   return error->message;
 }
 
 void
-error_set_message (error_t *error, const char *fmt, ...)
+ta_error_set_message (ta_error_t *error, const char *fmt, ...)
 {
   int n, size = 50;
   char *msg, *np;
@@ -119,15 +119,15 @@ error_set_message (error_t *error, const char *fmt, ...)
 }
 
 void
-error_set_full (error_t *error, int code, const char *name,
-                const char *fmt, ...)
+ta_error_set_full (ta_error_t *error, int code, const char *name,
+                   const char *fmt, ...)
 {
   int n, size = 50;
   char *msg, *np;
   va_list argp;
 
-  error_set_code (error, code);
-  error_set_name (error, name);
+  ta_error_set_code (error, code);
+  ta_error_set_name (error, name);
 
   /* This part is a duplication of error_set_message because it is
    * hard to pass ... (varargs) arguments from a function to another

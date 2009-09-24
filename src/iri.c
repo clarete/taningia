@@ -25,7 +25,7 @@
 #include <taningia/iri.h>
 #include <taningia/error.h>
 
-struct _iri_t
+struct _ta_iri_t
 {
   char *scheme;
   char *user;
@@ -34,14 +34,14 @@ struct _iri_t
   char *path;
   char *query;
   char *fragment;
-  error_t *error;
+  ta_error_t *error;
 };
 
-iri_t *
-iri_new (void)
+ta_iri_t *
+ta_iri_new (void)
 {
-  iri_t *iri;
-  iri = malloc (sizeof (iri_t));
+  ta_iri_t *iri;
+  iri = malloc (sizeof (ta_iri_t));
   iri->scheme = NULL;
   iri->user = NULL;
   iri->host = NULL;
@@ -54,7 +54,7 @@ iri_new (void)
 }
 
 void
-iri_free (iri_t *iri)
+ta_iri_free (ta_iri_t *iri)
 {
   if (iri->scheme)
     free (iri->scheme);
@@ -65,24 +65,24 @@ iri_free (iri_t *iri)
   if (iri->path)
     free (iri->path);
   if (iri->error)
-    error_free (iri->error);
+    ta_error_free (iri->error);
   free (iri);
 }
 
-error_t *
-iri_get_error (iri_t *iri)
+ta_error_t *
+ta_iri_get_error (ta_iri_t *iri)
 {
   return iri->error;
 }
 
 const char *
-iri_get_scheme (iri_t *iri)
+ta_iri_get_scheme (ta_iri_t *iri)
 {
   return iri->scheme;
 }
 
 void
-iri_set_scheme (iri_t *iri, const char *scheme)
+ta_iri_set_scheme (ta_iri_t *iri, const char *scheme)
 {
   if (iri->scheme)
     free (iri->scheme);
@@ -90,13 +90,13 @@ iri_set_scheme (iri_t *iri, const char *scheme)
 }
 
 const char *
-iri_get_user (iri_t *iri)
+ta_iri_get_user (ta_iri_t *iri)
 {
   return iri->user;
 }
 
 void
-iri_set_user (iri_t *iri, const char *user)
+ta_iri_set_user (ta_iri_t *iri, const char *user)
 {
   if (iri->user)
     free (iri->user);
@@ -104,13 +104,13 @@ iri_set_user (iri_t *iri, const char *user)
 }
 
 const char *
-iri_get_host (iri_t *iri)
+ta_iri_get_host (ta_iri_t *iri)
 {
   return iri->host;
 }
 
 void
-iri_set_host (iri_t *iri, const char *host)
+ta_iri_set_host (ta_iri_t *iri, const char *host)
 {
   if (iri->host)
     free (iri->host);
@@ -118,25 +118,25 @@ iri_set_host (iri_t *iri, const char *host)
 }
 
 int
-iri_get_port (iri_t *iri)
+ta_iri_get_port (ta_iri_t *iri)
 {
   return iri->port;
 }
 
 void
-iri_set_port (iri_t *iri, int port)
+ta_iri_set_port (ta_iri_t *iri, int port)
 {
   iri->port = port;
 }
 
 const char *
-iri_get_path (iri_t *iri)
+ta_iri_get_path (ta_iri_t *iri)
 {
   return iri->path;
 }
 
 void
-iri_set_path (iri_t *iri, const char *path)
+ta_iri_set_path (ta_iri_t *iri, const char *path)
 {
   if (iri->path)
     free (iri->path);
@@ -144,13 +144,13 @@ iri_set_path (iri_t *iri, const char *path)
 }
 
 const char *
-iri_get_query (iri_t *iri)
+ta_iri_get_query (ta_iri_t *iri)
 {
   return iri->query;
 }
 
 void
-iri_set_query (iri_t *iri, const char *query)
+ta_iri_set_query (ta_iri_t *iri, const char *query)
 {
   if (iri->query)
     free (iri->query);
@@ -158,13 +158,13 @@ iri_set_query (iri_t *iri, const char *query)
 }
 
 const char *
-iri_get_fragment (iri_t *iri)
+ta_iri_get_fragment (ta_iri_t *iri)
 {
   return iri->fragment;
 }
 
 void
-iri_set_fragment (iri_t *iri, const char *fragment)
+ta_iri_set_fragment (ta_iri_t *iri, const char *fragment)
 {
   if (iri->fragment)
     free (iri->fragment);
@@ -172,7 +172,7 @@ iri_set_fragment (iri_t *iri, const char *fragment)
 }
 
 char *
-iri_to_string (iri_t *iri)
+ta_iri_to_string (ta_iri_t *iri)
 {
   size_t static_part;
   size_t scheme_size,
@@ -191,8 +191,8 @@ iri_to_string (iri_t *iri)
   scheme_size = strlen (iri->scheme);
   host_size = strlen (iri->host),
 
-  /* Calculating the size of our return var */
-  static_part = 3 + 4;          /* ://, portnumber */
+    /* Calculating the size of our return var */
+    static_part = 3 + 4;          /* ://, portnumber */
   if (iri->user)
     {
       user_size = strlen (iri->user);
@@ -283,7 +283,7 @@ iri_to_string (iri_t *iri)
 }
 
 int
-iri_set_from_string (iri_t *iri, const char *string)
+ta_iri_set_from_string (ta_iri_t *iri, const char *string)
 
 {
   const char *p, *ihier_part, *query, *fragment;
@@ -301,10 +301,10 @@ iri_set_from_string (iri_t *iri, const char *string)
   if (!isalpha(p[0]))
     {
       if (iri->error)
-        error_free (iri->error);
-      iri->error = error_new ();
-      error_set_full (iri->error, IRI_PARSING_ERROR, "ParsingError",
-                        "Schema should start with an alpha char");
+        ta_error_free (iri->error);
+      iri->error = ta_error_new ();
+      ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR, "ParsingError",
+                         "Schema should start with an alpha char");
       return 0;
     }
 
@@ -320,10 +320,10 @@ iri_set_from_string (iri_t *iri, const char *string)
           !(c == '-' || c == '+' || c == '.'))
         {
           if (iri->error)
-            error_free (iri->error);
-          iri->error = error_new ();
-          error_set_full (iri->error, IRI_PARSING_ERROR, "ParsingError",
-                            "Schema should only have the following chars: [a-Z][0-9][-+.]");
+            ta_error_free (iri->error);
+          iri->error = ta_error_new ();
+          ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR, "ParsingError",
+                             "Schema should only have the following chars: [a-Z][0-9][-+.]");
           return 0;
         }
       c = *p++;
@@ -412,10 +412,10 @@ iri_set_from_string (iri_t *iri, const char *string)
           if (port_len == 0)
             {
               if (iri->error)
-                error_free (iri->error);
-              iri->error = error_new ();
-              error_set_full (iri->error, IRI_PARSING_ERROR, "ParsingError",
-                                "Invalid port number");
+                ta_error_free (iri->error);
+              iri->error = ta_error_new ();
+              ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR, "ParsingError",
+                                 "Invalid port number");
               return 0;
             }
 
@@ -438,11 +438,11 @@ iri_set_from_string (iri_t *iri, const char *string)
       if (path && path[0] != '/')
         {
           if (iri->error)
-            error_free (iri->error);
-          iri->error = error_new ();
-          error_set_full (iri->error, IRI_PARSING_ERROR, "ParsingError",
-                            "Path should start with a '/' since authority "
-                            "section was filled");
+            ta_error_free (iri->error);
+          iri->error = ta_error_new ();
+          ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR, "ParsingError",
+                             "Path should start with a '/' since authority "
+                             "section was filled");
           return 0;
         }
       if (path)

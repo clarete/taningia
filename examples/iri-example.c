@@ -27,58 +27,58 @@
 int
 main (int argc, char **argv)
 {
-  iri_t *iri;
-  char *iri_string;
-  iri = iri_new ();
+  ta_iri_t *iri;
+  char *ta_iri_string;
+  iri = ta_iri_new ();
 
-  iri_set_scheme (iri, "http");
-  iri_set_user (iri, "lincoln");
-  iri_set_host (iri, "localhost");
-  iri_set_port (iri, 80);
-  iri_set_path (iri, "/hello/there");
+  ta_iri_set_scheme (iri, "http");
+  ta_iri_set_user (iri, "lincoln");
+  ta_iri_set_host (iri, "localhost");
+  ta_iri_set_port (iri, 80);
+  ta_iri_set_path (iri, "/hello/there");
 
-  assert (!strcmp (iri_get_scheme (iri), "http"));
-  assert (!strcmp (iri_get_user (iri), "lincoln"));
-  assert (!strcmp (iri_get_host (iri), "localhost"));
-  assert (iri_get_port (iri) == 80);
-  assert (!strcmp (iri_get_path (iri), "/hello/there"));
+  assert (!strcmp (ta_iri_get_scheme (iri), "http"));
+  assert (!strcmp (ta_iri_get_user (iri), "lincoln"));
+  assert (!strcmp (ta_iri_get_host (iri), "localhost"));
+  assert (ta_iri_get_port (iri) == 80);
+  assert (!strcmp (ta_iri_get_path (iri), "/hello/there"));
 
-  iri_string = iri_to_string (iri);
-  assert (!strcmp (iri_string,
+  ta_iri_string = ta_iri_to_string (iri);
+  assert (!strcmp (ta_iri_string,
                    "http://lincoln@localhost:80/hello/there"));
-  free (iri_string);
-  iri_free (iri);
+  free (ta_iri_string);
+  ta_iri_free (iri);
 
   if (argc == 2)
     {
-      iri_t *myiri;
+      ta_iri_t *myiri;
       char *mystr;
-      myiri = iri_new ();
-      if (iri_set_from_string (myiri, argv[1]))
+      myiri = ta_iri_new ();
+      if (ta_iri_set_from_string (myiri, argv[1]))
         {
-          printf ("scheme:     %s\n", iri_get_scheme (iri));
-          printf ("user:       %s\n", iri_get_user (iri));
-          printf ("host:       %s\n", iri_get_host (iri));
-          printf ("port:       %d\n", iri_get_port (iri));
-          printf ("path:       %s\n", iri_get_path (iri));
-          printf ("query:      %s\n", iri_get_query (iri));
-          printf ("fragment:   %s\n", iri_get_fragment (iri));
+          printf ("scheme:     %s\n", ta_iri_get_scheme (iri));
+          printf ("user:       %s\n", ta_iri_get_user (iri));
+          printf ("host:       %s\n", ta_iri_get_host (iri));
+          printf ("port:       %d\n", ta_iri_get_port (iri));
+          printf ("path:       %s\n", ta_iri_get_path (iri));
+          printf ("query:      %s\n", ta_iri_get_query (iri));
+          printf ("fragment:   %s\n", ta_iri_get_fragment (iri));
 
-          mystr = iri_to_string (myiri);
+          mystr = ta_iri_to_string (myiri);
           if (mystr)
             {
               printf ("built IRI:  %s\n", mystr);
               free (mystr);
             }
-          iri_free (myiri);
+          ta_iri_free (myiri);
         }
       else
         {
-          error_t *error;
-          error = iri_get_error (myiri);
+          ta_error_t *error;
+          error = ta_iri_get_error (myiri);
           fprintf (stderr, "%s: %s\n",
-                   error_get_name (error),
-                   error_get_message (error));
+                   ta_error_get_name (error),
+                   ta_error_get_message (error));
         }
     }
   return 0;

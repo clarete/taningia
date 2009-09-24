@@ -20,25 +20,25 @@
 #include <stdlib.h>
 #include <taningia/list.h>
 
-list_t *
-list_new (void)
+ta_list_t *
+ta_list_new (void)
 {
-  list_t *list = malloc (sizeof (list_t));
+  ta_list_t *list = malloc (sizeof (ta_list_t));
   list->prev = NULL;
   list->next = NULL;
   return list;
 }
 
 void
-list_free (list_t *list)
+ta_list_free (ta_list_t *list)
 {
-  list_t *node;
+  ta_list_t *node;
   for (node = list->next; node; node = node->next)
     free (node);
 }
 
-list_t *
-list_first (list_t *list)
+ta_list_t *
+ta_list_first (ta_list_t *list)
 {
   if (list)
     while (list->prev)
@@ -46,8 +46,8 @@ list_first (list_t *list)
   return list;
 }
 
-list_t *
-list_last (list_t *list)
+ta_list_t *
+ta_list_last (ta_list_t *list)
 {
   if (list)
     while (list->next)
@@ -56,20 +56,20 @@ list_last (list_t *list)
 }
 
 int
-list_len (list_t *list)
+ta_list_len (ta_list_t *list)
 {
-  list_t *node;
+  ta_list_t *node;
   int len = 0;
   for (node = list; node; node = node->next)
     len++;
   return len;
 }
 
-list_t *
-list_append (list_t *list, void *data)
+ta_list_t *
+ta_list_append (ta_list_t *list, void *data)
 {
-  list_t *node;
-  node = list_new ();
+  ta_list_t *node;
+  node = ta_list_new ();
 
   /* This is going to be the last one, so we have no next entry */
   node->next = NULL;
@@ -79,8 +79,8 @@ list_append (list_t *list, void *data)
     {
       /* If there something in the list, let's just set our newly
        * allocated node as the last one. */
-      list_t *last;
-      last = list_last (list);
+      ta_list_t *last;
+      last = ta_list_last (list);
       last->next = node;
       node->prev = last;
       return list;
@@ -96,9 +96,9 @@ list_append (list_t *list, void *data)
 }
 
 int
-list_count (list_t *list, void *data, list_cmp_func_t cmpfunc)
+ta_list_count (ta_list_t *list, void *data, ta_list_cmp_func_t cmpfunc)
 {
-  list_t *node;
+  ta_list_t *node;
   int count = 0;
   for (node = list; node; node = node->next)
     if ((*cmpfunc) (node->data, data) == 0)
@@ -106,13 +106,13 @@ list_count (list_t *list, void *data, list_cmp_func_t cmpfunc)
   return count;
 }
 
-list_t *
-list_extend (list_t *list, list_t *otherlist)
+ta_list_t *
+ta_list_extend (ta_list_t *list, ta_list_t *otherlist)
 {
   if (otherlist)
     {
-      list_t *last;
-      last = list_last (list);
+      ta_list_t *last;
+      last = ta_list_last (list);
       if (last)
         last->next = otherlist;
       else
@@ -123,9 +123,9 @@ list_extend (list_t *list, list_t *otherlist)
 }
 
 int
-list_index (list_t *list, void *data)
+ta_list_index (ta_list_t *list, void *data)
 {
-  list_t *node;
+  ta_list_t *node;
   int counter;
   for (node = list, counter = 0; node; node = node->next, counter++)
     if (node->data == data)
@@ -134,9 +134,9 @@ list_index (list_t *list, void *data)
 }
 
 void *
-list_item (list_t *list, int index)
+ta_list_item (ta_list_t *list, int index)
 {
-  list_t *node;
+  ta_list_t *node;
   int counter;
   for (node = list, counter = 0; node; node = node->next, counter++)
     if (index == counter)
@@ -144,15 +144,15 @@ list_item (list_t *list, int index)
   return NULL;
 }
 
-list_t *
-list_insert (list_t *list, void *data, int position)
+ta_list_t *
+ta_list_insert (ta_list_t *list, void *data, int position)
 {
-  list_t *node;
-  list_t *newnode;
+  ta_list_t *node;
+  ta_list_t *newnode;
   int counter;
   int found = 0;
 
-  newnode = list_new ();
+  newnode = ta_list_new ();
   newnode->data = data;
 
   /* inserting an element at the first position */
@@ -169,7 +169,7 @@ list_insert (list_t *list, void *data, int position)
     {
       if (counter == position)
         {
-          list_t *prev;
+          ta_list_t *prev;
           prev = node->prev;
           prev->next = newnode;
           newnode->next = node;
@@ -182,15 +182,15 @@ list_insert (list_t *list, void *data, int position)
 
   /* inserting the new element in the end of the list. */
   if (!node && !found)
-    list = list_append (list, data);
+    list = ta_list_append (list, data);
 
   return list;
 }
 
-list_t *
-list_remove (list_t *list, void *data)
+ta_list_t *
+ta_list_remove (ta_list_t *list, void *data)
 {
-  list_t *node = list;
+  ta_list_t *node = list;
   while (node)
     {
       if (node->data != data)
@@ -219,10 +219,10 @@ list_remove (list_t *list, void *data)
   return list;
 }
 
-list_t *
-list_reverse (list_t *list)
+ta_list_t *
+ta_list_reverse (ta_list_t *list)
 {
-  list_t *node = NULL;
+  ta_list_t *node = NULL;
   while (list)
     {
       node = list;

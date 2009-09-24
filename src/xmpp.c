@@ -26,7 +26,7 @@
 #include <taningia/xmpp.h>
 #include <taningia/log.h>
 
-struct _xmpp_client_t {
+struct _ta_xmpp_client_t {
   char *jid;
   char *password;
   char *host;
@@ -40,8 +40,8 @@ struct _xmpp_client_t {
   int authenticated;
   int running;
 
-  log_t *log;
-  error_t *error;
+  ta_log_t *log;
+  ta_error_t *error;
 
   iksFilterHook *on_auth_success;
   void *on_auth_success_data;
@@ -51,15 +51,15 @@ struct _xmpp_client_t {
 
 /* Prototypes of some local functions */
 
-static int _xmpp_client_hook   (void *data, int type, iks *node);
+static int _ta_xmpp_client_hook   (void *data, int type, iks *node);
 
-static int _xmpp_client_do_run (void *user_data);
+static int _ta_xmpp_client_do_run (void *user_data);
 
 #ifdef DEBUG
 
 static void
-_xmpp_clienlog_hook (xmpp_client_t *client, const char *data,
-                         size_t size, int is_incoming)
+_xmpp_clienta_log_hook (ta_xmpp_client_t *client, const char *data,
+                        size_t size, int is_incoming)
 {
   if (iks_is_secure (client->parser))
     fprintf (stderr, "[SEC:");
@@ -77,14 +77,14 @@ _xmpp_clienlog_hook (xmpp_client_t *client, const char *data,
 /* Allocate memory and initialize stuff necessary to create a new xmpp
  * Client.
  */
-xmpp_client_t *
-xmpp_client_new (const char *jid,
-                   const char *password,
-                   const char *host,
-                   int         port)
+ta_xmpp_client_t *
+ta_xmpp_client_new (const char *jid,
+                    const char *password,
+                    const char *host,
+                    int         port)
 {
-  xmpp_client_t *client;
-  client = malloc (sizeof (xmpp_client_t));
+  ta_xmpp_client_t *client;
+  client = malloc (sizeof (ta_xmpp_client_t));
   client->jid = strdup (jid);
   client->password = strdup (password);
 
@@ -94,7 +94,7 @@ xmpp_client_new (const char *jid,
   client->running = 0;
 
   /* Iksemel stuff */
-  client->parser = iks_stream_new (IKS_NS_CLIENT, client, _xmpp_client_hook);
+  client->parser = iks_stream_new (IKS_NS_CLIENT, client, _ta_xmpp_client_hook);
   client->id = iks_id_new (iks_parser_stack (client->parser), jid);
   client->filter = iks_filter_new ();
 
@@ -109,11 +109,11 @@ xmpp_client_new (const char *jid,
     client->port = IKS_JABBER_PORT;
 
   /* taningia stuff */
-  client->log = log_new ("xmpp-client");
+  client->log = ta_log_new ("xmpp-client");
   client->error = NULL;
 
 #ifdef DEBUG
-  iks_selog_hook (client->parser, (iksLogHook *) _xmpp_clienlog_hook);
+  iks_seta_log_hook (client->parser, (iksLogHook *) _xmpp_clienta_log_hook);
 #endif
 
   return client;
@@ -122,7 +122,7 @@ xmpp_client_new (const char *jid,
 /* Free the memory used by a XmppContext struct.
  */
 void
-xmpp_client_free (xmpp_client_t *client)
+ta_xmpp_client_free (ta_xmpp_client_t *client)
 {
   if (client->jid)
     free (client->jid);
@@ -135,20 +135,20 @@ xmpp_client_free (xmpp_client_t *client)
   if (client->filter)
     iks_filter_delete (client->filter);
   if (client->log)
-    log_free (client->log);
+    ta_log_free (client->log);
   if (client->error)
-    error_free (client->error);
+    ta_error_free (client->error);
   free (client);
 }
 
 const char *
-xmpp_client_get_jid (xmpp_client_t *client)
+ta_xmpp_client_get_jid (ta_xmpp_client_t *client)
 {
   return client->jid;
 }
 
 void
-xmpp_client_set_jid (xmpp_client_t *client, const char *jid)
+ta_xmpp_client_set_jid (ta_xmpp_client_t *client, const char *jid)
 {
   if (client->jid)
     free (client->jid);
@@ -156,13 +156,13 @@ xmpp_client_set_jid (xmpp_client_t *client, const char *jid)
 }
 
 const char *
-xmpp_client_get_password (xmpp_client_t *client)
+ta_xmpp_client_get_password (ta_xmpp_client_t *client)
 {
   return client->password;
 }
 
 void
-xmpp_client_set_password (xmpp_client_t *client, const char *password)
+ta_xmpp_client_set_password (ta_xmpp_client_t *client, const char *password)
 {
   if (client->password)
     free (client->password);
@@ -170,13 +170,13 @@ xmpp_client_set_password (xmpp_client_t *client, const char *password)
 }
 
 const char *
-xmpp_client_get_host (xmpp_client_t *client)
+ta_xmpp_client_get_host (ta_xmpp_client_t *client)
 {
   return client->host;
 }
 
 void
-xmpp_client_set_host (xmpp_client_t *client, const char *host)
+ta_xmpp_client_set_host (ta_xmpp_client_t *client, const char *host)
 {
   if (client->host)
     free (client->host);
@@ -184,60 +184,60 @@ xmpp_client_set_host (xmpp_client_t *client, const char *host)
 }
 
 int
-xmpp_client_get_port (xmpp_client_t *client)
+ta_xmpp_client_get_port (ta_xmpp_client_t *client)
 {
   return client->port;
 }
 
 void
-xmpp_client_set_port (xmpp_client_t *client, int port)
+ta_xmpp_client_set_port (ta_xmpp_client_t *client, int port)
 {
   client->port = port;
 }
 
-log_t *
-xmpp_client_get_logger (xmpp_client_t *client)
+ta_log_t *
+ta_xmpp_client_get_logger (ta_xmpp_client_t *client)
 {
   return client->log;
 }
 
-error_t *
-xmpp_client_get_error (xmpp_client_t *client)
+ta_error_t *
+ta_xmpp_client_get_error (ta_xmpp_client_t *client)
 {
   return client->error;
 }
 
 iksfilter *
-xmpp_client_get_filter (xmpp_client_t *client)
+ta_xmpp_client_get_filter (ta_xmpp_client_t *client)
 {
   return client->filter;
 }
 
 int
-xmpp_client_is_running (xmpp_client_t *client)
+ta_xmpp_client_is_running (ta_xmpp_client_t *client)
 {
   return client->running;
 }
 
 int
-xmpp_client_send (xmpp_client_t *client, iks *node)
+ta_xmpp_client_send (ta_xmpp_client_t *client, iks *node)
 {
   int err;
   if ((err = iks_send (client->parser, node)) != IKS_OK)
     {
-      log_warn (client->log, "Fail to send the stanza");
+      ta_log_warn (client->log, "Fail to send the stanza");
       if (client->error)
-        error_free (client->error);
-      client->error = error_new ();
-      error_set_name (client->error, "NetworkError");
-      error_set_message (client->error, "Failed to send the stanza");
-      error_set_code (client->error, XMPP_SEND_ERROR);
+        ta_error_free (client->error);
+      client->error = ta_error_new ();
+      ta_error_set_name (client->error, "NetworkError");
+      ta_error_set_message (client->error, "Failed to send the stanza");
+      ta_error_set_code (client->error, XMPP_SEND_ERROR);
     }
   return err;
 }
 
 int
-xmpp_client_connect (xmpp_client_t *client)
+ta_xmpp_client_connect (ta_xmpp_client_t *client)
 {
   int err;
   if ((err = iks_connect_via (client->parser, client->host,
@@ -247,65 +247,65 @@ xmpp_client_connect (xmpp_client_t *client)
        * the error and send some useful result to the user. */
       if (client->error)
         {
-          error_free (client->error);
+          ta_error_free (client->error);
           client->error = NULL;
         }
-      client->error = error_new ();
-      error_set_name (client->error, "ConnectionError");
-      error_set_code (client->error, XMPP_CONNECTION_ERROR);
+      client->error = ta_error_new ();
+      ta_error_set_name (client->error, "ConnectionError");
+      ta_error_set_code (client->error, XMPP_CONNECTION_ERROR);
 
       switch (err)
         {
         case IKS_NET_NODNS:
-          error_set_message (client->error, "hostname lookup failed");
+          ta_error_set_message (client->error, "hostname lookup failed");
           break;
 
         case IKS_NET_NOCONN:
-          error_set_message (client->error, "connection failed");
+          ta_error_set_message (client->error, "connection failed");
           break;
 
         default:
-          error_set_message (client->error, "io error");
+          ta_error_set_message (client->error, "io error");
           break;
         }
       return 0;
     }
   else
     {
-      log_info (client->log, "Connected to xmpp:%s:%d",
-                  client->host, client->port);
+      ta_log_info (client->log, "Connected to xmpp:%s:%d",
+                   client->host, client->port);
       return 1;
     }
 }
 
 int
-xmpp_client_run (xmpp_client_t *client, int detach)
+ta_xmpp_client_run (ta_xmpp_client_t *client, int detach)
 {
   /* Detaching our main loop thread if requested */
   if (detach)
     {
       pthread_t th;
-      pthread_create (&th, NULL, (void *) _xmpp_client_do_run, (void *) client);
+      pthread_create (&th, NULL, (void *) _ta_xmpp_client_do_run, (void *) client);
       pthread_detach (th);
-      log_info (client->log, "Detaching xmpp client main loop thread");
+      ta_log_info (client->log, "Detaching xmpp client main loop thread");
       return -1;
     }
   else
-    return (_xmpp_client_do_run ((void *) client));
+    return (_ta_xmpp_client_do_run ((void *) client));
 }
 
 void
-xmpp_client_disconnect (xmpp_client_t *client)
+ta_xmpp_client_disconnect (ta_xmpp_client_t *client)
 {
   client->running = 0;
   iks_disconnect (client->parser);
-  log_info (client->log, "Disconnected");
+  ta_log_info (client->log, "Disconnected");
 }
 
 void
-xmpp_client_set_auth_success_cb (xmpp_client_t *client,
-                                   iksFilterHook *cb,
-                                   void *user_data)
+ta_xmpp_client_set_auth_success_cb (ta_xmpp_client_t *client,
+                                    iksFilterHook *cb,
+                                    void *user_data)
 {
   client->on_auth_success = cb;
   client->on_auth_success_data = user_data;
@@ -317,9 +317,9 @@ xmpp_client_set_auth_success_cb (xmpp_client_t *client,
 }
 
 void
-xmpp_client_set_auth_failure_cb (xmpp_client_t  *client,
-                                   iksFilterHook *cb,
-                                   void *user_data)
+ta_xmpp_client_set_auth_failure_cb (ta_xmpp_client_t  *client,
+                                    iksFilterHook *cb,
+                                    void *user_data)
 {
   client->on_auth_failure = cb;
   client->on_auth_failure_data = user_data;
@@ -333,11 +333,11 @@ xmpp_client_set_auth_failure_cb (xmpp_client_t  *client,
 /* ---- End of public API ---- */
 
 static int
-_xmpp_client_hook (void *data, int type, iks *node)
+_ta_xmpp_client_hook (void *data, int type, iks *node)
 {
-  xmpp_client_t *client;
+  ta_xmpp_client_t *client;
   char *name;
-  client = (xmpp_client_t *) data;
+  client = (ta_xmpp_client_t *) data;
   name = iks_name (node);
 
   switch (type)
@@ -384,7 +384,7 @@ _xmpp_client_hook (void *data, int type, iks *node)
         }
       else if (strcmp (name, "failure") == 0)
         {
-          log_info (client->log, "authentication failed");
+          ta_log_info (client->log, "authentication failed");
           if (client->on_auth_failure)
             {
               ikspak *pak;
@@ -396,7 +396,7 @@ _xmpp_client_hook (void *data, int type, iks *node)
         {
           client->authenticated = 1;
           iks_send_header (client->parser, client->id->server);
-          log_info (client->log, "authentication successful");
+          ta_log_info (client->log, "authentication successful");
         }
       else
         {
@@ -409,7 +409,7 @@ _xmpp_client_hook (void *data, int type, iks *node)
       {
         char *node_str;
         node_str = iks_string (iks_stack (node), node);
-        log_error (client->log, "Error stream: %s", node_str);
+        ta_log_error (client->log, "Error stream: %s", node_str);
         break;
       }
     }
@@ -421,12 +421,12 @@ _xmpp_client_hook (void *data, int type, iks *node)
 }
 
 static int
-_xmpp_client_do_run (void *user_data)
+_ta_xmpp_client_do_run (void *user_data)
 {
-  xmpp_client_t *client;
+  ta_xmpp_client_t *client;
   int ret = 1;
 
-  client = (xmpp_client_t *) user_data;
+  client = (ta_xmpp_client_t *) user_data;
   client->running = 1;
 
   while (client->running)
@@ -438,22 +438,22 @@ _xmpp_client_do_run (void *user_data)
           break;
 
         case IKS_NET_NOCONN:
-          log_info (client->log, "Client not connected, stopping main loop");
+          ta_log_info (client->log, "Client not connected, stopping main loop");
           client->running = 0;
           break;
 
         case IKS_NET_RWERR:
-          log_error (client->log, "Network error");
+          ta_log_error (client->log, "Network error");
           client->running = 0;
           break;
 
         case IKS_NET_TLSFAIL:
-          log_error (client->log, "TLS handshake failed");
+          ta_log_error (client->log, "TLS handshake failed");
           client->running = 0;
           break;
 
         default:
-          log_error (client->log, "IO error");
+          ta_log_error (client->log, "IO error");
           client->running = 0;
           break;
         }

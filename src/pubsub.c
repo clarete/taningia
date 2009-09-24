@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Lincoln de Sousa <lincoln@minaslivre.org>
+ * Copyright (C) 2009  Lincoln de Sousa <lincoln@minaslivre.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -36,24 +36,24 @@
 # define debugiq(x)
 #endif
 
-struct _pubsub_t
+struct _ta_pubsub_t
 {
   char *from;
   char *to;
   char *node_prefix;
-  log_t *log;
+  ta_log_t *log;
 };
 
-struct _pubsub_node_t
+struct _ta_pubsub_node_t
 {
-  pubsub_t *ctx;
+  ta_pubsub_t *ctx;
   char *name;
 };
 
 /* Generic help functions */
 
 static iks *
-createiq (pubsub_t *ctx, enum iksubtype type, const char *ns)
+createiq (ta_pubsub_t *ctx, enum iksubtype type, const char *ns)
 {
   iks *iq;
   char sid[32];
@@ -67,7 +67,7 @@ createiq (pubsub_t *ctx, enum iksubtype type, const char *ns)
 }
 
 static iks *
-createiqps (pubsub_t *ctx, enum iksubtype type)
+createiqps (ta_pubsub_t *ctx, enum iksubtype type)
 {
   iks *iq;
   char sid[32];
@@ -86,43 +86,43 @@ createiqps (pubsub_t *ctx, enum iksubtype type)
   iks_insert_attrib (iq, "to", ctx->to);
   iks_insert_attrib (iq, "from", ctx->from);
   iks_insert_attrib (iq, "id", sid);
-  iks_insert_attrib (iks_insert (iq, "pubsub"), "xmlns", PUBSUB_NS);
+  iks_insert_attrib (iks_insert (iq, "pubsub"), "xmlns", TA_PUBSUB_NS);
   return iq;
 }
 
-/* pubsub_t */
+/* ta_pubsub_t */
 
-pubsub_t *
-pubsub_new (const char *from, const char *to)
+ta_pubsub_t *
+ta_pubsub_new (const char *from, const char *to)
 {
-  pubsub_t *ctx;
-  ctx = malloc (sizeof (pubsub_t));
+  ta_pubsub_t *ctx;
+  ctx = malloc (sizeof (ta_pubsub_t));
   ctx->from = strdup (from);
   ctx->to = strdup (to);
-  ctx->log = log_new ("pubsub");
+  ctx->log = ta_log_new ("pubsub");
   ctx->node_prefix = NULL;
   return ctx;
 }
 
 void
-pubsub_free (pubsub_t *ctx)
+ta_pubsub_free (ta_pubsub_t *ctx)
 {
   free (ctx->from);
   free (ctx->to);
-  log_free (ctx->log);
+  ta_log_free (ctx->log);
   if (ctx->node_prefix)
     free (ctx->node_prefix);
   free (ctx);
 }
 
 const char *
-pubsub_get_node_prefix (pubsub_t *ctx)
+ta_pubsub_get_node_prefix (ta_pubsub_t *ctx)
 {
   return ctx->node_prefix;
 }
 
 void
-pubsub_set_node_prefix (pubsub_t *ctx, const char *prefix)
+ta_pubsub_set_node_prefix (ta_pubsub_t *ctx, const char *prefix)
 {
   if (ctx->node_prefix)
     free (ctx->node_prefix);
@@ -130,7 +130,7 @@ pubsub_set_node_prefix (pubsub_t *ctx, const char *prefix)
 }
 
 iks *
-pubsub_query_features (pubsub_t *ctx)
+ta_pubsub_query_features (ta_pubsub_t *ctx)
 {
   iks *iq = createiq (ctx, IKS_TYPE_GET, NS_INFO);
   debugiq (iq);
@@ -138,7 +138,7 @@ pubsub_query_features (pubsub_t *ctx)
 }
 
 iks *
-pubsub_query_affiliations (pubsub_t *ctx)
+ta_pubsub_query_affiliations (ta_pubsub_t *ctx)
 {
   iks *iq, *sub;
   iq = createiqps (ctx, IKS_TYPE_GET);
@@ -147,27 +147,27 @@ pubsub_query_affiliations (pubsub_t *ctx)
   return iq;
 }
 
-/* pubsub_node_t */
+/* ta_pubsub_node_t */
 
-pubsub_node_t *
-pubsub_node_new (pubsub_t *ctx, const char *name)
+ta_pubsub_node_t *
+ta_pubsub_node_new (ta_pubsub_t *ctx, const char *name)
 {
-  pubsub_node_t *node;
-  node = malloc (sizeof (pubsub_node_t));
+  ta_pubsub_node_t *node;
+  node = malloc (sizeof (ta_pubsub_node_t));
   node->ctx = ctx;
   node->name = name ? strdup (name) : NULL;
   return node;
 }
 
 const char  *
-pubsub_node_get_name (pubsub_node_t *node)
+ta_pubsub_node_get_name (ta_pubsub_node_t *node)
 {
   return node->name;
 }
 
 void
-pubsub_node_set_name (pubsub_node_t *node,
-                      const char  *name)
+ta_pubsub_node_set_name (ta_pubsub_node_t *node,
+                         const char  *name)
 {
   if (node->name)
     free (node->name);
@@ -175,7 +175,7 @@ pubsub_node_set_name (pubsub_node_t *node,
 }
 
 void
-pubsub_node_free (pubsub_node_t *node)
+ta_pubsub_node_free (ta_pubsub_node_t *node)
 {
   if (node->name)
     free (node->name);
@@ -183,7 +183,7 @@ pubsub_node_free (pubsub_node_t *node)
 }
 
 iks *
-pubsub_node_query_info (pubsub_node_t *node)
+ta_pubsub_node_query_info (ta_pubsub_node_t *node)
 {
   if (node->name)
     {
@@ -194,14 +194,14 @@ pubsub_node_query_info (pubsub_node_t *node)
     }
   else
     {
-      log_warn (node->ctx->log,
-                "Calling Node.query_info with no name set");
+      ta_log_warn (node->ctx->log,
+                   "Calling Node.query_info with no name set");
       return NULL;
     }
 }
 
 iks *
-pubsub_node_subscriptions (pubsub_node_t *node)
+ta_pubsub_node_subscriptions (ta_pubsub_node_t *node)
 {
   if (node->name)
     {
@@ -215,14 +215,14 @@ pubsub_node_subscriptions (pubsub_node_t *node)
     }
   else
     {
-      log_warn (node->ctx->log,
-                "Calling Node.subscriptions with no name set");
+      ta_log_warn (node->ctx->log,
+                   "Calling Node.subscriptions with no name set");
       return NULL;
     }
 }
 
 iks *
-pubsub_node_affiliations (pubsub_node_t *node)
+ta_pubsub_node_affiliations (ta_pubsub_node_t *node)
 {
   if (node->name)
     {
@@ -235,15 +235,15 @@ pubsub_node_affiliations (pubsub_node_t *node)
     }
   else
     {
-      log_warn (node->ctx->log,
-                "Calling Node.affiliations method with no name set");
+      ta_log_warn (node->ctx->log,
+                   "Calling Node.affiliations method with no name set");
       return NULL;
     }
 }
 
 iks *
-pubsub_node_subscribe (pubsub_node_t *node,
-                       const char  *jid)
+ta_pubsub_node_subscribe (ta_pubsub_node_t *node,
+                          const char  *jid)
 {
   if (node->name)
     {
@@ -260,15 +260,15 @@ pubsub_node_subscribe (pubsub_node_t *node,
     }
   else
     {
-      log_warn (node->ctx->log,
-                "Calling Node.subscribe method with no name set");
+      ta_log_warn (node->ctx->log,
+                   "Calling Node.subscribe method with no name set");
       return NULL;
     }
 }
 
 iks *
-pubsub_node_unsubscribe (pubsub_node_t *node,
-                         const char  *jid)
+ta_pubsub_node_unsubscribe (ta_pubsub_node_t *node,
+                            const char  *jid)
 {
   if (node->name)
     {
@@ -285,14 +285,14 @@ pubsub_node_unsubscribe (pubsub_node_t *node,
     }
   else
     {
-      log_warn (node->ctx->log,
-                "Calling Node.unsubscribe method with no name set");
+      ta_log_warn (node->ctx->log,
+                   "Calling Node.unsubscribe method with no name set");
       return NULL;
     }
 }
 
 iks *
-pubsub_query_node_items (pubsub_node_t *node)
+ta_pubsub_query_node_items (ta_pubsub_node_t *node)
 {
   if (node->name)
     {
@@ -304,15 +304,15 @@ pubsub_query_node_items (pubsub_node_t *node)
     }
   else
     {
-      log_warn (node->ctx->log,
-                "Calling Node.items method with no name set");
+      ta_log_warn (node->ctx->log,
+                   "Calling Node.items method with no name set");
       return NULL;
     }
 }
 
 iks *
-pubsub_node_items (pubsub_node_t *node,
-                   int          max_items)
+ta_pubsub_node_items (ta_pubsub_node_t *node,
+                      int          max_items)
 {
   if (node->name)
     {
@@ -331,17 +331,17 @@ pubsub_node_items (pubsub_node_t *node,
     }
   else
     {
-      log_warn (node->ctx->log,
-                "Calling Node.items method with no name set");
+      ta_log_warn (node->ctx->log,
+                   "Calling Node.items method with no name set");
       return NULL;
     }
 }
 
 iks *
-pubsub_node_publish_text (pubsub_node_t *node,
-                          const char  *id,
-                          const char  *body,
-                          int          len)
+ta_pubsub_node_publish_text (ta_pubsub_node_t *node,
+                             const char  *id,
+                             const char  *body,
+                             int          len)
 {
   if (node->name)
     {
@@ -358,16 +358,16 @@ pubsub_node_publish_text (pubsub_node_t *node,
     }
   else
     {
-      log_warn (node->ctx->log,
-                "Calling Node.publish_text method with no name set");
+      ta_log_warn (node->ctx->log,
+                   "Calling Node.publish_text method with no name set");
       return NULL;
     }
 }
 
 iks *
-pubsub_node_publish_iks (pubsub_node_t *node,
-                         const char  *id,
-                         iks         *child)
+ta_pubsub_node_publish_iks (ta_pubsub_node_t *node,
+                            const char  *id,
+                            iks         *child)
 {
   if (node->name)
     {
@@ -384,15 +384,15 @@ pubsub_node_publish_iks (pubsub_node_t *node,
     }
   else
     {
-      log_warn (node->ctx->log,
-                "Calling Node.publish_iks method with no name set");
+      ta_log_warn (node->ctx->log,
+                   "Calling Node.publish_iks method with no name set");
       return NULL;
     }
 }
 
 iks *
-pubsub_node_delete_item (pubsub_node_t *node,
-                         const char  *id)
+ta_pubsub_node_delete_item (ta_pubsub_node_t *node,
+                            const char  *id)
 {
   if (node->name)
     {
@@ -406,15 +406,15 @@ pubsub_node_delete_item (pubsub_node_t *node,
     }
   else
     {
-      log_warn (node->ctx->log,
-                "Calling Node.delete_item method with no name set");
+      ta_log_warn (node->ctx->log,
+                   "Calling Node.delete_item method with no name set");
       return NULL;
     }
 }
 
 iks *
-pubsub_node_create (pubsub_node_t *node,
-                    ...)
+ta_pubsub_node_create (ta_pubsub_node_t *node,
+                       ...)
 {
   iks *iq, *create, *config, *form;
   va_list args;
@@ -483,8 +483,8 @@ pubsub_node_create (pubsub_node_t *node,
 }
 
 iks *
-pubsub_node_createv (pubsub_node_t *node,
-                     const char **conf_params)
+ta_pubsub_node_createv (ta_pubsub_node_t *node,
+                        const char **conf_params)
 {
   iks *iq, *create, *config, *form;
   const char *arg;

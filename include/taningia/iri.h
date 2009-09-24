@@ -23,130 +23,129 @@
 #include <taningia/taningia.h>
 #include <taningia/error.h>
 
-typedef struct _iri_t iri_t;
+typedef struct _ta_iri_t ta_iri_t;
 
-typedef enum
-{
-  IRI_PARSING_ERROR
-} iri_error_t;
+typedef enum {
+  TA_IRI_PARSING_ERROR
+} ta_iri_error_t;
 
 /**
- * @name: iri_new
- * @type: constructor iri
+ * @name: ta_iri_new
+ * @type: constructor ta_iri
  */
-iri_t *iri_new (void);
+ta_iri_t *ta_iri_new (void);
 
 /**
- * @name: iri_free
- * @type: destructor iri
+ * @name: ta_iri_free
+ * @type: destructor ta_iri
  */
-void iri_free (iri_t *iri);
+void ta_iri_free (ta_iri_t *iri);
 
 /**
- * @name: iri_get_scheme
- * @type: getter iri:scheme
+ * @name: ta_iri_get_scheme
+ * @type: getter ta_iri:scheme
  */
-const char *iri_get_scheme (iri_t *iri);
+const char *ta_iri_get_scheme (ta_iri_t *iri);
 
 /**
- * @name: iri_set_scheme
- * @type: setter iri:scheme
+ * @name: ta_iri_set_scheme
+ * @type: setter ta_iri:scheme
  */
-void iri_set_scheme (iri_t *iri, const char *scheme);
+void ta_iri_set_scheme (ta_iri_t *iri, const char *scheme);
 
 /**
- * @name: iri_get_user
- * @type: getter iri:user
+ * @name: ta_iri_get_user
+ * @type: getter ta_iri:user
  */
-const char *iri_get_user (iri_t *iri);
+const char *ta_iri_get_user (ta_iri_t *iri);
 
 /**
- * @name: iri_set_user
- * @type: setter iri:user
+ * @name: ta_iri_set_user
+ * @type: setter ta_iri:user
  */
-void iri_set_user (iri_t *iri, const char *user);
+void ta_iri_set_user (ta_iri_t *iri, const char *user);
 
 /**
- * @name: iri_get_host
- * @type: getter iri:host
+ * @name: ta_iri_get_host
+ * @type: getter ta_iri:host
  */
-const char *iri_get_host (iri_t *iri);
+const char *ta_iri_get_host (ta_iri_t *iri);
 
 /**
- * @name: iri_set_host
- * @type: setter iri:host
+ * @name: ta_iri_set_host
+ * @type: setter ta_iri:host
  */
-void iri_set_host (iri_t *iri, const char *host);
+void ta_iri_set_host (ta_iri_t *iri, const char *host);
 
 /**
- * @name: iri_get_port
- * @type: getter iri:port
+ * @name: ta_iri_get_port
+ * @type: getter ta_iri:port
  */
-int iri_get_port (iri_t *iri);
+int ta_iri_get_port (ta_iri_t *iri);
 
 /**
- * @name: iri_set_port
- * @type: setter iri:port
+ * @name: ta_iri_set_port
+ * @type: setter ta_iri:port
  */
-void iri_set_port (iri_t *iri, int port);
+void ta_iri_set_port (ta_iri_t *iri, int port);
 
 /**
- * @name: iri_get_path
- * @type: getter iri:path
+ * @name: ta_iri_get_path
+ * @type: getter ta_iri:path
  */
-const char *iri_get_path (iri_t *iri);
+const char *ta_iri_get_path (ta_iri_t *iri);
 
 /**
- * @name: iri_set_path
- * @type: setter iri:path
+ * @name: ta_iri_set_path
+ * @type: setter ta_iri:path
  */
-void iri_set_path (iri_t *iri, const char *path);
+void ta_iri_set_path (ta_iri_t *iri, const char *path);
 
 /**
- * @name: iri_get_query
- * @type: getter iri:query
+ * @name: ta_iri_get_query
+ * @type: getter ta_iri:query
  */
-const char *iri_get_query (iri_t *iri);
+const char *ta_iri_get_query (ta_iri_t *iri);
 
 /**
- * @name: iri_set_query
- * @type: setter iri:query
+ * @name: ta_iri_set_query
+ * @type: setter ta_iri:query
  */
-void iri_set_query (iri_t *iri, const char *query);
+void ta_iri_set_query (ta_iri_t *iri, const char *query);
 
 /**
- * @name: iri_get_fragment
- * @type: getter iri:fragment
+ * @name: ta_iri_get_fragment
+ * @type: getter ta_iri:fragment
  */
-const char *iri_get_fragment (iri_t *iri);
+const char *ta_iri_get_fragment (ta_iri_t *iri);
 
 /**
- * @name: iri_set_fragment
- * @type: setter iri:fragment
+ * @name: ta_iri_set_fragment
+ * @type: setter ta_iri:fragment
  */
-void iri_set_fragment (iri_t *iri, const char *fragment);
+void ta_iri_set_fragment (ta_iri_t *iri, const char *fragment);
 
 /**
- * @name: iri_to_string
- * @type: method iri
+ * @name: ta_iri_to_string
+ * @type: method ta_iri
  *
  * Returns a string representation of an iri instance.
  */
-char *iri_to_string (iri_t *iri);
+char *ta_iri_to_string (ta_iri_t *iri);
 
 /**
- * @name: iri_get_error
- * @type: getter iri:error
+ * @name: ta_iri_get_error
+ * @type: getter ta_iri:error
  */
-error_t *iri_get_error (iri_t *iri);
+ta_error_t *ta_iri_get_error (ta_iri_t *iri);
 
 /**
- * @name: iri_set_from_string
- * @type: method iri
- * @raises: IRI_PARSING_ERROR
+ * @name: ta_iri_set_from_string
+ * @type: method ta_iri
+ * @raises: TA_IRI_PARSING_ERROR
  *
  * Parses a string into an iri.
  */
-int iri_set_from_string (iri_t *iri, const char *iristr);
+int ta_iri_set_from_string (ta_iri_t *iri, const char *iristr);
 
 #endif /* _TANINGIA_IRI_H_ */

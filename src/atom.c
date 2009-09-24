@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Lincoln de Sousa <lincoln@minaslivre.org>
+ * Copyright (C) 2009  Lincoln de Sousa <lincoln@minaslivre.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -29,71 +29,71 @@
 #include <taningia/error.h>
 #include <taningia/list.h>
 
-struct _atom_simple_element_t
+struct _ta_atom_simple_element_t
 {
   char *name;
   char *value;
 };
 
-struct _atom_link_t
+struct _ta_atom_link_t
 {
-  iri_t *href;
+  ta_iri_t *href;
   char *title;
   char *rel;
   char *type;
   char *length;
 };
 
-struct _atom_content_t
+struct _ta_atom_content_t
 {
   char *type;
   char *content;
   int   len;
-  iri_t *src;
+  ta_iri_t *src;
 };
 
-struct _atom_person_t
+struct _ta_atom_person_t
 {
   char *name;
   char *email;
-  iri_t *iri;
-  list_t *ext_elements;
+  ta_iri_t *iri;
+  ta_list_t *ext_elements;
 };
 
-struct _atom_category_t
+struct _ta_atom_category_t
 {
   char *label;
   char *term;
-  iri_t *scheme;
+  ta_iri_t *scheme;
 };
 
-struct _atom_entry_t
+struct _ta_atom_entry_t
 {
-  iri_t         *id;
+  ta_iri_t         *id;
   char         *title;
   time_t        updated;
   time_t        published;
   char         *rights;
-  list_t        *authors;
-  list_t        *categories;
-  list_t        *links;
+  ta_list_t        *authors;
+  ta_list_t        *categories;
+  ta_list_t        *links;
   char         *summary;
-  atom_content_t *content;
-  error_t       *error;
-  list_t        *ext_elements;
+  ta_atom_content_t *content;
+  ta_error_t       *error;
+  ta_list_t        *ext_elements;
 };
 
-struct _atom_feed_t
+struct _ta_atom_feed_t
 {
-  iri_t   *id;
+  ta_iri_t   *id;
   char   *title;
   time_t  updated;
-  list_t  *authors;
-  list_t  *categories;
-  list_t  *entries;
-  list_t  *links;
-  error_t *error;
-  list_t  *ext_elements;
+  ta_list_t  *authors;
+  ta_list_t  *categories;
+  ta_list_t  *entries;
+  ta_list_t  *links;
+  ta_error_t *error;
+  ta_list_t  *ext_elements;
 };
 
 /* Forward prototypes */
@@ -105,28 +105,28 @@ static time_t  iso8601_to_time   (const char *dt);
 /* helper functions */
 
 void
-_atom_free_ext_elements (list_t *list)
+_ta_atom_free_ext_elements (ta_list_t *list)
 {
-  list_t *tmp;
+  ta_list_t *tmp;
   for (tmp = list; tmp; tmp = tmp->next)
-    atom_simple_element_free (tmp->data);
-  list_free (list);
+    ta_atom_simple_element_free (tmp->data);
+  ta_list_free (list);
 }
 
-/* atom_simple_element_t */
+/* ta_atom_simple_element_t */
 
-atom_simple_element_t *
-atom_simple_element_new (const char *name, const char *value)
+ta_atom_simple_element_t *
+ta_atom_simple_element_new (const char *name, const char *value)
 {
-  atom_simple_element_t *see;
-  see = malloc (sizeof (atom_simple_element_t));
+  ta_atom_simple_element_t *see;
+  see = malloc (sizeof (ta_atom_simple_element_t));
   see->name = strdup (name);
   see->value = strdup (value);
   return see;
 }
 
 void
-atom_simple_element_free (atom_simple_element_t *see)
+ta_atom_simple_element_free (ta_atom_simple_element_t *see)
 {
   if (see->name)
     free (see->name);
@@ -136,7 +136,7 @@ atom_simple_element_free (atom_simple_element_t *see)
 }
 
 iks *
-atom_simple_element_to_iks (atom_simple_element_t *see)
+ta_atom_simple_element_to_iks (ta_atom_simple_element_t *see)
 {
   iks *iksee;
   iksee = iks_new (see->name);
@@ -145,20 +145,20 @@ atom_simple_element_to_iks (atom_simple_element_t *see)
 }
 
 char *
-atom_simple_element_to_string (atom_simple_element_t *see)
+ta_atom_simple_element_to_string (ta_atom_simple_element_t *see)
 {
-  iks *ik = atom_simple_element_to_iks (see);
+  iks *ik = ta_atom_simple_element_to_iks (see);
   return iks_string (iks_stack (ik), ik);
 }
 
 const char *
-atom_simple_element_get_name (atom_simple_element_t *see)
+ta_atom_simple_element_get_name (ta_atom_simple_element_t *see)
 {
   return see->name;
 }
 
 void
-atom_simple_element_set_name (atom_simple_element_t *see, const char *name)
+ta_atom_simple_element_set_name (ta_atom_simple_element_t *see, const char *name)
 {
   if (see->name)
     free (see->name);
@@ -166,26 +166,26 @@ atom_simple_element_set_name (atom_simple_element_t *see, const char *name)
 }
 
 const char *
-atom_simple_element_get_value (atom_simple_element_t *see)
+ta_atom_simple_element_get_value (ta_atom_simple_element_t *see)
 {
   return see->value;
 }
 
 void
-atom_simple_element_set_value (atom_simple_element_t *see, const char *value)
+ta_atom_simple_element_set_value (ta_atom_simple_element_t *see, const char *value)
 {
   if (see->value)
     free (see->value);
   see->value = strdup (value);
 }
 
-/* atom_link_t */
+/* ta_atom_link_t */
 
-atom_link_t *
-atom_link_new (iri_t *href)
+ta_atom_link_t *
+ta_atom_link_new (ta_iri_t *href)
 {
-  atom_link_t *lnk;
-  lnk = malloc (sizeof (atom_link_t));
+  ta_atom_link_t *lnk;
+  lnk = malloc (sizeof (ta_atom_link_t));
   lnk->href = href;
   lnk->title = NULL;
   lnk->rel = NULL;
@@ -195,10 +195,10 @@ atom_link_new (iri_t *href)
 }
 
 void
-atom_link_free (atom_link_t *link)
+ta_atom_link_free (ta_atom_link_t *link)
 {
   if (link->href)
-    iri_free (link->href);
+    ta_iri_free (link->href);
   if (link->title)
     free (link->title);
   if (link->rel)
@@ -211,12 +211,12 @@ atom_link_free (atom_link_t *link)
 }
 
 iks *
-atom_link_to_iks (atom_link_t *link)
+ta_atom_link_to_iks (ta_atom_link_t *link)
 {
   iks *lnk;
   char *href;
   lnk = iks_new ("link");
-  href = iri_to_string (link->href);
+  href = ta_iri_to_string (link->href);
   iks_insert_attrib (lnk, "href", href);
   free (href);
   if (link->rel)
@@ -231,36 +231,36 @@ atom_link_to_iks (atom_link_t *link)
 }
 
 char *
-atom_link_to_string (atom_link_t *link)
+ta_atom_link_to_string (ta_atom_link_t *link)
 {
-  iks *ik = atom_link_to_iks (link);
+  iks *ik = ta_atom_link_to_iks (link);
   return iks_string (iks_stack (ik), ik);
 }
 
-iri_t *
-atom_link_get_href (atom_link_t *link)
+ta_iri_t *
+ta_atom_link_get_href (ta_atom_link_t *link)
 {
   return link->href;
 }
 
 void
-atom_link_set_href (atom_link_t *link,
-                      iri_t      *href)
+ta_atom_link_set_href (ta_atom_link_t *link,
+                       ta_iri_t      *href)
 {
   if (link->href)
-    iri_free (link->href);
+    ta_iri_free (link->href);
   link->href = href;
 }
 
 const char *
-atom_link_get_title (atom_link_t *link)
+ta_atom_link_get_title (ta_atom_link_t *link)
 {
   return link->title;
 }
 
 void
-atom_link_set_title (atom_link_t  *link,
-                       const char *title)
+ta_atom_link_set_title (ta_atom_link_t  *link,
+                        const char *title)
 {
   if (link->title)
     free (link->title);
@@ -268,14 +268,14 @@ atom_link_set_title (atom_link_t  *link,
 }
 
 const char *
-atom_link_get_rel (atom_link_t *link)
+ta_atom_link_get_rel (ta_atom_link_t *link)
 {
   return link->rel;
 }
 
 void
-atom_link_set_rel (atom_link_t  *link,
-                     const char *rel)
+ta_atom_link_set_rel (ta_atom_link_t  *link,
+                      const char *rel)
 {
   if (link->rel)
     free (link->rel);
@@ -283,14 +283,14 @@ atom_link_set_rel (atom_link_t  *link,
 }
 
 const char *
-atom_link_get_type (atom_link_t *link)
+ta_atom_link_get_type (ta_atom_link_t *link)
 {
   return link->type;
 }
 
 void
-atom_link_set_type (atom_link_t  *link,
-                      const char *type)
+ta_atom_link_set_type (ta_atom_link_t  *link,
+                       const char *type)
 {
   if (link->type)
     free (link->type);
@@ -298,27 +298,27 @@ atom_link_set_type (atom_link_t  *link,
 }
 
 const char *
-atom_link_get_length (atom_link_t *link)
+ta_atom_link_get_length (ta_atom_link_t *link)
 {
   return link->length;
 }
 
 void
-atom_link_set_length (atom_link_t  *link,
-                        const char *length)
+ta_atom_link_set_length (ta_atom_link_t  *link,
+                         const char *length)
 {
   if (link->length)
     free (link->length);
   link->length = strdup (length);
 }
 
-/* atom_content_t */
+/* ta_atom_content_t */
 
-atom_content_t *
-atom_content_new (const char *type)
+ta_atom_content_t *
+ta_atom_content_new (const char *type)
 {
-  atom_content_t *ct;
-  ct = malloc (sizeof (atom_content_t));
+  ta_atom_content_t *ct;
+  ct = malloc (sizeof (ta_atom_content_t));
   ct->type = strdup (type ? type : "text");
   ct->content = NULL;
   ct->src = NULL;
@@ -327,19 +327,19 @@ atom_content_new (const char *type)
 }
 
 void
-atom_content_free (atom_content_t *content)
+ta_atom_content_free (ta_atom_content_t *content)
 {
   if (content->type)
     free (content->type);
   if (content->content)
     free (content->content);
   if (content->src)
-    iri_free (content->src);
+    ta_iri_free (content->src);
   free (content);
 }
 
 iks *
-atom_content_to_iks (atom_content_t *content)
+ta_atom_content_to_iks (ta_atom_content_t *content)
 {
   iks *ct;
   ct = iks_new ("content");
@@ -347,7 +347,7 @@ atom_content_to_iks (atom_content_t *content)
   if (content->src != NULL)
     {
       char *iri;
-      iri = iri_to_string (content->src);
+      iri = ta_iri_to_string (content->src);
       iks_insert_attrib (ct, "src", iri);
       free (iri);
     }
@@ -370,40 +370,40 @@ atom_content_to_iks (atom_content_t *content)
 }
 
 char *
-atom_content_to_string (atom_content_t *content)
+ta_atom_content_to_string (ta_atom_content_t *content)
 {
-  iks *ik = atom_content_to_iks (content);
+  iks *ik = ta_atom_content_to_iks (content);
   return iks_string (iks_stack (ik), ik);
 }
 
 const char *
-atom_content_get_type (atom_content_t *content)
+ta_atom_content_get_type (ta_atom_content_t *content)
 {
   return content->type;
 }
 
 void
-atom_content_set_type (atom_content_t *content,
-                         const char   *type)
+ta_atom_content_set_type (ta_atom_content_t *content,
+                          const char   *type)
 {
   if (content->type)
     free (content->type);
   content->type = strdup (type);
 }
 
-iri_t *
-atom_content_get_src (atom_content_t *content)
+ta_iri_t *
+ta_atom_content_get_src (ta_atom_content_t *content)
 {
   return content->src;
 }
 
 void
-atom_content_set_src (atom_content_t *content,
-                        iri_t         *src)
+ta_atom_content_set_src (ta_atom_content_t *content,
+                         ta_iri_t         *src)
 {
   if (content->src)
     {
-      iri_free (content->src);
+      ta_iri_free (content->src);
       if (src != NULL && content->content)
         {
           free (content->content);
@@ -414,8 +414,8 @@ atom_content_set_src (atom_content_t *content,
 }
 
 const char *
-atom_content_get_content (atom_content_t *content,
-                            int          *len)
+ta_atom_content_get_content (ta_atom_content_t *content,
+                             int          *len)
 {
   if (len)
     *len = content->len;
@@ -423,16 +423,16 @@ atom_content_get_content (atom_content_t *content,
 }
 
 void
-atom_content_set_content (atom_content_t *content,
-                            const char   *text,
-                            int           len)
+ta_atom_content_set_content (ta_atom_content_t *content,
+                             const char   *text,
+                             int           len)
 {
   if (content->content)
     {
       free (content->content);
       if (text != NULL && content->src)
         {
-          iri_free (content->src);
+          ta_iri_free (content->src);
           content->src = NULL;
         }
     }
@@ -440,15 +440,15 @@ atom_content_set_content (atom_content_t *content,
 }
 
 
-/* atom_person_t */
+/* ta_atom_person_t */
 
-atom_person_t *
-atom_person_new (const char *name,
-                   const char *email,
-                   iri_t       *iri)
+ta_atom_person_t *
+ta_atom_person_new (const char *name,
+                    const char *email,
+                    ta_iri_t       *iri)
 {
-  atom_person_t *person;
-  person = malloc (sizeof (atom_person_t));
+  ta_atom_person_t *person;
+  person = malloc (sizeof (ta_atom_person_t));
   person->name = strdup (name);
   person->email = email ? strdup (email) : NULL;
   person->iri = iri;
@@ -457,21 +457,21 @@ atom_person_new (const char *name,
 }
 
 void
-atom_person_free (atom_person_t *person)
+ta_atom_person_free (ta_atom_person_t *person)
 {
   if (person->name)
     free (person->name);
   if (person->email)
     free (person->email);
   if (person->iri)
-    iri_free (person->iri);
+    ta_iri_free (person->iri);
   if (person->ext_elements)
-    _atom_free_ext_elements (person->ext_elements);
+    _ta_atom_free_ext_elements (person->ext_elements);
   free (person);
 }
 
 iks *
-atom_person_to_iks (atom_person_t *person, const char *element)
+ta_atom_person_to_iks (ta_atom_person_t *person, const char *element)
 {
   iks *ik;
   ik = iks_new (element);
@@ -481,17 +481,17 @@ atom_person_to_iks (atom_person_t *person, const char *element)
   if (person->iri)
     {
       char *iri;
-      iri = iri_to_string (person->iri);
+      iri = ta_iri_to_string (person->iri);
       iks_insert_cdata (iks_insert (ik, "uri"), iri, 0);
       free (iri);
     }
   if (person->ext_elements)
     {
-      list_t *tmp;
+      ta_list_t *tmp;
       for (tmp = person->ext_elements; tmp; tmp = tmp->next)
         {
           iks *ext_elements =
-            atom_simple_element_to_iks (tmp->data);
+            ta_atom_simple_element_to_iks (tmp->data);
           iks_insert_node (ik, ext_elements);
         }
     }
@@ -499,21 +499,21 @@ atom_person_to_iks (atom_person_t *person, const char *element)
 }
 
 char *
-atom_person_to_string (atom_person_t *person, const char *element)
+ta_atom_person_to_string (ta_atom_person_t *person, const char *element)
 {
-  iks *ik = atom_person_to_iks (person, element);
+  iks *ik = ta_atom_person_to_iks (person, element);
   return strdup (iks_string (iks_stack (ik), ik));
 }
 
 const char *
-atom_person_get_name (atom_person_t *person)
+ta_atom_person_get_name (ta_atom_person_t *person)
 {
   return person->name;
 }
 
 void
-atom_person_set_name (atom_person_t *person,
-                        const char  *name)
+ta_atom_person_set_name (ta_atom_person_t *person,
+                         const char  *name)
 {
   if (person->name)
     free (person->name);
@@ -521,62 +521,62 @@ atom_person_set_name (atom_person_t *person,
 }
 
 const char *
-atom_person_get_email (atom_person_t *person)
+ta_atom_person_get_email (ta_atom_person_t *person)
 {
   return person->email;
 }
 
 void
-atom_person_set_email (atom_person_t *person,
-                         const char  *email)
+ta_atom_person_set_email (ta_atom_person_t *person,
+                          const char  *email)
 {
   if (person->email)
     free (person->email);
   person->email = strdup (email);
 }
 
-iri_t *
-atom_person_get_iri (atom_person_t *person)
+ta_iri_t *
+ta_atom_person_get_iri (ta_atom_person_t *person)
 {
   return person->iri;
 }
 
 void
-atom_person_set_iri (atom_person_t *person,
-                       iri_t        *iri)
+ta_atom_person_set_iri (ta_atom_person_t *person,
+                        ta_iri_t        *iri)
 {
   if (person->iri)
-    iri_free (person->iri);
+    ta_iri_free (person->iri);
   person->iri = iri;
 }
 
 void
-atom_person_add_see (atom_person_t *person, atom_simple_element_t *element)
+ta_atom_person_add_see (ta_atom_person_t *person, ta_atom_simple_element_t *element)
 {
-  person->ext_elements = list_append (person->ext_elements, element);
+  person->ext_elements = ta_list_append (person->ext_elements, element);
 }
 
 void
-atom_person_del_see (atom_person_t *person)
+ta_atom_person_del_see (ta_atom_person_t *person)
 {
-  _atom_free_ext_elements (person->ext_elements);
+  _ta_atom_free_ext_elements (person->ext_elements);
   person->ext_elements = NULL;
 }
 
-list_t *
-atom_person_get_see (atom_person_t *person)
+ta_list_t *
+ta_atom_person_get_see (ta_atom_person_t *person)
 {
   return person->ext_elements;
 }
 
 
-/* atom_category_t */
+/* ta_atom_category_t */
 
-atom_category_t *
-atom_category_new (const char *term, const char *label, iri_t *scheme)
+ta_atom_category_t *
+ta_atom_category_new (const char *term, const char *label, ta_iri_t *scheme)
 {
-  atom_category_t *cat;
-  cat = malloc (sizeof (atom_category_t));
+  ta_atom_category_t *cat;
+  cat = malloc (sizeof (ta_atom_category_t));
   cat->term = strdup (term);
   cat->label = label ? strdup (label) : NULL;
   cat->scheme = scheme ? scheme : NULL;
@@ -584,19 +584,19 @@ atom_category_new (const char *term, const char *label, iri_t *scheme)
 }
 
 void
-atom_category_free (atom_category_t  *category)
+ta_atom_category_free (ta_atom_category_t  *category)
 {
   if (category->term)
     free (category->term);
   if (category->label)
     free (category->label);
   if (category->scheme)
-    iri_free (category->scheme);
+    ta_iri_free (category->scheme);
   free (category);
 }
 
 iks *
-atom_category_to_iks (atom_category_t *category)
+ta_atom_category_to_iks (ta_atom_category_t *category)
 {
   iks *ik;
   ik = iks_new ("category");
@@ -606,28 +606,28 @@ atom_category_to_iks (atom_category_t *category)
   if (category->scheme)
     {
       char *iri;
-      iri = iri_to_string (category->scheme);
+      iri = ta_iri_to_string (category->scheme);
       iks_insert_attrib (ik, "scheme", iri);
     }
   return ik;
 }
 
 char *
-atom_category_to_string (atom_category_t  *category)
+ta_atom_category_to_string (ta_atom_category_t  *category)
 {
-  iks *ik = atom_category_to_iks (category);
+  iks *ik = ta_atom_category_to_iks (category);
   return iks_string (iks_stack (ik), ik);
 }
 
 const char *
-atom_category_get_label (atom_category_t *category)
+ta_atom_category_get_label (ta_atom_category_t *category)
 {
   return (const char *) category->label;
 }
 
 void
-atom_category_set_label (atom_category_t *category,
-                           const char    *label)
+ta_atom_category_set_label (ta_atom_category_t *category,
+                            const char    *label)
 {
   if (category->label)
     free (category->label);
@@ -638,45 +638,45 @@ atom_category_set_label (atom_category_t *category,
 }
 
 const char *
-atom_category_get_term (atom_category_t  *category)
+ta_atom_category_get_term (ta_atom_category_t  *category)
 {
   return (const char *) category->term;
 }
 
 void
-atom_category_set_term (atom_category_t *category,
-                          const char    *term)
+ta_atom_category_set_term (ta_atom_category_t *category,
+                           const char    *term)
 {
   if (category->term)
     free (category->term);
   category->term = strdup (term);
 }
 
-iri_t *
-atom_category_get_scheme (atom_category_t *category)
+ta_iri_t *
+ta_atom_category_get_scheme (ta_atom_category_t *category)
 {
   return category->scheme;
 }
 
 void
-atom_category_set_scheme (atom_category_t *category,
-                            iri_t          *scheme)
+ta_atom_category_set_scheme (ta_atom_category_t *category,
+                             ta_iri_t          *scheme)
 {
   if (category->scheme)
-    iri_free (category->scheme);
+    ta_iri_free (category->scheme);
   if (scheme)
     category->scheme = scheme;
   else
     category->scheme = NULL;
 }
 
-/* atom_entry_t */
+/* ta_atom_entry_t */
 
-atom_entry_t *
-atom_entry_new (const char *title)
+ta_atom_entry_t *
+ta_atom_entry_new (const char *title)
 {
-  atom_entry_t *entry;
-  entry = malloc (sizeof (atom_entry_t));
+  ta_atom_entry_t *entry;
+  entry = malloc (sizeof (ta_atom_entry_t));
   entry->title = title ? strdup (title) : NULL;
   entry->id = NULL;
   entry->updated = time (0);
@@ -692,38 +692,38 @@ atom_entry_new (const char *title)
 }
 
 int
-atom_entry_set_from_file (atom_entry_t *entry,
-                            const char *fname)
+ta_atom_entry_set_from_file (ta_atom_entry_t *entry,
+                             const char *fname)
 {
   iks *ik;
   int err;
   if ((err = iks_load (fname, &ik)) != IKS_OK)
     {
       if (entry->error)
-        error_free (entry->error);
-      entry->error = error_new ();
+        ta_error_free (entry->error);
+      entry->error = ta_error_new ();
       switch (err)
         {
         case IKS_NOMEM:
-          error_set_full (entry->error, ATOM_LOAD_ERROR, "LoadError",
-                            "Not enough memory to load file");
+          ta_error_set_full (entry->error, TA_ATOM_LOAD_ERROR, "LoadError",
+                             "Not enough memory to load file");
         case IKS_BADXML:
-          error_set_full (entry->error, ATOM_LOAD_ERROR, "LoadError",
-                            "Unable to parse xml file");
+          ta_error_set_full (entry->error, TA_ATOM_LOAD_ERROR, "LoadError",
+                             "Unable to parse xml file");
         default:
-          error_set_full (entry->error, ATOM_LOAD_ERROR, "LoadError",
-                            "Unknown error");
+          ta_error_set_full (entry->error, TA_ATOM_LOAD_ERROR, "LoadError",
+                             "Unknown error");
         }
       return 0;
     }
-  return atom_entry_set_from_iks (entry, ik);
+  return ta_atom_entry_set_from_iks (entry, ik);
 }
 
 int
-atom_entry_set_from_iks (atom_entry_t *entry,
-                           iks        *ik)
+ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
+                            iks        *ik)
 {
-  iri_t *eid;
+  ta_iri_t *eid;
   iks *child, *content;
   char *id, *title, *updated, *published, *summary, *rights;
 
@@ -732,54 +732,54 @@ atom_entry_set_from_iks (atom_entry_t *entry,
     {
       iks_delete (ik);
       if (entry->error)
-        error_free (entry->error);
-      entry->error = error_new ();
-      error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
-                        "Wrong root entry element");
+        ta_error_free (entry->error);
+      entry->error = ta_error_new ();
+      ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                         "Wrong root entry element");
       return 0;
     }
   id = iks_find_cdata (ik, "id");
   if (!id)
     {
       if (entry->error)
-        error_free (entry->error);
-      entry->error = error_new ();
-      error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
-                        "No <id> element found");
+        ta_error_free (entry->error);
+      entry->error = ta_error_new ();
+      ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                         "No <id> element found");
       return 0;
     }
-  eid = iri_new ();
-  if (!iri_set_from_string (eid, id))
+  eid = ta_iri_new ();
+  if (!ta_iri_set_from_string (eid, id))
     {
       if (entry->error)
-        error_free (entry->error);
-      entry->error = error_new ();
-      error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
-                        "Invalid <id> iri");
-      iri_free (eid);
+        ta_error_free (entry->error);
+      entry->error = ta_error_new ();
+      ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                         "Invalid <id> iri");
+      ta_iri_free (eid);
       return 0;
     }
   title = iks_find_cdata (ik, "title");
   if (!title)
     {
       if (entry->error)
-        error_free (entry->error);
-      entry->error = error_new ();
-      error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
-                        "No <title> element found");
+        ta_error_free (entry->error);
+      entry->error = ta_error_new ();
+      ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                         "No <title> element found");
       return 0;
     }
 
   /* Here we have almost all required fields */
-  atom_entry_set_id (entry, eid);
-  atom_entry_set_title (entry, title);
+  ta_atom_entry_set_id (entry, eid);
+  ta_atom_entry_set_title (entry, title);
 
   updated = iks_find_cdata (ik, "updated");
   if (updated)
     {
       time_t updatedt;
       updatedt = iso8601_to_time (updated);
-      atom_entry_set_updated (entry, updatedt);
+      ta_atom_entry_set_updated (entry, updatedt);
     }
 
   published = iks_find_cdata (ik, "published");
@@ -787,21 +787,21 @@ atom_entry_set_from_iks (atom_entry_t *entry,
     {
       time_t publishedt;
       publishedt = iso8601_to_time (published);
-      atom_entry_set_published (entry, publishedt);
+      ta_atom_entry_set_published (entry, publishedt);
     }
 
   summary = iks_find_cdata (ik, "summary");
   if (summary)
-    atom_entry_set_summary (entry, summary);
+    ta_atom_entry_set_summary (entry, summary);
 
   rights = iks_find_cdata (ik, "rights");
   if (rights)
-    atom_entry_set_rights (entry, rights);
+    ta_atom_entry_set_rights (entry, rights);
 
   content = iks_find (ik, "content");
   if (content)
     {
-      atom_content_t *ct;
+      ta_atom_content_t *ct;
       char *type = NULL, *src = NULL, *scontent = NULL;
       int content_len = 0;
       type = iks_find_attrib (content, "type");
@@ -810,11 +810,11 @@ atom_entry_set_from_iks (atom_entry_t *entry,
       if (!type)
         {
           if (entry->error)
-            error_free (entry->error);
-          entry->error = error_new ();
-          error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
-                            "No \"type\" attribute specified for content "
-                            "element");
+            ta_error_free (entry->error);
+          entry->error = ta_error_new ();
+          ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                             "No \"type\" attribute specified for content "
+                             "element");
           return 0;
         }
 
@@ -823,46 +823,46 @@ atom_entry_set_from_iks (atom_entry_t *entry,
       if (src && scontent)
         {
           if (entry->error)
-            error_free (entry->error);
-          entry->error = error_new ();
-          error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
-                            "Invalid content, it has the src attribute set "
-                            "and content tag is filled");
+            ta_error_free (entry->error);
+          entry->error = ta_error_new ();
+          ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                             "Invalid content, it has the src attribute set "
+                             "and content tag is filled");
           return 0;
         }
       if (!src && !scontent)
         {
           if (entry->error)
-            error_free (entry->error);
-          entry->error = error_new ();
-          error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
-                            "No src attribute or content in content tag");
+            ta_error_free (entry->error);
+          entry->error = ta_error_new ();
+          ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                             "No src attribute or content in content tag");
           return 0;
         }
       if (scontent)
         content_len = iks_cdata_size (iks_child (content));
-      ct = atom_content_new (type);
-      atom_content_set_content (ct, scontent, content_len);
+      ct = ta_atom_content_new (type);
+      ta_atom_content_set_content (ct, scontent, content_len);
       if (src)
         {
-          iri_t *srci;
-          srci = iri_new ();
-          if (!iri_set_from_string (srci, src))
+          ta_iri_t *srci;
+          srci = ta_iri_new ();
+          if (!ta_iri_set_from_string (srci, src))
             {
               if (entry->error)
-                error_free (entry->error);
-              entry->error = error_new ();
-              error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
-                                "Invalid iri in content src attribute");
-              iri_free (srci);
-              atom_content_free (ct);
+                ta_error_free (entry->error);
+              entry->error = ta_error_new ();
+              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                                 "Invalid iri in content src attribute");
+              ta_iri_free (srci);
+              ta_atom_content_free (ct);
               return 0;
             }
-          atom_content_set_src (ct, srci);
+          ta_atom_content_set_src (ct, srci);
         }
       if (scontent)
-        atom_content_set_content (ct, scontent, content_len);
-      atom_entry_set_content (entry, ct);
+        ta_atom_content_set_content (ct, scontent, content_len);
+      ta_atom_entry_set_content (entry, ct);
     }
 
   /* Looking for more structured data */
@@ -871,44 +871,44 @@ atom_entry_set_from_iks (atom_entry_t *entry,
       if (!strcmp (iks_name (child), "author"))
         {
           char *name, *email = NULL, *uri = NULL;
-          iri_t *iri = NULL;
-          atom_person_t *author;
+          ta_iri_t *iri = NULL;
+          ta_atom_person_t *author;
           name = iks_find_cdata (child, "name");
 
-          /* Specification is clear, an atom:author element *MUST*
+          /* Specification is clear, an ta_atom:author element *MUST*
            * have a name. */
           if (!name)
             {
               if (entry->error)
-                error_free (entry->error);
-              entry->error = error_new ();
-              error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
-                                "Author with no name");
+                ta_error_free (entry->error);
+              entry->error = ta_error_new ();
+              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                                 "Author with no name");
               return 0;
             }
           email = iks_find_cdata (child, "email");
           uri = iks_find_cdata (child, "uri");
-          iri = iri_new ();
+          iri = ta_iri_new ();
 
           /* Like above, specification denies invalid iris in an uri
            * of a person object. */
-          if (uri && !iri_set_from_string (iri, uri))
+          if (uri && !ta_iri_set_from_string (iri, uri))
             {
               if (entry->error)
-                error_free (entry->error);
-              entry->error = error_new ();
-              error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
-                                "Author with an invalid iri in uri field");
-              iri_free (iri);
+                ta_error_free (entry->error);
+              entry->error = ta_error_new ();
+              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                                 "Author with an invalid iri in uri field");
+              ta_iri_free (iri);
               return 0;
             }
-          author = atom_person_new (name, email, iri);
-          atom_entry_add_author (entry, author);
+          author = ta_atom_person_new (name, email, iri);
+          ta_atom_entry_add_author (entry, author);
         }
       if (!strcmp (iks_name (child), "category"))
         {
-          atom_category_t *cat;
-          iri_t *iri = NULL;
+          ta_atom_category_t *cat;
+          ta_iri_t *iri = NULL;
           char *term = NULL, *label = NULL, *scheme = NULL;
           term = iks_find_attrib (child, "term");
           label = iks_find_attrib (child, "label");
@@ -916,57 +916,57 @@ atom_entry_set_from_iks (atom_entry_t *entry,
           if (!term)
             {
               if (entry->error)
-                error_free (entry->error);
-              entry->error = error_new ();
-              error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
-                                "Category with no term attribute");
+                ta_error_free (entry->error);
+              entry->error = ta_error_new ();
+              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                                 "Category with no term attribute");
               return 0;
             }
           if (scheme)
             {
-              iri = iri_new ();
-              if (!iri_set_from_string (iri, scheme))
+              iri = ta_iri_new ();
+              if (!ta_iri_set_from_string (iri, scheme))
                 {
                   if (entry->error)
-                    error_free (entry->error);
-                  entry->error = error_new ();
-                  error_set_full (entry->error, ATOM_PARSING_ERROR, "ParsingError",
-                                    "Category scheme attribute is not a valid iri");
-                  iri_free (iri);
+                    ta_error_free (entry->error);
+                  entry->error = ta_error_new ();
+                  ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                                     "Category scheme attribute is not a valid iri");
+                  ta_iri_free (iri);
                   return 0;
                 }
             }
-          cat = atom_category_new (term, label, iri);
-          atom_entry_add_category (entry, cat);
+          cat = ta_atom_category_new (term, label, iri);
+          ta_atom_entry_add_category (entry, cat);
         }
     }
   return 1;
 }
 
 void
-atom_entry_free (atom_entry_t *entry)
+ta_atom_entry_free (ta_atom_entry_t *entry)
 {
   if (entry->title)
     free (entry->title);
   if (entry->id)
-    iri_free (entry->id);
+    ta_iri_free (entry->id);
   if (entry->rights)
     free (entry->rights);
   if (entry->authors)
-    atom_entry_del_authors (entry);
+    ta_atom_entry_del_authors (entry);
   if (entry->categories)
-    atom_entry_del_categories (entry);
+    ta_atom_entry_del_categories (entry);
   if (entry->summary)
     free (entry->summary);
   if (entry->content)
-    atom_content_free (entry->content);
+    ta_atom_content_free (entry->content);
   if (entry->error)
-    error_free (entry->error);
+    ta_error_free (entry->error);
   free (entry);
 }
 
-error_t *
-atom_entry_get_error (atom_entry_t *entry)
+ta_error_t *
+ta_atom_entry_get_error (ta_atom_entry_t *entry)
 {
   return entry->error;
 }
@@ -989,20 +989,20 @@ iso8601_to_time (const char *dt)
 }
 
 iks *
-atom_entry_to_iks (atom_entry_t *entry)
+ta_atom_entry_to_iks (ta_atom_entry_t *entry)
 {
   iks *ik;
   char *updated, *id_iri;
-  list_t *tmp;
+  ta_list_t *tmp;
 
   if (entry->id == NULL)
     return NULL;
 
   updated = time_to_iso8601 (entry->updated);
-  id_iri = iri_to_string (entry->id);
+  id_iri = ta_iri_to_string (entry->id);
 
   ik = iks_new ("entry");
-  iks_insert_attrib (ik, "xmlns", ATOM_NS);
+  iks_insert_attrib (ik, "xmlns", TA_ATOM_NS);
   iks_insert_cdata (iks_insert (ik, "id"), id_iri, 0);
   iks_insert_cdata (iks_insert (ik, "title"), entry->title, 0);
   iks_insert_cdata (iks_insert (ik, "updated"), updated, 0);
@@ -1024,194 +1024,194 @@ atom_entry_to_iks (atom_entry_t *entry)
     for (tmp = entry->authors; tmp; tmp = tmp->next)
       {
         iks *authors =
-          atom_person_to_iks (tmp->data, "author");
+          ta_atom_person_to_iks (tmp->data, "author");
         iks_insert_node (ik, authors);
       }
   if (entry->categories)
     for (tmp = entry->categories; tmp; tmp = tmp->next)
       {
         iks *categories =
-          atom_category_to_iks (tmp->data);
+          ta_atom_category_to_iks (tmp->data);
         iks_insert_node (ik, categories);
       }
   if (entry->links)
     for (tmp = entry->links; tmp; tmp = tmp->next)
       {
         iks *links =
-          atom_link_to_iks (tmp->data);
+          ta_atom_link_to_iks (tmp->data);
         iks_insert_node (ik, links);
       }
   if (entry->summary)
     iks_insert_cdata (iks_insert (ik, "summary"), entry->summary, 0);
   if (entry->content)
-    iks_insert_node (ik, atom_content_to_iks (entry->content));
+    iks_insert_node (ik, ta_atom_content_to_iks (entry->content));
   return ik;
 }
 
 char *
-atom_entry_to_string (atom_entry_t *entry)
+ta_atom_entry_to_string (ta_atom_entry_t *entry)
 {
-  iks *ik = atom_entry_to_iks (entry);
+  iks *ik = ta_atom_entry_to_iks (entry);
   if (ik)
     return strdup (iks_string (iks_stack (ik), ik));
   return NULL;
 }
 
 int
-atom_entry_to_file (atom_entry_t *entry,
-                      const char *fname)
+ta_atom_entry_to_file (ta_atom_entry_t *entry,
+                       const char *fname)
 {
-  return iks_save (fname, atom_entry_to_iks (entry));
+  return iks_save (fname, ta_atom_entry_to_iks (entry));
 }
 
 const char *
-atom_entry_get_title (atom_entry_t *entry)
+ta_atom_entry_get_title (ta_atom_entry_t *entry)
 {
   return (const char *) entry->title;
 }
 
 void
-atom_entry_set_title (atom_entry_t *entry,
-                        const char *title)
+ta_atom_entry_set_title (ta_atom_entry_t *entry,
+                         const char *title)
 {
   if (entry->title)
     free (entry->title);
   entry->title = strdup (title);
 }
 
-iri_t *
-atom_entry_get_id (atom_entry_t *entry)
+ta_iri_t *
+ta_atom_entry_get_id (ta_atom_entry_t *entry)
 {
   return entry->id;
 }
 
 void
-atom_entry_set_id (atom_entry_t *entry, iri_t *id)
+ta_atom_entry_set_id (ta_atom_entry_t *entry, ta_iri_t *id)
 {
   if (entry->id)
-    iri_free (entry->id);
+    ta_iri_free (entry->id);
   entry->id = id;
 }
 
 time_t
-atom_entry_get_updated (atom_entry_t *entry)
+ta_atom_entry_get_updated (ta_atom_entry_t *entry)
 {
   return entry->updated;
 }
 
 void
-atom_entry_set_updated (atom_entry_t *entry,
-                          time_t      updated)
+ta_atom_entry_set_updated (ta_atom_entry_t *entry,
+                           time_t      updated)
 {
   entry->updated = updated;
 }
 
 time_t
-atom_entry_get_published (atom_entry_t *entry)
+ta_atom_entry_get_published (ta_atom_entry_t *entry)
 {
   return entry->published;
 }
 
 void
-atom_entry_set_published (atom_entry_t *entry,
-                            time_t      published)
+ta_atom_entry_set_published (ta_atom_entry_t *entry,
+                             time_t      published)
 {
   entry->published = published;
 }
 
 const char *
-atom_entry_get_rights (atom_entry_t *entry)
+ta_atom_entry_get_rights (ta_atom_entry_t *entry)
 {
   return entry->rights;
 }
 
 void
-atom_entry_set_rights (atom_entry_t *entry,
-                         const char *rights)
+ta_atom_entry_set_rights (ta_atom_entry_t *entry,
+                          const char *rights)
 {
   if (entry->rights)
     free (entry->rights);
   entry->rights = strdup (rights);
 }
 
-list_t *
-atom_entry_get_authors (atom_entry_t *entry)
+ta_list_t *
+ta_atom_entry_get_authors (ta_atom_entry_t *entry)
 {
   return entry->authors;
 }
 
 void
-atom_entry_add_author (atom_entry_t  *entry,
-                         atom_person_t *author)
+ta_atom_entry_add_author (ta_atom_entry_t  *entry,
+                          ta_atom_person_t *author)
 {
-  entry->authors = list_append (entry->authors, author);
+  entry->authors = ta_list_append (entry->authors, author);
 }
 
 void
-atom_entry_del_authors (atom_entry_t *entry)
+ta_atom_entry_del_authors (ta_atom_entry_t *entry)
 {
-  list_t *tmp;
+  ta_list_t *tmp;
   for (tmp = entry->authors; tmp; tmp = tmp->next)
-    atom_person_free (tmp->data);
-  list_free (entry->authors);
+    ta_atom_person_free (tmp->data);
+  ta_list_free (entry->authors);
   entry->authors = NULL;
 }
 
-list_t *
-atom_entry_get_categories (atom_entry_t *entry)
+ta_list_t *
+ta_atom_entry_get_categories (ta_atom_entry_t *entry)
 {
   return entry->categories;
 }
 
 void
-atom_entry_add_category (atom_entry_t    *entry,
-                           atom_category_t *category)
+ta_atom_entry_add_category (ta_atom_entry_t    *entry,
+                            ta_atom_category_t *category)
 {
-  entry->categories = list_append (entry->categories, category);
+  entry->categories = ta_list_append (entry->categories, category);
 }
 
 void
-atom_entry_del_categories (atom_entry_t *entry)
+ta_atom_entry_del_categories (ta_atom_entry_t *entry)
 {
-  list_t *tmp;
+  ta_list_t *tmp;
   for (tmp = entry->categories; tmp; tmp = tmp->next)
-    atom_category_free (tmp->data);
-  list_free (entry->categories);
+    ta_atom_category_free (tmp->data);
+  ta_list_free (entry->categories);
   entry->categories = NULL;
 }
 
-list_t *
-atom_entry_get_links (atom_entry_t *entry)
+ta_list_t *
+ta_atom_entry_get_links (ta_atom_entry_t *entry)
 {
   return entry->links;
 }
 
 void
-atom_entry_add_link (atom_entry_t *entry,
-                       atom_link_t  *link)
+ta_atom_entry_add_link (ta_atom_entry_t *entry,
+                        ta_atom_link_t  *link)
 {
-  entry->links = list_append (entry->links, link);
+  entry->links = ta_list_append (entry->links, link);
 }
 
 void
-atom_entry_del_links (atom_entry_t *entry)
+ta_atom_entry_del_links (ta_atom_entry_t *entry)
 {
-  list_t *tmp;
+  ta_list_t *tmp;
   for (tmp = entry->links; tmp; tmp = tmp->next)
-    atom_link_free (tmp->data);
-  list_free (entry->links);
+    ta_atom_link_free (tmp->data);
+  ta_list_free (entry->links);
   entry->links = NULL;
 }
 
 const char *
-atom_entry_get_summary (atom_entry_t *entry)
+ta_atom_entry_get_summary (ta_atom_entry_t *entry)
 {
   return (const char *) entry->summary;
 }
 
 void
-atom_entry_set_summary (atom_entry_t *entry,
-                          const char *summary)
+ta_atom_entry_set_summary (ta_atom_entry_t *entry,
+                           const char *summary)
 {
   if (entry->summary)
     free (entry->summary);
@@ -1221,50 +1221,50 @@ atom_entry_set_summary (atom_entry_t *entry,
     entry->summary = NULL;
 }
 
-atom_content_t *
-atom_entry_get_content (atom_entry_t *entry)
+ta_atom_content_t *
+ta_atom_entry_get_content (ta_atom_entry_t *entry)
 {
   return entry->content;
 }
 
 void
-atom_entry_set_content (atom_entry_t   *entry,
-                          atom_content_t *content)
+ta_atom_entry_set_content (ta_atom_entry_t   *entry,
+                           ta_atom_content_t *content)
 {
   if (entry->content)
-    atom_content_free (entry->content);
+    ta_atom_content_free (entry->content);
   entry->content = content;
 }
 
 void
-atom_entry_add_see (atom_entry_t *entry, atom_simple_element_t *element)
+ta_atom_entry_add_see (ta_atom_entry_t *entry, ta_atom_simple_element_t *element)
 {
-  entry->ext_elements = list_append (entry->ext_elements, element);
+  entry->ext_elements = ta_list_append (entry->ext_elements, element);
 }
 
 void
-atom_entry_del_see (atom_entry_t *entry)
+ta_atom_entry_del_see (ta_atom_entry_t *entry)
 {
-  list_t *tmp;
+  ta_list_t *tmp;
   for (tmp = entry->ext_elements; tmp; tmp = tmp->next)
-    atom_simple_element_free (tmp->data);
-  list_free (entry->ext_elements);
+    ta_atom_simple_element_free (tmp->data);
+  ta_list_free (entry->ext_elements);
   entry->ext_elements = NULL;
 }
 
-list_t *
-atom_entry_get_see (atom_entry_t *entry)
+ta_list_t *
+ta_atom_entry_get_see (ta_atom_entry_t *entry)
 {
   return entry->ext_elements;
 }
 
-/* atom_feed_t */
+/* ta_atom_feed_t */
 
-atom_feed_t *
-atom_feed_new (const char *title)
+ta_atom_feed_t *
+ta_atom_feed_new (const char *title)
 {
-  atom_feed_t *feed;
-  feed = malloc (sizeof (atom_feed_t));
+  ta_atom_feed_t *feed;
+  feed = malloc (sizeof (ta_atom_feed_t));
   feed->title = title ? strdup (title) : NULL;
   feed->id = NULL;
   feed->updated = time (0);
@@ -1275,10 +1275,10 @@ atom_feed_new (const char *title)
 }
 
 int
-atom_feed_set_from_file (atom_feed_t  *feed,
-                           const char *fname)
+ta_atom_feed_set_from_file (ta_atom_feed_t  *feed,
+                            const char *fname)
 {
-  iri_t *eid;
+  ta_iri_t *eid;
   iks *ik, *child;
   char *id, *title, *updated;
   int err;
@@ -1290,54 +1290,54 @@ atom_feed_set_from_file (atom_feed_t  *feed,
     {
       iks_delete (ik);
       if (feed->error)
-        error_free (feed->error);
-      feed->error = error_new ();
-      error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
-                        "Wrong root feed element");
+        ta_error_free (feed->error);
+      feed->error = ta_error_new ();
+      ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                         "Wrong root feed element");
       return 0;
     }
   id = iks_find_cdata (ik, "id");
   if (!id)
     {
       if (feed->error)
-        error_free (feed->error);
-      feed->error = error_new ();
-      error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
-                        "No <id> element found");
+        ta_error_free (feed->error);
+      feed->error = ta_error_new ();
+      ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                         "No <id> element found");
       return 0;
     }
-  eid = iri_new ();
-  if (!iri_set_from_string (eid, id))
+  eid = ta_iri_new ();
+  if (!ta_iri_set_from_string (eid, id))
     {
       if (feed->error)
-        error_free (feed->error);
-      feed->error = error_new ();
-      error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
-                        "Invalid <id> iri");
-      iri_free (eid);
+        ta_error_free (feed->error);
+      feed->error = ta_error_new ();
+      ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                         "Invalid <id> iri");
+      ta_iri_free (eid);
       return 0;
     }
   title = iks_find_cdata (ik, "title");
   if (!title)
     {
       if (feed->error)
-        error_free (feed->error);
-      feed->error = error_new ();
-      error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
-                        "No <title> element found");
+        ta_error_free (feed->error);
+      feed->error = ta_error_new ();
+      ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                         "No <title> element found");
       return 0;
     }
 
   /* Here we have almost all required fields */
-  atom_feed_set_id (feed, eid);
-  atom_feed_set_title (feed, title);
+  ta_atom_feed_set_id (feed, eid);
+  ta_atom_feed_set_title (feed, title);
 
   updated = iks_find_cdata (ik, "updated");
   if (updated)
     {
       time_t updatedt;
       updatedt = iso8601_to_time (updated);
-      atom_feed_set_updated (feed, updatedt);
+      ta_atom_feed_set_updated (feed, updatedt);
     }
 
   /* Looking for more structured data */
@@ -1346,46 +1346,46 @@ atom_feed_set_from_file (atom_feed_t  *feed,
       if (!strcmp (iks_name (child), "author"))
         {
           char *name, *email = NULL, *uri = NULL;
-          iri_t *iri = NULL;
-          atom_person_t *author;
+          ta_iri_t *iri = NULL;
+          ta_atom_person_t *author;
           name = iks_find_cdata (child, "name");
 
-          /* Specification is clear, an atom:author element *MUST*
+          /* Specification is clear, an ta_atom:author element *MUST*
            * have a name. */
           if (!name)
             {
               if (feed->error)
-                error_free (feed->error);
-              feed->error = error_new ();
-              error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
-                                "Author with no name");
+                ta_error_free (feed->error);
+              feed->error = ta_error_new ();
+              ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                                 "Author with no name");
               return 0;
             }
           email = iks_find_cdata (child, "email");
           uri = iks_find_cdata (child, "uri");
-          iri = iri_new ();
+          iri = ta_iri_new ();
           if (uri)
-            iri_set_from_string (iri, uri);
+            ta_iri_set_from_string (iri, uri);
 
-          /* Like above, specification denies invalid iris in an atom
+          /* Like above, specification denies invalid iris in an ta_atom
            * person. */
-          if (uri && !iri_set_from_string (iri, uri))
+          if (uri && !ta_iri_set_from_string (iri, uri))
             {
               if (feed->error)
-                error_free (feed->error);
-              feed->error = error_new ();
-              error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
-                                "Author with an invalid iri in uri field");
-              iri_free (iri);
+                ta_error_free (feed->error);
+              feed->error = ta_error_new ();
+              ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                                 "Author with an invalid iri in uri field");
+              ta_iri_free (iri);
               return 0;
             }
-          author = atom_person_new (name, email, iri);
-          atom_feed_add_author (feed, author);
+          author = ta_atom_person_new (name, email, iri);
+          ta_atom_feed_add_author (feed, author);
         }
       if (!strcmp (iks_name (child), "category"))
         {
-          atom_category_t *cat;
-          iri_t *iri = NULL;
+          ta_atom_category_t *cat;
+          ta_iri_t *iri = NULL;
           char *term = NULL, *label = NULL, *scheme = NULL;
           term = iks_find_attrib (child, "term");
           label = iks_find_attrib (child, "label");
@@ -1393,72 +1393,72 @@ atom_feed_set_from_file (atom_feed_t  *feed,
           if (!term)
             {
               if (feed->error)
-                error_free (feed->error);
-              feed->error = error_new ();
-              error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
-                                "Category with no term attribute");
+                ta_error_free (feed->error);
+              feed->error = ta_error_new ();
+              ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                                 "Category with no term attribute");
               return 0;
             }
           if (scheme)
             {
-              iri = iri_new ();
-              if (!iri_set_from_string (iri, scheme))
+              iri = ta_iri_new ();
+              if (!ta_iri_set_from_string (iri, scheme))
                 {
                   if (feed->error)
-                    error_free (feed->error);
-                  feed->error = error_new ();
-                  error_set_full (feed->error, ATOM_PARSING_ERROR, "ParsingError",
-                                    "Category scheme attribute is not a valid iri");
-                  iri_free (iri);
+                    ta_error_free (feed->error);
+                  feed->error = ta_error_new ();
+                  ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+                                     "Category scheme attribute is not a valid iri");
+                  ta_iri_free (iri);
                   return 0;
                 }
             }
-          cat = atom_category_new (term, label, iri);
-          atom_feed_add_category (feed, cat);
+          cat = ta_atom_category_new (term, label, iri);
+          ta_atom_feed_add_category (feed, cat);
         }
     }
   return 1;
 }
 
 void
-atom_feed_free (atom_feed_t *feed)
+ta_atom_feed_free (ta_atom_feed_t *feed)
 {
   if (feed->id)
-    iri_free (feed->id);
+    ta_iri_free (feed->id);
   if (feed->title)
     free (feed->title);
   if (feed->authors)
-    atom_feed_del_authors (feed);
+    ta_atom_feed_del_authors (feed);
   if (feed->categories)
-    atom_feed_del_categories (feed);
+    ta_atom_feed_del_categories (feed);
   if (feed->entries)
-    atom_feed_del_entries (feed);
+    ta_atom_feed_del_entries (feed);
   if (feed->error)
-    error_free (feed->error);
+    ta_error_free (feed->error);
   free (feed);
 }
 
-error_t *
-atom_feed_get_error (atom_feed_t *feed)
+ta_error_t *
+ta_atom_feed_get_error (ta_atom_feed_t *feed)
 {
   return feed->error;
 }
 
 iks *
-atom_feed_to_iks (atom_feed_t *feed)
+ta_atom_feed_to_iks (ta_atom_feed_t *feed)
 {
   iks *ik;
   char *updated, *id_iri;
-  list_t *tmp;
+  ta_list_t *tmp;
 
   if (feed->id == NULL)
     return NULL;
 
   updated = time_to_iso8601 (feed->updated);
-  id_iri = iri_to_string (feed->id);
+  id_iri = ta_iri_to_string (feed->id);
 
   ik = iks_new ("feed");
-  iks_insert_attrib (ik, "xmlns", ATOM_NS);
+  iks_insert_attrib (ik, "xmlns", TA_ATOM_NS);
   iks_insert_cdata (iks_insert (ik, "id"), id_iri, 0);
   iks_insert_cdata (iks_insert (ik, "title"), feed->title, 0);
   iks_insert_cdata (iks_insert (ik, "updated"), updated, 0);
@@ -1468,171 +1468,171 @@ atom_feed_to_iks (atom_feed_t *feed)
     for (tmp = feed->authors; tmp; tmp = tmp->next)
       {
         iks *authors =
-          atom_person_to_iks (tmp->data, "author");
+          ta_atom_person_to_iks (tmp->data, "author");
         iks_insert_node (ik, authors);
       }
   if (feed->categories)
     for (tmp = feed->categories; tmp; tmp = tmp->next)
       {
         iks *categories =
-          atom_category_to_iks (tmp->data);
+          ta_atom_category_to_iks (tmp->data);
         iks_insert_node (ik, categories);
       }
   if (feed->entries)
     for (tmp = feed->entries; tmp; tmp = tmp->next)
       {
         iks *entries =
-          atom_entry_to_iks (tmp->data);
+          ta_atom_entry_to_iks (tmp->data);
         iks_insert_node (ik, entries);
       }
   return ik;
 }
 
 char *
-atom_feed_to_string (atom_feed_t *feed)
+ta_atom_feed_to_string (ta_atom_feed_t *feed)
 {
-  iks *ik = atom_feed_to_iks (feed);
+  iks *ik = ta_atom_feed_to_iks (feed);
   if (ik)
     return strdup (iks_string (iks_stack (ik), ik));
   return NULL;
 }
 
 int
-atom_feed_to_file (atom_feed_t  *feed,
-                     const char *fname)
+ta_atom_feed_to_file (ta_atom_feed_t  *feed,
+                      const char *fname)
 {
-  return iks_save (fname, atom_feed_to_iks (feed));
+  return iks_save (fname, ta_atom_feed_to_iks (feed));
 }
 
 const char *
-atom_feed_get_title (atom_feed_t *feed)
+ta_atom_feed_get_title (ta_atom_feed_t *feed)
 {
   return feed->title;
 }
 
 void
-atom_feed_set_title (atom_feed_t  *feed,
-                       const char *title)
+ta_atom_feed_set_title (ta_atom_feed_t  *feed,
+                        const char *title)
 {
   if (feed->title)
     free (feed->title);
   feed->title = strdup (title);
 }
 
-iri_t *
-atom_feed_get_id (atom_feed_t *feed)
+ta_iri_t *
+ta_atom_feed_get_id (ta_atom_feed_t *feed)
 {
   return feed->id;
 }
 
 void
-atom_feed_set_id (atom_feed_t *feed, iri_t *id)
+ta_atom_feed_set_id (ta_atom_feed_t *feed, ta_iri_t *id)
 {
   if (feed->id)
-    iri_free (feed->id);
+    ta_iri_free (feed->id);
   feed->id = id;
 }
 
 time_t
-atom_feed_get_updated (atom_feed_t *feed)
+ta_atom_feed_get_updated (ta_atom_feed_t *feed)
 {
   return feed->updated;
 }
 
 void
-atom_feed_set_updated (atom_feed_t *feed,
-                         time_t     updated)
+ta_atom_feed_set_updated (ta_atom_feed_t *feed,
+                          time_t     updated)
 {
   feed->updated = updated;
 }
 
-list_t *
-atom_feed_get_authors (atom_feed_t *feed)
+ta_list_t *
+ta_atom_feed_get_authors (ta_atom_feed_t *feed)
 {
   return feed->authors;
 }
 
 void
-atom_feed_add_author (atom_feed_t  *feed,
-                         atom_person_t *author)
+ta_atom_feed_add_author (ta_atom_feed_t  *feed,
+                         ta_atom_person_t *author)
 {
-  feed->authors = list_append (feed->authors, author);
+  feed->authors = ta_list_append (feed->authors, author);
 }
 
 void
-atom_feed_del_authors (atom_feed_t *feed)
+ta_atom_feed_del_authors (ta_atom_feed_t *feed)
 {
-  list_t *tmp;
+  ta_list_t *tmp;
   for (tmp = feed->authors; tmp; tmp = tmp->next)
-    atom_person_free (tmp->data);
-  list_free (feed->authors);
+    ta_atom_person_free (tmp->data);
+  ta_list_free (feed->authors);
   feed->authors = NULL;
 }
 
-list_t *
-atom_feed_get_categories (atom_feed_t *feed)
+ta_list_t *
+ta_atom_feed_get_categories (ta_atom_feed_t *feed)
 {
   return feed->categories;
 }
 
 void
-atom_feed_add_category (atom_feed_t    *feed,
-                           atom_category_t *category)
+ta_atom_feed_add_category (ta_atom_feed_t    *feed,
+                           ta_atom_category_t *category)
 {
-  feed->categories = list_append (feed->categories, category);
+  feed->categories = ta_list_append (feed->categories, category);
 }
 
 void
-atom_feed_del_categories (atom_feed_t *feed)
+ta_atom_feed_del_categories (ta_atom_feed_t *feed)
 {
-  list_t *tmp;
+  ta_list_t *tmp;
   for (tmp = feed->categories; tmp; tmp = tmp->next)
-    atom_category_free (tmp->data);
-  list_free (feed->categories);
+    ta_atom_category_free (tmp->data);
+  ta_list_free (feed->categories);
   feed->categories = NULL;
 }
 
-list_t *
-atom_feed_get_links (atom_feed_t *feed)
+ta_list_t *
+ta_atom_feed_get_links (ta_atom_feed_t *feed)
 {
   return feed->links;
 }
 
 void
-atom_feed_add_link (atom_feed_t *feed, atom_link_t *link)
+ta_atom_feed_add_link (ta_atom_feed_t *feed, ta_atom_link_t *link)
 {
-  feed->links = list_append (feed->links, link);
+  feed->links = ta_list_append (feed->links, link);
 }
 
 void
-atom_feed_del_links (atom_feed_t *feed)
+ta_atom_feed_del_links (ta_atom_feed_t *feed)
 {
-  list_t *tmp;
+  ta_list_t *tmp;
   for (tmp = feed->links; tmp; tmp = tmp->next)
-    atom_link_free (tmp->data);
-  list_free (feed->links);
+    ta_atom_link_free (tmp->data);
+  ta_list_free (feed->links);
   feed->links = NULL;
 }
 
-list_t *
-atom_feed_get_entries (atom_feed_t *feed)
+ta_list_t *
+ta_atom_feed_get_entries (ta_atom_feed_t *feed)
 {
   return feed->entries;
 }
 
 void
-atom_feed_add_entry (atom_feed_t  *feed,
-                       atom_entry_t *entry)
+ta_atom_feed_add_entry (ta_atom_feed_t  *feed,
+                        ta_atom_entry_t *entry)
 {
-  feed->entries = list_append (feed->entries, entry);
+  feed->entries = ta_list_append (feed->entries, entry);
 }
 
 void
-atom_feed_del_entries (atom_feed_t *feed)
+ta_atom_feed_del_entries (ta_atom_feed_t *feed)
 {
-  list_t *tmp;
+  ta_list_t *tmp;
   for (tmp = feed->entries; tmp; tmp = tmp->next)
-    atom_entry_free (tmp->data);
-  list_free (feed->entries);
+    ta_atom_entry_free (tmp->data);
+  ta_list_free (feed->entries);
   feed->entries = NULL;
 }

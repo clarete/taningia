@@ -22,63 +22,63 @@
 
 #include <taningia/taningia.h>
 
-typedef struct _error_t error_t;
+typedef struct _ta_error_t ta_error_t;
 
 /**
- * @name: error_new
- * @type: constructor error
+ * @name: ta_error_new
+ * @type: constructor ta_error
  */
-error_t *error_new (void);
+ta_error_t *ta_error_new (void);
 
 /**
- * @name: error_free
- * @type: destructor error
+ * @name: ta_error_free
+ * @type: destructor ta_error
  */
-void error_free (error_t *error);
+void ta_error_free (ta_error_t *error);
 
 /**
- * @name: error_get_code
- * @type: getter error:code
+ * @name: ta_error_get_code
+ * @type: getter ta_error:code
  */
-int error_get_code (error_t *error);
+int ta_error_get_code (ta_error_t *error);
 
 /**
- * @name: error_set_code
- * @type: setter error:code
+ * @name: ta_error_set_code
+ * @type: setter ta_error:code
  */
-void error_set_code (error_t *error, int code);
+void ta_error_set_code (ta_error_t *error, int code);
 
 /**
- * @name: error_get_name
- * @type: getter error:name
+ * @name: ta_error_get_name
+ * @type: getter ta_error:name
  */
-const char *error_get_name (error_t *error);
+const char *ta_error_get_name (ta_error_t *error);
 
 /**
- * @name: error_set_name
- * @type: setter error:name
+ * @name: ta_error_set_name
+ * @type: setter ta_error:name
  */
-void error_set_name (error_t *error, const char *name);
+void ta_error_set_name (ta_error_t *error, const char *name);
 
 /**
- * @name: error_get_message
- * @type: getter error:message
+ * @name: ta_error_get_message
+ * @type: getter ta_error:message
  */
-const char *error_get_message (error_t *error);
+const char *ta_error_get_message (ta_error_t *error);
 
 /**
- * @name: error_set_message
- * @type: setter error:message
+ * @name: ta_error_set_message
+ * @type: setter ta_error:message
  */
-void error_set_message (error_t *error, const char *message, ...);
+void ta_error_set_message (ta_error_t *error, const char *message, ...);
 
 /**
- * @name: error_set_full
- * @type: method error
+ * @name: ta_error_set_full
+ * @type: method ta_error
  *
  * A shortcut to set all error attributes at once.
  */
-void error_set_full (error_t *error, int code, const char *name,
-                     const char *message, ...);
+void ta_error_set_full (ta_error_t *error, int code, const char *name,
+                        const char *message, ...);
 
 #endif /* _TANINGIA_ERROR_H_ */
