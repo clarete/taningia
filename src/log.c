@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Lincoln de Sousa <lincoln@minaslivre.org>
+ * Copyright (C) 2009  Lincoln de Sousa <lincoln@minaslivre.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -24,23 +24,23 @@
 #include <taningia/log.h>
 #include <time.h>
 
-struct _TLog
+struct _log_t
 {
   char *name;
-  TLogLevel level;
-  TLogHandlerFunc handler;
+  log_level_t level;
+  log_handler_func_t handler;
   int use_colors;
   void *handler_data;
   char *date_format;
 };
 
-TLog *
-t_log_new (const char *domain_name)
+log_t *
+log_new (const char *domain_name)
 {
-  TLog *log;
-  log = malloc (sizeof (TLog));
+  log_t *log;
+  log = malloc (sizeof (log_t));
   log->name = strdup (domain_name);
-  log->level = TLOG_CRITICAL | TLOG_ERROR | TLOG_WARN;
+  log->level = LOG_CRITICAL | LOG_ERROR | LOG_WARN;
   log->handler = NULL;
   log->handler_data = NULL;
   log->use_colors = 0;
@@ -49,7 +49,7 @@ t_log_new (const char *domain_name)
 }
 
 void
-t_log_free (TLog *log)
+log_free (log_t *log)
 {
   free (log->name);
   free (log->date_format);
@@ -57,38 +57,38 @@ t_log_free (TLog *log)
 }
 
 void
-t_log_set_handler (TLog *log, TLogHandlerFunc handler, void *user_data)
+log_set_handler (log_t *log, log_handler_func_t handler, void *user_data)
 {
   log->handler = handler;
   log->handler_data = user_data;
 }
 
 void
-t_log_set_use_colors (TLog *log, int use_colors)
+log_set_use_colors (log_t *log, int use_colors)
 {
   log->use_colors = use_colors;
 }
 
 int
-t_log_get_use_colors (TLog *log)
+log_get_use_colors (log_t *log)
 {
   return log->use_colors;
 }
 
 void
-t_log_set_level (TLog *log, TLogLevel level)
+log_set_level (log_t *log, log_level_t level)
 {
   log->level = level;
 }
 
-TLogLevel
-t_log_get_level (TLog *log)
+log_level_t
+log_get_level (log_t *log)
 {
   return log->level;
 }
 
 void
-t_log_set_date_format (TLog *log, const char * date_format)
+log_set_date_format (log_t *log, const char * date_format)
 {
   if (log->date_format)
     free (log->date_format);
@@ -96,7 +96,7 @@ t_log_set_date_format (TLog *log, const char * date_format)
 }
 
 const char *
-t_log_get_date_format (TLog *log)
+log_get_date_format (log_t *log)
 {
   return log->date_format;
 }
@@ -133,7 +133,7 @@ t_log_get_date_format (TLog *log)
       }
 
 static char *
-t_log_localtime (TLog * log)
+_log_localtime (log_t * log)
 {
   struct tm * timeinfo;
   time_t rawtime = time (NULL);
@@ -153,11 +153,11 @@ t_log_localtime (TLog * log)
 }
 
 void
-t_log_info (TLog *log, const char *fmt, ...)
+log_info (log_t *log, const char *fmt, ...)
 {
-  char *log_time = t_log_localtime (log);
+  char *log_time = _log_localtime (log);
 
-  if (!(log->level & TLOG_INFO))
+  if (!(log->level & LOG_INFO))
     return;
 
   get_message (fmt, argp);
@@ -165,7 +165,7 @@ t_log_info (TLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, TLOG_INFO, msg, log->handler_data))
+    if (log->handler (log, LOG_INFO, msg, log->handler_data))
       return;
 
   if (!log->use_colors)
@@ -181,11 +181,11 @@ t_log_info (TLog *log, const char *fmt, ...)
 }
 
 void
-t_log_warn (TLog *log, const char *fmt, ...)
+log_warn (log_t *log, const char *fmt, ...)
 {
-  char *log_time = t_log_localtime (log);
+  char *log_time = _log_localtime (log);
 
-  if (!(log->level & TLOG_WARN))
+  if (!(log->level & LOG_WARN))
     return;
 
   get_message (fmt, argp);
@@ -193,7 +193,7 @@ t_log_warn (TLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, TLOG_WARN, msg, log->handler_data))
+    if (log->handler (log, LOG_WARN, msg, log->handler_data))
       return;
 
   if (!log->use_colors)
@@ -209,11 +209,11 @@ t_log_warn (TLog *log, const char *fmt, ...)
 }
 
 void
-t_log_debug (TLog *log, const char *fmt, ...)
+log_debug (log_t *log, const char *fmt, ...)
 {
-  char *log_time = t_log_localtime (log);
+  char *log_time = _log_localtime (log);
 
-  if (!(log->level & TLOG_DEBUG))
+  if (!(log->level & LOG_DEBUG))
     return;
 
   get_message (fmt, argp);
@@ -221,7 +221,7 @@ t_log_debug (TLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, TLOG_DEBUG, msg, log->handler_data))
+    if (log->handler (log, LOG_DEBUG, msg, log->handler_data))
       return;
 
   if (!log->use_colors)
@@ -237,11 +237,11 @@ t_log_debug (TLog *log, const char *fmt, ...)
 }
 
 void
-t_log_critical (TLog *log, const char *fmt, ...)
+log_critical (log_t *log, const char *fmt, ...)
 {
-  char *log_time = t_log_localtime (log);
+  char *log_time = _log_localtime (log);
 
-  if (!(log->level & TLOG_CRITICAL))
+  if (!(log->level & LOG_CRITICAL))
     return;
 
   get_message (fmt, argp);
@@ -249,7 +249,7 @@ t_log_critical (TLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, TLOG_CRITICAL, msg, log->handler_data))
+    if (log->handler (log, LOG_CRITICAL, msg, log->handler_data))
       return;
 
   if (!log->use_colors)
@@ -265,11 +265,11 @@ t_log_critical (TLog *log, const char *fmt, ...)
 }
 
 void
-t_log_error (TLog *log, const char *fmt, ...)
+log_error (log_t *log, const char *fmt, ...)
 {
-  char *log_time = t_log_localtime (log);
+  char *log_time = _log_localtime (log);
 
-  if (!(log->level & TLOG_ERROR))
+  if (!(log->level & LOG_ERROR))
     return;
 
   get_message (fmt, argp);
@@ -277,7 +277,7 @@ t_log_error (TLog *log, const char *fmt, ...)
     return;
 
   if (log->handler)
-    if (log->handler (log, TLOG_ERROR, msg, log->handler_data))
+    if (log->handler (log, LOG_ERROR, msg, log->handler_data))
       return;
 
   if (!log->use_colors)

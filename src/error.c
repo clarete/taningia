@@ -23,18 +23,18 @@
 #include <string.h>
 #include <taningia/error.h>
 
-struct _TError
+struct _error_t
 {
   char *name;
   char *message;
   int code;
 };
 
-TError *
-t_error_new (void)
+error_t *
+error_new (void)
 {
-  TError *error;
-  error = malloc (sizeof (TError));
+  error_t *error;
+  error = malloc (sizeof (error_t));
   error->name = NULL;
   error->message = NULL;
   error->code = 0;
@@ -42,7 +42,7 @@ t_error_new (void)
 }
 
 void
-t_error_free (TError *error)
+error_free (error_t *error)
 {
   if (error->name)
     free (error->name);
@@ -52,25 +52,25 @@ t_error_free (TError *error)
 }
 
 int
-t_error_get_code (TError *error)
+error_get_code (error_t *error)
 {
   return error->code;
 }
 
 void
-t_error_set_code (TError *error, int code)
+error_set_code (error_t *error, int code)
 {
   error->code = code;
 }
 
 const char *
-t_error_get_name (TError *error)
+error_get_name (error_t *error)
 {
   return error->name;
 }
 
 void
-t_error_set_name (TError *error, const char *name)
+error_set_name (error_t *error, const char *name)
 {
   if (error->name)
     free (error->name);
@@ -78,13 +78,13 @@ t_error_set_name (TError *error, const char *name)
 }
 
 const char *
-t_error_get_message (TError *error)
+error_get_message (error_t *error)
 {
   return error->message;
 }
 
 void
-t_error_set_message (TError *error, const char *fmt, ...)
+error_set_message (error_t *error, const char *fmt, ...)
 {
   int n, size = 50;
   char *msg, *np;
@@ -119,17 +119,17 @@ t_error_set_message (TError *error, const char *fmt, ...)
 }
 
 void
-t_error_set_full (TError *error, int code, const char *name,
-                  const char *fmt, ...)
+error_set_full (error_t *error, int code, const char *name,
+                const char *fmt, ...)
 {
   int n, size = 50;
   char *msg, *np;
   va_list argp;
 
-  t_error_set_code (error, code);
-  t_error_set_name (error, name);
+  error_set_code (error, code);
+  error_set_name (error, name);
 
-  /* This part is a duplication of t_error_set_message because it is
+  /* This part is a duplication of error_set_message because it is
    * hard to pass ... (varargs) arguments from a function to another
    * that is already doing this (we use vsnprintf in vsnprintf) */
 

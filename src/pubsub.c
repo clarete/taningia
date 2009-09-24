@@ -36,24 +36,24 @@
 # define debugiq(x)
 #endif
 
-struct _TPubsub
+struct _pubsub_t
 {
   char *from;
   char *to;
   char *node_prefix;
-  TLog *log;
+  log_t *log;
 };
 
-struct _TPubsubNode
+struct _pubsub_node_t
 {
-  TPubsub *ctx;
+  pubsub_t *ctx;
   char *name;
 };
 
 /* Generic help functions */
 
 static iks *
-createiq (TPubsub *ctx, enum iksubtype type, const char *ns)
+createiq (pubsub_t *ctx, enum iksubtype type, const char *ns)
 {
   iks *iq;
   char sid[32];
@@ -67,7 +67,7 @@ createiq (TPubsub *ctx, enum iksubtype type, const char *ns)
 }
 
 static iks *
-createiqps (TPubsub *ctx, enum iksubtype type)
+createiqps (pubsub_t *ctx, enum iksubtype type)
 {
   iks *iq;
   char sid[32];
@@ -90,40 +90,39 @@ createiqps (TPubsub *ctx, enum iksubtype type)
   return iq;
 }
 
-/* TPubsub */
+/* pubsub_t */
 
-TPubsub *
-t_pubsub_new (const char *from, const char *to)
+pubsub_t *
+pubsub_new (const char *from, const char *to)
 {
-  TPubsub *ctx;
-  ctx = malloc (sizeof (TPubsub));
+  pubsub_t *ctx;
+  ctx = malloc (sizeof (pubsub_t));
   ctx->from = strdup (from);
   ctx->to = strdup (to);
-  ctx->log = t_log_new ("pubsub");
+  ctx->log = log_new ("pubsub");
   ctx->node_prefix = NULL;
   return ctx;
 }
 
 void
-t_pubsub_free (TPubsub *ctx)
+pubsub_free (pubsub_t *ctx)
 {
   free (ctx->from);
   free (ctx->to);
-  t_log_free (ctx->log);
+  log_free (ctx->log);
   if (ctx->node_prefix)
     free (ctx->node_prefix);
   free (ctx);
 }
 
 const char *
-t_pubsub_get_node_prefix (TPubsub *ctx)
+pubsub_get_node_prefix (pubsub_t *ctx)
 {
   return ctx->node_prefix;
 }
 
 void
-t_pubsub_set_node_prefix (TPubsub    *ctx,
-                          const char *prefix)
+pubsub_set_node_prefix (pubsub_t *ctx, const char *prefix)
 {
   if (ctx->node_prefix)
     free (ctx->node_prefix);
@@ -131,7 +130,7 @@ t_pubsub_set_node_prefix (TPubsub    *ctx,
 }
 
 iks *
-t_pubsub_query_features (TPubsub *ctx)
+pubsub_query_features (pubsub_t *ctx)
 {
   iks *iq = createiq (ctx, IKS_TYPE_GET, NS_INFO);
   debugiq (iq);
@@ -139,7 +138,7 @@ t_pubsub_query_features (TPubsub *ctx)
 }
 
 iks *
-t_pubsub_query_affiliations (TPubsub *ctx)
+pubsub_query_affiliations (pubsub_t *ctx)
 {
   iks *iq, *sub;
   iq = createiqps (ctx, IKS_TYPE_GET);
@@ -148,27 +147,27 @@ t_pubsub_query_affiliations (TPubsub *ctx)
   return iq;
 }
 
-/* TPubsubNode */
+/* pubsub_node_t */
 
-TPubsubNode *
-t_pubsub_node_new (TPubsub *ctx, const char *name)
+pubsub_node_t *
+pubsub_node_new (pubsub_t *ctx, const char *name)
 {
-  TPubsubNode *node;
-  node = malloc (sizeof (TPubsubNode));
+  pubsub_node_t *node;
+  node = malloc (sizeof (pubsub_node_t));
   node->ctx = ctx;
   node->name = name ? strdup (name) : NULL;
   return node;
 }
 
 const char  *
-t_pubsub_node_get_name (TPubsubNode *node)
+pubsub_node_get_name (pubsub_node_t *node)
 {
   return node->name;
 }
 
 void
-t_pubsub_node_set_name (TPubsubNode *node,
-                        const char  *name)
+pubsub_node_set_name (pubsub_node_t *node,
+                      const char  *name)
 {
   if (node->name)
     free (node->name);
@@ -176,7 +175,7 @@ t_pubsub_node_set_name (TPubsubNode *node,
 }
 
 void
-t_pubsub_node_free (TPubsubNode *node)
+pubsub_node_free (pubsub_node_t *node)
 {
   if (node->name)
     free (node->name);
@@ -184,7 +183,7 @@ t_pubsub_node_free (TPubsubNode *node)
 }
 
 iks *
-t_pubsub_node_query_info (TPubsubNode *node)
+pubsub_node_query_info (pubsub_node_t *node)
 {
   if (node->name)
     {
@@ -195,14 +194,14 @@ t_pubsub_node_query_info (TPubsubNode *node)
     }
   else
     {
-      t_log_warn (node->ctx->log,
-                  "Calling Node.query_info with no name set");
+      log_warn (node->ctx->log,
+                "Calling Node.query_info with no name set");
       return NULL;
     }
 }
 
 iks *
-t_pubsub_node_subscriptions (TPubsubNode *node)
+pubsub_node_subscriptions (pubsub_node_t *node)
 {
   if (node->name)
     {
@@ -216,14 +215,14 @@ t_pubsub_node_subscriptions (TPubsubNode *node)
     }
   else
     {
-      t_log_warn (node->ctx->log,
-                  "Calling Node.subscriptions with no name set");
+      log_warn (node->ctx->log,
+                "Calling Node.subscriptions with no name set");
       return NULL;
     }
 }
 
 iks *
-t_pubsub_node_affiliations (TPubsubNode *node)
+pubsub_node_affiliations (pubsub_node_t *node)
 {
   if (node->name)
     {
@@ -236,15 +235,15 @@ t_pubsub_node_affiliations (TPubsubNode *node)
     }
   else
     {
-      t_log_warn (node->ctx->log,
-                  "Calling Node.affiliations method with no name set");
+      log_warn (node->ctx->log,
+                "Calling Node.affiliations method with no name set");
       return NULL;
     }
 }
 
 iks *
-t_pubsub_node_subscribe (TPubsubNode *node,
-                         const char  *jid)
+pubsub_node_subscribe (pubsub_node_t *node,
+                       const char  *jid)
 {
   if (node->name)
     {
@@ -261,15 +260,15 @@ t_pubsub_node_subscribe (TPubsubNode *node,
     }
   else
     {
-      t_log_warn (node->ctx->log,
-                  "Calling Node.subscribe method with no name set");
+      log_warn (node->ctx->log,
+                "Calling Node.subscribe method with no name set");
       return NULL;
     }
 }
 
 iks *
-t_pubsub_node_unsubscribe (TPubsubNode *node,
-                           const char  *jid)
+pubsub_node_unsubscribe (pubsub_node_t *node,
+                         const char  *jid)
 {
   if (node->name)
     {
@@ -286,14 +285,14 @@ t_pubsub_node_unsubscribe (TPubsubNode *node,
     }
   else
     {
-      t_log_warn (node->ctx->log,
-                  "Calling Node.unsubscribe method with no name set");
+      log_warn (node->ctx->log,
+                "Calling Node.unsubscribe method with no name set");
       return NULL;
     }
 }
 
 iks *
-t_pubsub_query_node_items (TPubsubNode *node)
+pubsub_query_node_items (pubsub_node_t *node)
 {
   if (node->name)
     {
@@ -305,15 +304,15 @@ t_pubsub_query_node_items (TPubsubNode *node)
     }
   else
     {
-      t_log_warn (node->ctx->log,
-                  "Calling Node.items method with no name set");
+      log_warn (node->ctx->log,
+                "Calling Node.items method with no name set");
       return NULL;
     }
 }
 
 iks *
-t_pubsub_node_items (TPubsubNode *node,
-                     int          max_items)
+pubsub_node_items (pubsub_node_t *node,
+                   int          max_items)
 {
   if (node->name)
     {
@@ -332,17 +331,17 @@ t_pubsub_node_items (TPubsubNode *node,
     }
   else
     {
-      t_log_warn (node->ctx->log,
-                  "Calling Node.items method with no name set");
+      log_warn (node->ctx->log,
+                "Calling Node.items method with no name set");
       return NULL;
     }
 }
 
 iks *
-t_pubsub_node_publish_text (TPubsubNode *node,
-                            const char  *id,
-                            const char  *body,
-                            int          len)
+pubsub_node_publish_text (pubsub_node_t *node,
+                          const char  *id,
+                          const char  *body,
+                          int          len)
 {
   if (node->name)
     {
@@ -359,16 +358,16 @@ t_pubsub_node_publish_text (TPubsubNode *node,
     }
   else
     {
-      t_log_warn (node->ctx->log,
-                  "Calling Node.publish_text method with no name set");
+      log_warn (node->ctx->log,
+                "Calling Node.publish_text method with no name set");
       return NULL;
     }
 }
 
 iks *
-t_pubsub_node_publish_iks (TPubsubNode *node,
-                           const char  *id,
-                           iks         *child)
+pubsub_node_publish_iks (pubsub_node_t *node,
+                         const char  *id,
+                         iks         *child)
 {
   if (node->name)
     {
@@ -385,15 +384,15 @@ t_pubsub_node_publish_iks (TPubsubNode *node,
     }
   else
     {
-      t_log_warn (node->ctx->log,
-                  "Calling Node.publish_iks method with no name set");
+      log_warn (node->ctx->log,
+                "Calling Node.publish_iks method with no name set");
       return NULL;
     }
 }
 
 iks *
-t_pubsub_node_delete_item (TPubsubNode *node,
-                           const char  *id)
+pubsub_node_delete_item (pubsub_node_t *node,
+                         const char  *id)
 {
   if (node->name)
     {
@@ -407,15 +406,15 @@ t_pubsub_node_delete_item (TPubsubNode *node,
     }
   else
     {
-      t_log_warn (node->ctx->log,
-                  "Calling Node.delete_item method with no name set");
+      log_warn (node->ctx->log,
+                "Calling Node.delete_item method with no name set");
       return NULL;
     }
 }
 
 iks *
-t_pubsub_node_create (TPubsubNode *node,
-                      ...)
+pubsub_node_create (pubsub_node_t *node,
+                    ...)
 {
   iks *iq, *create, *config, *form;
   va_list args;
@@ -484,8 +483,8 @@ t_pubsub_node_create (TPubsubNode *node,
 }
 
 iks *
-t_pubsub_node_createv (TPubsubNode *node,
-                       const char **conf_params)
+pubsub_node_createv (pubsub_node_t *node,
+                     const char **conf_params)
 {
   iks *iq, *create, *config, *form;
   const char *arg;

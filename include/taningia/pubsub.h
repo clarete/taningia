@@ -25,72 +25,197 @@
 
 #define PUBSUB_NS "http://jabber.org/protocol/pubsub"
 
-typedef struct _TPubsub TPubsub;
-typedef struct _TPubsubNode TPubsubNode;
+typedef struct _pubsub_t pubsub_t;
+typedef struct _pubsub_node_t pubsub_node_t;
 
-/* TPubsub */
+/* -- Pubsub -- */
 
-TPubsub    *t_pubsub_new                     (const char *from,
-                                              const char *to);
+/**
+ * @name: pubsub_new
+ * @type: constructor pubsub
+ */
+pubsub_t *pubsub_new (const char *from, const char *to);
 
-void        t_pubsub_free                    (TPubsub    *ctx);
+/**
+ * @name: pubsub_free
+ * @type: destructor pubsub
+ */
+void pubsub_free (pubsub_t *ctx);
 
-iks        *t_pubsub_query_features          (TPubsub    *ctx);
+/**
+ * @name: pubsub_get_node_prefix
+ * @type: getter pubusb:node_prefix
+ */
+const char *pubsub_get_node_prefix (pubsub_t *ctx);
 
-iks        *t_pubsub_query_affiliations      (TPubsub    *ctx);
+/**
+ * @name: pubsub_set_node_prefix
+ * @type: setter pubusb:node_prefix
+ */
+void pubsub_set_node_prefix (pubsub_t *ctx, const char *prefix);
 
-const char *t_pubsub_get_node_prefix         (TPubsub    *ctx);
+/**
+ * @name: pubsub_query_features
+ * @type: method pubsub
+ *
+ * Build a stanza to be sent to an xmpp server that query for all
+ * available pubsub features.
+ */
+iks *pubsub_query_features (pubsub_t *ctx);
 
-void        t_pubsub_set_node_prefix         (TPubsub    *ctx,
-                                              const char *prefix);
+/**
+ * @name: pubsub_query_affiliations
+ * @type: method pubsub
+ *
+ * Build a stanza that queries all affiliations in a pubsub service.
+ */
+iks *pubsub_query_affiliations (pubsub_t *ctx);
 
-/* TPubsubNode */
+/* -- Pubsub Node -- */
 
-TPubsubNode *t_pubsub_node_new               (TPubsub    *ctx,
-                                              const char *name _optional_);
+/**
+ * @name: pubsub_node_new
+ * @type: constructor pubsub_node
+ * @param name (optional): Node name
+ */
+pubsub_node_t *pubsub_node_new (pubsub_t *ctx, const char *name);
 
-void         t_pubsub_node_free              (TPubsubNode *node);
+/**
+ * @name: pubsub_node_free
+ * @type: destructor pubsub_node
+ */
+void pubsub_node_free (pubsub_node_t *node);
 
-const char  *t_pubsub_node_get_name          (TPubsubNode *node);
+/**
+ * @name: pubsub_node_get_name
+ * @type: getter pubsub_node:name
+ */
+const char *pubsub_node_get_name (pubsub_node_t *node);
 
-void         t_pubsub_node_set_name          (TPubsubNode *node,
-                                              const char  *name);
+/**
+ * @name: pubsub_node_set_name
+ * @type: setter pubsub_node:name
+ */
+void pubsub_node_set_name (pubsub_node_t *node, const char *name);
 
-iks         *t_pubsub_node_query_info        (TPubsubNode *node);
+/**
+ * @name: pubsub_node_query_info
+ * @type: method pubsub_node
+ *
+ * Build a stanza to query node info.
+ */
+iks *pubsub_node_query_info (pubsub_node_t *node);
 
-iks         *t_pubsub_node_subscriptions     (TPubsubNode *node);
+/**
+ * @name: pubsub_node_subscriptions
+ * @type: method pubsub_node
+ *
+ * Build a stanza to request all node subscriptions.
+ */
+iks *pubsub_node_subscriptions (pubsub_node_t *node);
 
-iks         *t_pubsub_node_affiliations      (TPubsubNode *node);
+/**
+ * @name: pubsub_node_affiliations
+ * @type: method pubsub_node
+ *
+ * Build a stanza to request all node affiliations.
+ */
+iks *pubsub_node_affiliations (pubsub_node_t *node);
 
-iks         *t_pubsub_node_subscribe         (TPubsubNode *node,
-                                              const char  *jid _optional_);
+/**
+ * @name: pubsub_node_subscribe
+ * @type: method pubsub_node
+ * @param jid (optional): The jid to be subscribed.
+ *
+ * Build a stanza to subscribe to a node. If no `jid' is passed, the
+ * jid set in context will be used.
+ */
+iks *pubsub_node_subscribe (pubsub_node_t *node, const char *jid);
 
-iks         *t_pubsub_node_unsubscribe       (TPubsubNode *node,
-                                              const char  *jid _optional_);
+/**
+ * @name: pubsub_node_unsubscribe
+ * @type: method pubsub_node
+ * @param jid (optional): The jid to be unsubscribed.
+ *
+ * Build a stanza to unsubscribe from a node. If no `jid' is passed,
+ * the jid set in context will be used.
+ * 
+ */
+iks *pubsub_node_unsubscribe (pubsub_node_t *node, const char *jid);
 
 /*
-iks         *t_pubsub_node_items             (TPubsubNode *node);
+  iks *pubsub_node_items (pubsub_node_t *node);
 */
 
-iks         *t_pubsub_node_items             (TPubsubNode *node,
-                                              int          max_items);
+/**
+ * @name: pubsub_node_items
+ * @type: method pubsub_node
+ * @param max_items: Maximum entries to be returned from the server.
+ *
+ * Build a stanza to get the list of entries of a node.
+ */
+iks *pubsub_node_items (pubsub_node_t *node, int max_items);
 
-iks         *t_pubsub_node_publish_text      (TPubsubNode *node,
-                                              const char  *id _optional_,
-                                              const char  *body,
-                                              int          len _len_);
+/**
+ * @name: pubsub_node_publish_text
+ * @type: method pubsub_node
+ * @param id (nullable): The id of published entry.
+ * @param body: The text body to be published.
+ * @param len (optional): The length of the text body.
+ *
+ * Build a stanza to publish a bunch of text in the node.
+ */
+iks *pubsub_node_publish_text (pubsub_node_t *node, const char *id,
+                               const char *body, int len);
 
-iks         *t_pubsub_node_publish_iks       (TPubsubNode *node,
-                                              const char  *id _optional_,
-                                              iks         *child);
+/**
+ * @name: pubsub_node_publish_iks
+ * @type: method pubsub_node
+ * @param id (nullable): The id of published entry.
+ * @param child: The iks object to be published.
+ *
+ * Build a stanza to publish an iks object in the node.
+ */
+iks *pubsub_node_publish_iks (pubsub_node_t *node, const char *id, iks *child);
 
-iks         *t_pubsub_node_delete_item       (TPubsubNode *node,
-                                              const char  *id);
+/**
+ * @name: pubsub_node_delete_item
+ * @type: method pubsub_node
+ * @param id: The id of the object to be deleted.
+ *
+ * Build a stanza to delete an entry from a node.
+ */
+iks *pubsub_node_delete_item (pubsub_node_t *node, const char *id);
 
-iks         *t_pubsub_node_create            (TPubsubNode *node,
-                                              ...);
+/**
+ * @name: pubsub_node_create
+ * @type: method pubsub_node
+ *
+ * Build a stanza to create a node. This function allows to create
+ * <strong>and</strong> configure a ndoe at once. To do it, pass the
+ * configuration information to the var args and end it with a NULL
+ * value, like this:
+ *
+ * <pre>
+ * pubsub_node_create (mynode, "type", "leaf", NULL);
+ * </pre>
+ */
+iks *pubsub_node_create (pubsub_node_t *node, ...);
 
-iks         *t_pubsub_node_createv           (TPubsubNode *node,
-                                              const char **conf_params);
+/**
+ * @name: pubsub_node_createv
+ * @type: method pubsub_node
+ * @param conf_params: Configuration parameters.
+ * @see: pubsub_node_create
+ *
+ * Same of `pubsub_node_create' but without using var args to receive
+ * config parameters. Use it like this:
+ *
+ * <pre>
+ * const char** params = { "type", "leaf", NULL };
+ * pubsub_node_createv (mynode, params);
+ * </pre>
+ */
+iks *pubsub_node_createv (pubsub_node_t *node, const char **conf_params);
 
 #endif /* _TANINGIA_PUBSUB_H */

@@ -22,25 +22,63 @@
 
 #include <taningia/taningia.h>
 
-typedef struct _TError TError;
+typedef struct _error_t error_t;
 
-TError      *t_error_new          (void);
+/**
+ * @name: error_new
+ * @type: constructor error
+ */
+error_t *error_new (void);
 
-void         t_error_free         (TError *error);
+/**
+ * @name: error_free
+ * @type: destructor error
+ */
+void error_free (error_t *error);
 
-int          t_error_get_code     (TError *error);
+/**
+ * @name: error_get_code
+ * @type: getter error:code
+ */
+int error_get_code (error_t *error);
 
-void         t_error_set_code     (TError *error, int code);
+/**
+ * @name: error_set_code
+ * @type: setter error:code
+ */
+void error_set_code (error_t *error, int code);
 
-const char  *t_error_get_name     (TError *error);
+/**
+ * @name: error_get_name
+ * @type: getter error:name
+ */
+const char *error_get_name (error_t *error);
 
-void         t_error_set_name     (TError *error, const char *name);
+/**
+ * @name: error_set_name
+ * @type: setter error:name
+ */
+void error_set_name (error_t *error, const char *name);
 
-const char  *t_error_get_message  (TError *error);
+/**
+ * @name: error_get_message
+ * @type: getter error:message
+ */
+const char *error_get_message (error_t *error);
 
-void         t_error_set_message  (TError *error, const char *message, ...);
+/**
+ * @name: error_set_message
+ * @type: setter error:message
+ */
+void error_set_message (error_t *error, const char *message, ...);
 
-void         t_error_set_full     (TError *error, int code, const char *name,
-                                   const char *message, ...);
+/**
+ * @name: error_set_full
+ * @type: method error
+ *
+ * A shortcut to set all error attributes at once.
+ */
+void error_set_full (error_t *error, int code, const char *name,
+                     const char *message, ...);
 
 #endif /* _TANINGIA_ERROR_H_ */

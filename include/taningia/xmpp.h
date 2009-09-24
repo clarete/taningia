@@ -26,52 +26,159 @@
 #include <taningia/log.h>
 #include <taningia/error.h>
 
-typedef struct _TXmppClient TXmppClient;
+typedef enum
+{
+  XMPP_CONNECTION_ERROR,
+  XMPP_SEND_ERROR
+} xmpp_error_t;
 
-TXmppClient       *t_xmpp_client_new                  (const char       *jid,
-                                                       const char       *password,
-                                                       const char       *host _optional_,
-                                                       int               port _optional_);
- 
-void               t_xmpp_client_free                 (TXmppClient      *ctx);
+typedef struct _xmpp_client_t xmpp_client_t;
 
-const char        *t_xmpp_client_get_jid              (TXmppClient      *ctx);
+/**
+ * @name: xmpp_client_new
+ * @type: constructor xmpp_client
+ * @param jid: XMPP jid to be used in the client connection.
+ * @param password: Password of the jid.
+ * @param host (optional): Host to connect to.
+ * @param port (optional): XMPP host port to connect to.
+ *
+ * Creates a new instance of the xmpp client. If host is ommited, it
+ * will be extracted from the jid. If port is ommited, the default
+ * XMPP port (5222) will be used.
+ */
+xmpp_client_t *xmpp_client_new (const char *jid, const char *password,
+                                const char *host, int port);
 
-void               t_xmpp_client_set_jid              (TXmppClient      *ctx,
-                                                       const char       *jid);
+/**
+ * @name: xmpp_client_free
+ * @type: destructor xmpp_client
+ */
+void xmpp_client_free (xmpp_client_t *ctx);
 
-const char        *t_xmpp_client_get_password         (TXmppClient      *ctx);
+/**
+ * @name: xmpp_client_get_jid
+ * @type: getter xmpp_client:jid
+ */
+const char *xmpp_client_get_jid (xmpp_client_t *ctx);
 
-void               t_xmpp_client_set_password         (TXmppClient      *ctx,
-                                                       const char       *password);
+/**
+ * @name: xmpp_client_set_jid
+ * @type: setter xmpp_client:jid
+ */
+void xmpp_client_set_jid (xmpp_client_t *ctx, const char *jid);
 
-const char        *t_xmpp_client_get_host             (TXmppClient      *ctx);
+/**
+ * @name: xmpp_client_get_password
+ * @type: getter xmpp_client:password
+ */
+const char *xmpp_client_get_password (xmpp_client_t *ctx);
 
-void               t_xmpp_client_set_host             (TXmppClient      *ctx,
-                                                       const char       *host);
+/**
+ * @name: xmpp_client_set_password
+ * @type: setter xmpp_client:password
+ */
+void xmpp_client_set_password (xmpp_client_t *ctx, const char *password);
 
-int                t_xmpp_client_get_port              (TXmppClient     *ctx);
+/**
+ * @name: xmpp_client_get_host
+ * @type: getter xmpp_client:host
+ */
+const char *xmpp_client_get_host (xmpp_client_t *ctx);
 
-void               t_xmpp_client_set_port              (TXmppClient     *ctx,
-                                                        int              port);
+/**
+ * @name: xmpp_client_set_host
+ * @type: setter xmpp_client:host
+ */
+void xmpp_client_set_host (xmpp_client_t *ctx,
+                           const char *host);
 
-TFilter           *t_xmpp_client_get_filter_events     (TXmppClient     *ctx);
+/**
+ * @name: xmpp_client_get_port
+ * @type: getter xmpp_client:port
+ */
+int xmpp_client_get_port (xmpp_client_t *ctx);
 
-TFilter           *t_xmpp_client_get_filter_ids        (TXmppClient     *ctx);
+/**
+ * @name: xmpp_client_set_port
+ * @type: setter xmpp_client:port
+ */
+void xmpp_client_set_port (xmpp_client_t *ctx, int port);
 
-TLog              *t_xmpp_client_get_logger            (TXmppClient     *ctx);
+/**
+ * @name: xmpp_client_get_logger
+ * @type: getter xmpp_client:log
+ */
+log_t *xmpp_client_get_logger (xmpp_client_t *ctx);
 
-TError            *t_xmpp_client_get_error             (TXmppClient     *ctx);
+/**
+ * @name: xmpp_client_get_error
+ * @type: getter xmpp_client:error
+ */
+error_t *xmpp_client_get_error (xmpp_client_t *ctx);
 
-int                t_xmpp_client_send                  (TXmppClient     *ctx,
-                                                        iks             *node);
+/**
+ * @name: xmpp_client_get_filter
+ * @type: getter xmpp_client:filter
+ */
+iksfilter *xmpp_client_get_filter (xmpp_client_t *client);
 
-int                t_xmpp_client_run                   (TXmppClient     *ctx);
+/**
+ * @name: xmpp_client_connect
+ * @type: method xmpp_client
+ * @raise: XMPP_CONNECTION_ERROR
+ *
+ * Connects the client to the host and port specified in the
+ * constructor.
+ */
+int xmpp_client_connect (xmpp_client_t *client);
 
-void               t_xmpp_client_stop                  (TXmppClient     *ctx);
+/**
+ * @name: xmpp_client_disconnect
+ * @type: method xmpp_client
+ *
+ * Disconnects the client from the host.
+ */
+void xmpp_client_disconnect (xmpp_client_t *ctx);
 
-int                t_xmpp_client_reconnect             (TXmppClient     *ctx);
+/**
+ * @name: xmpp_client_send
+ * @type: method xmpp_client
+ * @param node: The iks node to be sent to the XMPP server.
+ *
+ * Sends iks nodes to the XMPP server. Only call this function after
+ * making sure that client is running properly. To do it, use the
+ * `xmpp_client_is_running' function.
+ */
+int xmpp_client_send (xmpp_client_t *ctx, iks *node);
 
-int                t_xmpp_client_is_running            (TXmppClient     *ctx);
+/**
+ * @name: xmpp_client_run
+ * @type: method xmpp_client
+ * @param detach: Define if client's main loop will run in a separated
+ * thread.
+ *
+ * Starts the client main loop. If `detach' is true, returns
+ * -1. Otherwise returns the error code of the package read function.
+ */
+int xmpp_client_run (xmpp_client_t *ctx, int detach);
+
+/**
+ * @name: xmpp_client_is_running
+ * @type: method xmpp_client
+ * @return: bool
+ *
+ * Returns the state of the XMPP client, if it is running or not.
+ */
+int xmpp_client_is_running (xmpp_client_t *ctx);
+
+/* Filter callbacks */
+
+void xmpp_client_set_auth_success_cb (xmpp_client_t *client,
+                                      iksFilterHook *cb,
+                                      void *user_data);
+
+void xmpp_client_set_auth_failure_cb (xmpp_client_t *client,
+                                      iksFilterHook *cb,
+                                      void *user_data);
 
 #endif /* _TANINGIA_XMPP_CLIENT_H_ */

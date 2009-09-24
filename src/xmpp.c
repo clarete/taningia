@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Lincoln de Sousa <lincoln@minaslivre.org>
+ * Copyright (C) 2009  Lincoln de Sousa <lincoln@minaslivre.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -27,536 +27,437 @@
 #include <taningia/filter.h>
 #include <taningia/log.h>
 
-struct _TXmppClient {
-  iksparser *parser;
-  iksid *id;
+struct _xmpp_client_t {
   char *jid;
   char *password;
   char *host;
   int port;
-  TFilter *events;
-  TFilter *ids;
-  TLog *log;
-  TError *error;
+
+  iksparser *parser;
+  iksid *id;
+  iksfilter *filter;
+
+  int features;
+  int authenticated;
   int running;
+
+  log_t *log;
+  error_t *error;
+
+  iksFilterHook *on_auth_success;
+  void *on_auth_success_data;
+  iksFilterHook *on_auth_failure;
+  void *on_auth_failure_data;
 };
 
 /* Prototypes of some local functions */
 
-static int      _t_xmpp_client_hook       (void *data, int type, iks *node);
+static int _xmpp_client_hook   (void *data, int type, iks *node);
 
-static void    *_t_xmpp_client_do_run     (void *user_data);
+static int _xmpp_client_do_run (void *user_data);
+
+#ifdef DEBUG
 
 static void
-_t_xmpp_client_log_hook (void *user_data, const char *data, size_t size, int is_incoming)
+_xmpp_clienlog_hook (xmpp_client_t *client, const char *data,
+                         size_t size, int is_incoming)
 {
-  /* fprintf (stderr, "%s %s\n", is_incoming ? "[in]" : "[out]", data); */
+  if (iks_is_secure (client->parser))
+    fprintf (stderr, "[SEC:");
+  else
+    fprintf (stderr, "[");
+  if (is_incoming)
+    fprintf (stderr, "RECV] ");
+  else
+    fprintf (stderr, "SEND] ");
+  fprintf (stderr, "%s\n\n", data);
 }
 
-/**
- * Allocate memory and initialize stuff necessary to create a new
- * XmppContext.
+#endif
+
+/* Allocate memory and initialize stuff necessary to create a new xmpp
+ * Client.
  */
-TXmppClient *
-t_xmpp_client_new (const char *jid,
-            const char *password,
-            const char *host,
-            int         port)
+xmpp_client_t *
+xmpp_client_new (const char *jid,
+                   const char *password,
+                   const char *host,
+                   int         port)
 {
-  TXmppClient *ctx;
-  ctx = malloc (sizeof (TXmppClient));
-  ctx->jid = strdup (jid);
-  ctx->password = strdup (password);
-  ctx->parser = iks_stream_new (IKS_NS_CLIENT, ctx, _t_xmpp_client_hook);
-  ctx->id = iks_id_new (iks_parser_stack (ctx->parser), ctx->jid);
-  ctx->events = t_filter_new (ctx);
-  ctx->ids = t_filter_new (ctx);
-  ctx->log = t_log_new ("xmpp-client");
-  ctx->error = NULL;
-  ctx->running = 0;
+  xmpp_client_t *client;
+  client = malloc (sizeof (xmpp_client_t));
+  client->jid = strdup (jid);
+  client->password = strdup (password);
 
-  /* Handling optional arguments */
+  /* Control flags */
+  client->features = 0;
+  client->authenticated = 0;
+  client->running = 0;
 
+  /* Iksemel stuff */
+  client->parser = iks_stream_new (IKS_NS_CLIENT, client, _xmpp_client_hook);
+  client->id = iks_id_new (iks_parser_stack (client->parser), jid);
+  client->filter = iks_filter_new ();
+
+  /* Handling optional parameters */
   if (host == NULL)
-    ctx->host = strdup (ctx->id->server);
+    client->host = strdup (client->id->server);
   else
-    ctx->host = strdup (host);
-
+    client->host = strdup (host);
   if (port)
-    ctx->port = port;
+    client->port = port;
   else
-    ctx->port = IKS_JABBER_PORT;
+    client->port = IKS_JABBER_PORT;
 
-  /* Useful for debugging */
+  /* taningia stuff */
+  client->log = log_new ("xmpp-client");
+  client->error = NULL;
 
-  iks_set_log_hook (ctx->parser, _t_xmpp_client_log_hook);
-  return ctx;
+#ifdef DEBUG
+  iks_selog_hook (client->parser, (iksLogHook *) _xmpp_clienlog_hook);
+#endif
+
+  return client;
 }
 
-/**
- * Free the memory used by a XmppContext struct.
+/* Free the memory used by a XmppContext struct.
  */
 void
-t_xmpp_client_free (TXmppClient *ctx)
+xmpp_client_free (xmpp_client_t *client)
 {
-  free (ctx->jid);
-  free (ctx->password);
-  iks_parser_delete (ctx->parser);
-  t_filter_free (ctx->events);
-  t_filter_free (ctx->ids);
-  t_log_free (ctx->log);
-  if (ctx->error)
-    t_error_free (ctx->error);
-  free (ctx);
+  if (client->jid)
+    free (client->jid);
+  if (client->password)
+    free (client->password);
+  if (client->host)
+    free (client->host);
+  if (client->parser)
+    iks_parser_delete (client->parser);
+  if (client->filter)
+    iks_filter_delete (client->filter);
+  if (client->log)
+    log_free (client->log);
+  if (client->error)
+    error_free (client->error);
+  free (client);
 }
 
 const char *
-t_xmpp_client_get_jid (TXmppClient *ctx)
+xmpp_client_get_jid (xmpp_client_t *client)
 {
-  return ctx->jid;
+  return client->jid;
 }
 
 void
-t_xmpp_client_set_jid (TXmppClient *ctx, const char *jid)
+xmpp_client_set_jid (xmpp_client_t *client, const char *jid)
 {
-  if (ctx->jid)
-    free (ctx->jid);
-  ctx->jid = strdup (jid);
+  if (client->jid)
+    free (client->jid);
+  client->jid = strdup (jid);
 }
 
 const char *
-t_xmpp_client_get_password (TXmppClient *ctx)
+xmpp_client_get_password (xmpp_client_t *client)
 {
-  return ctx->password;
+  return client->password;
 }
 
 void
-t_xmpp_client_set_password (TXmppClient *ctx, const char *password)
+xmpp_client_set_password (xmpp_client_t *client, const char *password)
 {
-  if (ctx->password)
-    free (ctx->password);
-  ctx->password = strdup (password);
+  if (client->password)
+    free (client->password);
+  client->password = strdup (password);
 }
 
 const char *
-t_xmpp_client_get_host (TXmppClient *ctx)
+xmpp_client_get_host (xmpp_client_t *client)
 {
-  return ctx->host;
+  return client->host;
 }
 
 void
-t_xmpp_client_set_host (TXmppClient *ctx, const char *host)
+xmpp_client_set_host (xmpp_client_t *client, const char *host)
 {
-  if (ctx->host)
-    free (ctx->host);
-  ctx->host = strdup (host);
+  if (client->host)
+    free (client->host);
+  client->host = strdup (host);
 }
 
 int
-t_xmpp_client_get_port (TXmppClient *ctx)
+xmpp_client_get_port (xmpp_client_t *client)
 {
-  return ctx->port;
+  return client->port;
 }
 
 void
-t_xmpp_client_set_port (TXmppClient *ctx, int port)
+xmpp_client_set_port (xmpp_client_t *client, int port)
 {
-  ctx->port = port;
+  client->port = port;
 }
 
-TFilter *
-t_xmpp_client_get_filter_events (TXmppClient *ctx)
+log_t *
+xmpp_client_gelogger (xmpp_client_t *client)
 {
-  return ctx->events;
+  return client->log;
 }
 
-TFilter *
-t_xmpp_client_get_filter_ids (TXmppClient *ctx)
+error_t *
+xmpp_client_get_error (xmpp_client_t *client)
 {
-  return ctx->ids;
+  return client->error;
 }
 
-TLog *
-t_xmpp_client_get_logger (TXmppClient *ctx)
+iksfilter *
+xmpp_client_get_filter (xmpp_client_t *client)
 {
-  return ctx->log;
-}
-
-TError *
-t_xmpp_client_get_error (TXmppClient *ctx)
-{
-  return ctx->error;
+  return client->filter;
 }
 
 int
-t_xmpp_client_is_running (TXmppClient *ctx)
+xmpp_client_is_running (xmpp_client_t *client)
 {
-  return ctx->running;
+  return client->running;
 }
 
 int
-t_xmpp_client_send (TXmppClient *ctx, iks *node)
+xmpp_client_send (xmpp_client_t *client, iks *node)
 {
   int err;
-  if ((err = iks_send (ctx->parser, node)) != IKS_OK)
+  if ((err = iks_send (client->parser, node)) != IKS_OK)
     {
-      t_log_warn (ctx->log, "Fail to send packet through t_xmpp_client_send");
-      if (ctx->error)
-        {
-          t_error_free (ctx->error);
-          ctx->error = NULL;
-        }
-      ctx->error = t_error_new ();
-      t_error_set_name (ctx->error, "NetworkError");
-      t_error_set_message (ctx->error,
-                           "Failed to send package through the client");
-      t_error_set_code (ctx->error, err);
+      log_warn (client->log, "Fail to send the stanza");
+      if (client->error)
+        error_free (client->error);
+      client->error = error_new ();
+      error_set_name (client->error, "NetworkError");
+      error_set_message (client->error, "Failed to send the stanza");
+      error_set_code (client->error, XMPP_SEND_ERROR);
     }
   return err;
 }
 
-/**
- * This function starts the main xmpp (iksemel) loop in another
- * thread. To avoid problems with our loved GMainLoop used by soup.
- */
 int
-t_xmpp_client_run (TXmppClient *ctx)
+xmpp_client_connect (xmpp_client_t *client)
 {
   int err;
-  pthread_t th;
-
-  if ((err = iks_connect_via (ctx->parser, ctx->host,
-                              ctx->port, ctx->id->server)) != IKS_OK)
+  if ((err = iks_connect_via (client->parser, client->host,
+                              client->port, client->id->server)) != IKS_OK)
     {
       /* Something didnt't work properly here, so we need to handle
        * the error and send some useful result to the user. */
-      if (ctx->error)
+      if (client->error)
         {
-          t_error_free (ctx->error);
-          ctx->error = NULL;
+          error_free (client->error);
+          client->error = NULL;
         }
-      ctx->error = t_error_new ();
-      t_error_set_name (ctx->error, "ConnectionError");
-      t_error_set_message (ctx->error,
-                           "Unable to connect to: %s:%d",
-                           ctx->host, ctx->port);
-      t_error_set_code (ctx->error, err);
-      t_log_warn (ctx->log, "Unable to connect to: %s:%d",
-                  ctx->host, ctx->port);
-      return err;
+      client->error = error_new ();
+      error_set_name (client->error, "ConnectionError");
+      error_set_code (client->error, XMPP_CONNECTION_ERROR);
+
+      switch (err)
+        {
+        case IKS_NET_NODNS:
+          error_set_message (client->error, "hostname lookup failed");
+          break;
+
+        case IKS_NET_NOCONN:
+          error_set_message (client->error, "connection failed");
+          break;
+
+        default:
+          error_set_message (client->error, "io error");
+          break;
+        }
+      return 0;
     }
-  t_log_info (ctx->log, "Connected to xmpp:%s:%d", ctx->host, ctx->port);
+  else
+    {
+      log_info (client->log, "Connected to xmpp:%s:%d",
+                  client->host, client->port);
+      return 1;
+    }
+}
 
-  ctx->running = 1;
-
-  /* Detaching our main loop thread */
-  pthread_create (&th, NULL, _t_xmpp_client_do_run, (void *) ctx);
-  pthread_detach (th);
-  t_log_info (ctx->log, "Detaching the main loop thread");
-
-  return IKS_OK;
+int
+xmpp_client_run (xmpp_client_t *client, int detach)
+{
+  /* Detaching our main loop thread if requested */
+  if (detach)
+    {
+      pthread_t th;
+      pthread_create (&th, NULL, (void *) _xmpp_client_do_run, (void *) client);
+      pthread_detach (th);
+      log_info (client->log, "Detaching xmpp client main loop thread");
+      return -1;
+    }
+  else
+    return (_xmpp_client_do_run ((void *) client));
 }
 
 void
-t_xmpp_client_stop (TXmppClient *ctx)
+xmpp_client_disconnect (xmpp_client_t *client)
 {
-  iks_disconnect (ctx->parser);
-  ctx->running = 0;
-  t_log_info (ctx->log, "Disconnected");
+  client->running = 0;
+  iks_disconnect (client->parser);
+  log_info (client->log, "Disconnected");
 }
 
-int
-t_xmpp_client_reconnect (TXmppClient *ctx)
+void
+xmpp_client_set_auth_success_cb (xmpp_client_t *client,
+                                   iksFilterHook *cb,
+                                   void *user_data)
 {
-  t_xmpp_client_stop (ctx);
-  return t_xmpp_client_run (ctx);
+  client->on_auth_success = cb;
+  client->on_auth_success_data = user_data;
+  iks_filter_add_rule (client->filter, (iksFilterHook *) cb, user_data,
+                       IKS_RULE_TYPE, IKS_PAK_IQ,
+                       IKS_RULE_SUBTYPE, IKS_TYPE_RESULT,
+                       IKS_RULE_ID, "auth",
+                       IKS_RULE_DONE);
 }
 
-/* Static (local) functions. A very special thanks to Thadeu
- * Cascardo, his pubsub-bot was a very useful example =D */
-
-int
-xmpp_bind_hook (iksparser *parser, iks *node)
+void
+xmpp_client_set_auth_failure_cb (xmpp_client_t  *client,
+                                   iksFilterHook *cb,
+                                   void *user_data)
 {
-  iks *iq;
-  iq = iks_new ("iq");
-  iks_insert_attrib (iq, "type", "set");
-  iks_insert_attrib (iq, "id", "bind1");
-  iks_insert_attrib (iks_insert (iq, "bind"),
-                     "xmlns", "urn:ietf:params:xml:ns:xmpp-bind");
-  iks_send (parser, iq);
-  iks_delete (iq);
-  return 0;
+  client->on_auth_failure = cb;
+  client->on_auth_failure_data = user_data;
+  iks_filter_add_rule (client->filter, cb, user_data,
+                       IKS_RULE_TYPE, IKS_PAK_IQ,
+                       IKS_RULE_SUBTYPE, IKS_TYPE_ERROR,
+                       IKS_RULE_ID, "auth",
+                       IKS_RULE_DONE);
 }
 
-int
-xmpp_iq_error (iksparser *parser, iks *node)
-{
-  iks *enode;
-  char *to;
-  char *from;
-  if (!iks_strcmp (iks_find_attrib (node, "type"), "error"))
-    return 1;
-  to = iks_find_attrib (node, "to");
-  from = iks_find_attrib (node, "from");
-  if (to)
-    iks_insert_attrib (node, "from", to);
-  else
-    iks_insert_attrib (node, "from", NULL);
-  if (from)
-    iks_insert_attrib (node, "to", from);
-  else
-    iks_insert_attrib (node, "to", NULL);
-  iks_insert_attrib (node, "type", "error");
-  enode = iks_insert (node, "error");
-  iks_insert_attrib (enode, "type", "cancel");
-  iks_insert_attrib (iks_insert (enode, "feature-not-implemented"),
-                     "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas");
-  iks_send (parser, node);
-  return 0;
-}
-
-int
-xmpp_session_hook (iksparser *parser, iks *node)
-{
-  iks *iq;
-
-  iq = iks_make_session ();
-  iks_insert_attrib (iq, "id", "session1");
-  iks_send (parser, iq);
-  iks_delete (iq);
-  return 0;
-}
-
-int
-xmpp_initial_presence_hook (iksparser *parser, iks *node)
-{
-  iks *pres;
-  pres = iks_make_pres (IKS_SHOW_AVAILABLE, "System blah!");
-  iks_send (parser, pres);
-  iks_delete (pres);
-  return 0;
-}
-
-int
-xmpp_id_hook (iksparser *parser, iks *node, char *id)
-{
-  if (!iks_strcmp (id, "bind1"))
-    {
-      xmpp_session_hook (parser, node);
-      return 0;
-    }
-  else if (!iks_strcmp (id, "session1"))
-    {
-      xmpp_initial_presence_hook (parser, node);
-      return 0;
-    }
-  return 1;
-}
+/* ---- End of public API ---- */
 
 static int
-xmpp_features_hook (TXmppClient *ctx, iks *node)
+_xmpp_client_hook (void *data, int type, iks *node)
 {
-  iks *feat;
-  char *ns;
-
-  for (feat = iks_child (node); feat != NULL; feat = iks_next (feat))
-    {
-      ns = iks_find_attrib (feat, "xmlns");
-      if (!iks_strcmp (ns, "urn:ietf:params:xml:ns:xmpp-tls"))
-        {
-          if (iks_start_tls (ctx->parser) != IKS_OK)
-            {
-              t_log_warn (ctx->log, "TLS negotiation failed");
-              return 1;
-            }
-          else
-            {
-              t_log_info (ctx->log, "TLS negotiation done");
-              return 0;
-            }
-        }
-      else if (!iks_strcmp (ns, IKS_NS_XMPP_SASL))
-        {
-          if (iks_start_sasl (ctx->parser, IKS_SASL_DIGEST_MD5,
-                              ctx->id->user, ctx->password) != IKS_OK)
-            {
-              t_log_warn (ctx->log, "SASL negotiation failed");
-              return 1;
-            }
-          else
-            {
-              t_log_info (ctx->log, "SASL started");
-              return 0;
-            }
-        }
-      else if (!iks_strcmp (ns, IKS_NS_XMPP_BIND))
-        {
-          if (xmpp_bind_hook (ctx->parser, node) == 0)
-            {
-              t_log_info (ctx->log, "Bind hook sent");
-              return 0;
-            }
-          else
-            {
-              t_log_warn (ctx->log, "Bind hook failed");
-              return 1;
-            }
-        }
-    }
-  return 1;
-}
-
-int
-xmpp_other_hook (TXmppClient *ctx, iks *node, char *ns)
-{
-  if (!iks_strcmp (ns, IKS_NS_XMPP_SASL))
-    {
-      if (!iks_strcmp (iks_name (node), "success"))
-        iks_send_header (ctx->parser, ctx->id->server);
-      else if (!iks_strcmp (iks_name (node), "failure"))
-        t_log_warn (ctx->log, "Authentication failed");
-      return 0;
-    }
-  return 1;
-}
-
-static int
-_t_xmpp_client_hook (void *data, int type, iks *node)
-{
+  xmpp_client_t *client;
   char *name;
-  char *id;
-  char *ns;
-  iksparser *parser;
-  TXmppClient *ctx;
-
-  ctx = (TXmppClient *) data;
-  parser = ctx->parser;
+  client = (xmpp_client_t *) data;
   name = iks_name (node);
-  id = iks_find_attrib (node, "id");
-  ns = iks_find_attrib (node, "xmlns");
 
-  /* Dispatching a notification to id handlers. */
-  if (id)
-    t_filter_call (ctx->ids, id, node);
-
-  if (!iks_strcmp (name, "iq"))
+  switch (type)
     {
-      t_filter_call (ctx->events, "iq", node);
-      if (xmpp_id_hook (parser, node, id) == 0)
-        return IKS_OK;
-      xmpp_iq_error (parser, node);
-    }
-  else if (!iks_strcmp (name, "presence"))
-    {
-      char *from;
-      from = iks_find_attrib (node, "from");
-      t_filter_call (ctx->events, "presence", node);
-      t_log_info (ctx->log, "I sense a disturbance in the force: %s!", from);
-    }
-  else if (!iks_strcmp (name, "message"))
-    {
-      char *from;
-      char *body;
-      from = iks_find_attrib (node, "from");
-      body = iks_find_cdata (node, "body");
-      t_filter_call (ctx->events, "message", node);
-      if (body)
-        t_log_info (ctx->log, "Xmpp message from '%s':\n%s", from, body);
-      else
-        t_log_info (ctx->log, "Xmpp message from '%s'", from);
-    }
-  else if (!iks_strcmp (name, "stream:features"))
-    {
-      /* Sending notification about incoming features */
-      t_filter_call (ctx->events, "features", node);
-
-      /* Calling our standard feature hook with tls, sasl and
-       * binding operations. */
-      if (xmpp_features_hook (ctx, node) == 0)
+    case IKS_NODE_START:
+      if (!iks_is_secure (client->parser))
         {
-          return IKS_OK;
+          iks_start_tls (client->parser);
+          break;
         }
-      else
+    case IKS_NODE_NORMAL:
+      if (strcmp (name, "stream:features") == 0)
         {
-          t_log_critical (ctx->log, "Something wrong has happened:\n%s",
-                          iks_string (iks_stack (node), node));
-        }
-    }
-  else if (!iks_strcmp (name, "stream:error"))
-    {
-      char *inner_name;
-      inner_name = iks_name (iks_child (node));
-
-      /* Dispatching an event notifiying the error. */
-      t_filter_call (ctx->events, "error", node);
-
-      /* Trying to give more info about the error to the user. Some
-       * kinds of errors can change the behaviour of the
-       * connection. In this first example, that we're handling a
-       * `host-unknown' error, we'll interrupt the recv loop since
-       * we'll never get anything without connecting to the host. */
-      if (!iks_strcmp (inner_name, "host-unknown"))
-        {
-          t_xmpp_client_stop (ctx);
-          if (ctx->error)
+          client->features = iks_stream_features (node);
+          if (!iks_is_secure (client->parser))
+            break;
+          if (client->authenticated)
             {
-              t_error_free (ctx->error);
-              ctx->error = NULL;
+              if (client->features & IKS_STREAM_BIND)
+                {
+                  iks *bind;
+                  bind = iks_make_resource_bind (client->id);
+                  iks_send (client->parser, bind);
+                  iks_delete (bind);
+                }
+              if (client->features & IKS_STREAM_SESSION)
+                {
+                  iks *session;
+                  session = iks_make_session ();
+                  iks_insert_attrib (session, "id", "auth");
+                  iks_send (client->parser, session);
+                  iks_delete (session);
+                }
             }
-          ctx->error = t_error_new ();
-          t_error_set_name (ctx->error, "UnknownHost");
-          t_error_set_message (ctx->error,
-                               "Unknown host, aborting main loop");
-          t_error_set_code (ctx->error, 1);
-          t_log_critical (ctx->log, "Unknown Host, aborting main loop");
+          else
+            {
+              if (client->features & IKS_STREAM_SASL_MD5)
+                iks_start_sasl (client->parser, IKS_SASL_DIGEST_MD5,
+                                client->id->user, client->password);
+              else if (client->features & IKS_STREAM_SASL_PLAIN)
+                iks_start_sasl (client->parser, IKS_SASL_PLAIN,
+                                client->id->user, client->password);
+            }
+        }
+      else if (strcmp (name, "failure") == 0)
+        {
+          log_info (client->log, "authentication failed");
+          if (client->on_auth_failure)
+            {
+              ikspak *pak;
+              pak = iks_packet (node);
+              client->on_auth_failure (client->on_auth_failure_data, pak);
+            }
+        }
+      else if (strcmp (name, "success") == 0)
+        {
+          client->authenticated = 1;
+          iks_send_header (client->parser, client->id->server);
+          log_info (client->log, "authentication successful");
         }
       else
         {
-          t_log_warn (ctx->log, "streamerror: %s",
-                      iks_string (iks_stack (node), node));
+          ikspak *pak;
+          pak = iks_packet (node);
+          iks_filter_packet (client->filter, pak);
         }
+      break;
+    case IKS_NODE_ERROR:
+      {
+        char *node_str;
+        node_str = iks_string (iks_stack (node), node);
+        log_error (client->log, "Error stream: %s", node_str);
+        break;
+      }
     }
-  else
-    {
-      if (xmpp_other_hook (ctx, node, ns) == 0)
-        return IKS_OK;
-      t_log_warn (ctx->log, "Unhandled hook: \"%s\"", name);
-    }
+
+  if (node)
+    iks_delete (node);
+
   return IKS_OK;
 }
 
-/* The main loop of our xmpp client. */
-static void *
-_t_xmpp_client_do_run (void *user_data)
+static int
+_xmpp_client_do_run (void *user_data)
 {
-  int err;
-  TXmppClient *ctx = (TXmppClient *) user_data;
+  xmpp_client_t *client;
+  int ret = 1;
 
-  while (ctx->running)
+  client = (xmpp_client_t *) user_data;
+  client->running = 1;
+
+  while (client->running)
     {
-      if (!ctx->parser)
+      switch (iks_recv (client->parser, -1))
         {
-          ctx->running = 0;
+        case IKS_HOOK:
+        case IKS_OK:
+          break;
+
+        case IKS_NET_NOCONN:
+          log_info (client->log, "Client not connected, stopping main loop");
+          client->running = 0;
+          break;
+
+        case IKS_NET_RWERR:
+          log_error (client->log, "Network error");
+          client->running = 0;
+          break;
+
+        case IKS_NET_TLSFAIL:
+          log_error (client->log, "TLS handshake failed");
+          client->running = 0;
+          break;
+
+        default:
+          log_error (client->log, "IO error");
+          client->running = 0;
           break;
         }
-      if ((err = iks_recv (ctx->parser, -1)) != IKS_OK)
-        {
-          switch (err)
-            {
-            case IKS_NET_NOCONN:
-              t_log_critical (ctx->log, "iks_recv: IKS_NET_NOCONN.");
-              break;
-
-            case IKS_NET_RWERR:
-              t_log_critical (ctx->log, "iks_recv: IKS_NET_RWERR.");
-              break;
-
-            default:
-              t_log_critical (ctx->log, "iks_recv: Unhandled error.");
-              break;
-            }
-        }
     }
-  return NULL;
+  return ret;
 }
