@@ -311,6 +311,15 @@ ta_pubsub_query_node_items (ta_pubsub_node_t *node)
 }
 
 iks *
+ta_pubsub_node_nodes (ta_pubsub_node_t *node)
+{
+  iks *iq = createiq (node->ctx, IKS_TYPE_GET, NS_ITEM);
+  if (node->name)
+    iks_insert_attrib (iks_child (iq), "node", node->name);
+  return iq;
+}
+
+iks *
 ta_pubsub_node_items (ta_pubsub_node_t *node,
                       int          max_items)
 {

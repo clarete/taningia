@@ -142,9 +142,13 @@ iks *ta_pubsub_node_subscribe (ta_pubsub_node_t *node, const char *jid);
  */
 iks *ta_pubsub_node_unsubscribe (ta_pubsub_node_t *node, const char *jid);
 
-/*
-  iks *ta_pubsub_node_items (ta_pubsub_node_t *node);
-*/
+/**
+ * @name: ta_pubsub_node_nodes
+ * @type: method ta_pubsub_node
+ *
+ * Discover all nodes in a node instance.
+ */
+iks *ta_pubsub_node_nodes (ta_pubsub_node_t *node);
 
 /**
  * @name: ta_pubsub_node_items
