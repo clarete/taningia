@@ -440,7 +440,7 @@ def underscore_to_camel(name):
         else:
             nname += name[i]
         i += 1
-    return nname
+    return nname.capitalize()
 
 class Helper(object):
     cyclegctypes = []
