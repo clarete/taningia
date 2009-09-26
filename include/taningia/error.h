@@ -20,8 +20,6 @@
 #ifndef _TANINGIA_ERROR_H_
 #define _TANINGIA_ERROR_H_
 
-#include <taningia/taningia.h>
-
 typedef struct _ta_error_t ta_error_t;
 
 /**

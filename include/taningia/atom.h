@@ -22,7 +22,6 @@
 
 #include <time.h>
 #include <iksemel.h>
-#include <taningia/taningia.h>
 #include <taningia/iri.h>
 #include <taningia/error.h>
 #include <taningia/list.h>

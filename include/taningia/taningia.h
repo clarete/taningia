@@ -20,24 +20,12 @@
 #ifndef _TANINGIA_H_
 #define _TANINGIA_H_
 
-/* These macros are param modifier marks, they have no meaning for the
- * C user. They are mainly used by the binding scanner script to
- * provide some more info about function parameters. */
-
-/* Used for output params */
-#define _out_
-
-/* Used for optional parameters  */
-#define _optional_
-
-/* Used to receive a string size. The parameter right before the one
- * marked with this must be a string */
-#define _len_
-
-/* Mark parameters that can receive NULL values. Different from _out_
- * parameters because, it is still required, but can receive a NULL
- * value.
- */
-#define _nullable_
+#include "atom.h"
+#include "error.h"
+#include "iri.h"
+#include "list.h"
+#include "log.h"
+#include "pubsub.h"
+#include "xmpp.h"
 
 #endif /* _TANINGIA_H_ */

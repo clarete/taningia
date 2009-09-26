@@ -21,7 +21,6 @@
 #define _TANINGIA_PUBSUB_H
 
 #include <iksemel.h>
-#include <taningia/taningia.h>
 
 #define TA_PUBSUB_NS "http://jabber.org/protocol/pubsub"
 

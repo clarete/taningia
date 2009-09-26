@@ -20,7 +20,6 @@
 #ifndef _TANINGIA_IRI_H_
 #define _TANINGIA_IRI_H_
 
-#include <taningia/taningia.h>
 #include <taningia/error.h>
 
 typedef struct _ta_iri_t ta_iri_t;
