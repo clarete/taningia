@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Lincoln de Sousa <lincoln@minaslivre.org>
+ * Copyright (C) 2009  Lincoln de Sousa <lincoln@minaslivre.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -27,10 +27,13 @@
 
 typedef enum {
   XMPP_CONNECTION_ERROR,
+  XMPP_NO_SUCH_EVENT_ERROR,
   XMPP_SEND_ERROR
 } ta_xmpp_error_t;
 
 typedef struct _ta_xmpp_client_t ta_xmpp_client_t;
+
+typedef int (*ta_xmpp_client_hook_t) (ta_xmpp_client_t *, void *, void *);
 
 /**
  * @name: ta_xmpp_client_new
@@ -168,14 +171,56 @@ int ta_xmpp_client_run (ta_xmpp_client_t *ctx, int detach);
  */
 int ta_xmpp_client_is_running (ta_xmpp_client_t *ctx);
 
-/* Filter callbacks */
+/**
+ * @name: ta_xmpp_client_event_connect
+ * @type: method ta_xmpp_client
+ * @param event: Name of the event to connected the hook.
+ * @param hook: The hook to be connected to the event.
+ * @param user_data: User defined value to be passed to the hook.
+ * @raise: XMPP_NO_SUCH_EVENT_ERROR
+ *
+ * Connects a hook to an already defined event in the client.  A
+ * common case of this function is while connecting, that you connect
+ * a hook to the <em>authenticated</em> event. To do it, you can do
+ * some thing like this:
+ *
+ * <pre>
+ * int
+ * auth_cb (ta_xmpp_client_t *client, void *user_data)
+ * {
+ *   printf ("Auth sucessful!");
+ *   return 1;
+ * }
+ *
+ * ta_xmpp_client_t *client;
+ * client = ta_xmpp_client_new ("lincoln@localhost", "passwd", NULL, 0);
+ * ta_xmpp_client_connect (client);
+ * ta_xmpp_client_event_connect (client, "authenticated", auth_cb, NULL);
+ * ta_xmpp_client_run (client, 1);
+ * </pre>
+ *
+ * This method will <strong>not</strong> modify or free value passed
+ * in `user_data' parameter.
+ */
+int ta_xmpp_client_event_connect (ta_xmpp_client_t *client,
+                                  const char *event,
+                                  ta_xmpp_client_hook_t hook,
+                                  void *user_data);
 
-void ta_xmpp_client_set_auth_success_cb (ta_xmpp_client_t *client,
-                                         iksFilterHook *cb,
-                                         void *user_data);
-
-void ta_xmpp_client_set_auth_failure_cb (ta_xmpp_client_t *client,
-                                         iksFilterHook *cb,
-                                         void *user_data);
+/**
+ * @name: ta_xmpp_client_event_disconnect
+ * @type: method ta_xmpp_client
+ * @param event: The event name
+ * @param hook: Hook to be disconnected from the event.
+ * @raise: XMPP_NO_SUCH_EVENT_ERROR
+ *
+ * Disconnects a previously connected hook from an event.
+ *
+ * This method will <strong>not</strong> modify or free value passed
+ * in `user_data' parameter.
+ */
+int ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
+                                     const char *event,
+                                     ta_xmpp_client_hook_t hook);
 
 #endif /* _TANINGIA_XMPP_H_ */

@@ -23,12 +23,17 @@
 #include <taningia/xmpp.h>
 #include <taningia/log.h>
 
-int
-connected_cb (void *data, ikspak *pak)
+static int
+connected_cb (ta_xmpp_client_t *client, void *data)
 {
-  ta_xmpp_client_t *client;
+  fprintf (stderr, "We're connected!\n");
+  return 0;
+}
+
+static int
+auth_cb (ta_xmpp_client_t *client, void *data)
+{
   iks *node;
-  client = (ta_xmpp_client_t *) data;
   printf ("connected: =)\n");
   printf ("Sending presence and sleeping some time\n");
 
@@ -40,19 +45,18 @@ connected_cb (void *data, ikspak *pak)
   /* Sleeping some time before disconnection */
   sleep (3);
   ta_xmpp_client_disconnect (client);
-  return IKS_FILTER_EAT;
+  return 0;
 }
 
-int
-not_connected_cb (void *data, ikspak *pak)
+static int
+auth_failed_cb (ta_xmpp_client_t *client, void *data)
 {
-  ta_xmpp_client_t *client;
+  ikspak *pak = (ikspak *) data;
   char *node_str = iks_string (iks_stack (pak->x), pak->x);
-  client = (ta_xmpp_client_t *) data;
   printf ("not connected: =(\n");
   printf ("%s\n", node_str);
   ta_xmpp_client_disconnect (client);
-  return IKS_FILTER_EAT;
+  return 0;
 }
 
 int
@@ -78,6 +82,22 @@ main (int argc, char **argv)
    * jid will be used. And if port is 0, it will default to 5222 */
   xmpp = ta_xmpp_client_new (jid, passwd, host, 5222);
 
+  /* Connecting callbacks to some events dispatched by our client.  If
+   * you try to connect to an unknown event, `event_connect' method
+   * returns `0' and an error will be set.
+   */
+  ta_xmpp_client_event_connect (xmpp, "connected",
+                                (ta_xmpp_client_hook_t) connected_cb,
+                                NULL);
+
+  ta_xmpp_client_event_connect (xmpp, "authenticated",
+                                (ta_xmpp_client_hook_t) auth_cb,
+                                NULL);
+
+  ta_xmpp_client_event_connect (xmpp, "authentication-failed",
+                                (ta_xmpp_client_hook_t) auth_failed_cb,
+                                NULL);
+
   /* You can access and configure log object attached to the brand new
    * xmpp client instance. To know more about the log object, look at
    * the `log-system.c' example */
@@ -95,11 +115,6 @@ main (int argc, char **argv)
       ta_xmpp_client_free (xmpp);
       return 1;
     }
-
-  /* Setting callbacks to handle successful and failure
-   * authentications */
-  ta_xmpp_client_set_auth_success_cb (xmpp, connected_cb, ((void *) xmpp));
-  ta_xmpp_client_set_auth_failure_cb (xmpp, not_connected_cb, ((void *) xmpp));
 
   /* Starting client main loop. Requesting to do not detach the loop
    * to another thread. Authentication will be done here too. */

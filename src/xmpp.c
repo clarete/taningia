@@ -25,6 +25,10 @@
 
 #include <taningia/xmpp.h>
 #include <taningia/log.h>
+#include <taningia/list.h>
+
+/* To use GHashTable. Soon it will be replaced. */
+#include <glib.h>
 
 struct _ta_xmpp_client_t {
   char *jid;
@@ -43,10 +47,12 @@ struct _ta_xmpp_client_t {
   ta_log_t *log;
   ta_error_t *error;
 
-  iksFilterHook *on_auth_success;
-  void *on_auth_success_data;
-  iksFilterHook *on_auth_failure;
-  void *on_auth_failure_data;
+  GHashTable *events;
+};
+
+struct hook_data {
+  ta_xmpp_client_hook_t hook;
+  void *data;
 };
 
 /* Prototypes of some local functions */
@@ -54,6 +60,36 @@ struct _ta_xmpp_client_t {
 static int _ta_xmpp_client_hook   (void *data, int type, iks *node);
 
 static int _ta_xmpp_client_do_run (void *user_data);
+
+/* Look for an entry called `event' in the client event hash table and
+ * then executes all hooks added to the list in that entry. If a hook
+ * returns a true value, the iteration is stopped. */
+static void
+_ta_xmpp_client_call_event_hooks (ta_xmpp_client_t *client,
+                                  const char *event, void *data)
+{
+  ta_list_t *tmp;
+  ta_list_t *hooks = g_hash_table_lookup (client->events, event);
+  struct hook_data *hdata;
+  for (tmp = hooks; tmp; tmp = tmp->next)
+    {
+      hdata = (struct hook_data *) tmp->data; 
+      if ((*hdata->hook) (client, data, hdata->data))
+        return;
+    }
+}
+
+/* Definition of the callback that is called when our client
+ * successfully authenticates in an XMPP server.  This callback just
+ * call any declared hook against `authenticated' event. */
+static int
+_ta_xmpp_client_ikshook_authenticated (void *data, ikspak *pak)
+{
+  ta_xmpp_client_t *client;
+  client = (ta_xmpp_client_t *) data;
+  _ta_xmpp_client_call_event_hooks (client, "authenticated", pak);
+  return IKS_FILTER_PASS;
+}
 
 #ifdef DEBUG
 
@@ -93,10 +129,10 @@ ta_xmpp_client_new (const char *jid,
   client->authenticated = 0;
   client->running = 0;
 
-  /* Iksemel stuff */
-  client->parser = iks_stream_new (IKS_NS_CLIENT, client, _ta_xmpp_client_hook);
-  client->id = iks_id_new (iks_parser_stack (client->parser), jid);
-  client->filter = iks_filter_new ();
+  /* iksemel stuff */
+  client->parser = NULL;
+  client->filter = NULL;
+  client->id = NULL;
 
   /* Handling optional parameters */
   if (host == NULL)
@@ -112,10 +148,14 @@ ta_xmpp_client_new (const char *jid,
   client->log = ta_log_new ("xmpp-client");
   client->error = NULL;
 
-#ifdef DEBUG
-  iks_seta_log_hook (client->parser, (iksLogHook *) _xmpp_clienta_log_hook);
-#endif
-
+  /* Initializing hash table that holds event hooks and adding all
+   * currently supported events. We actually don't free anything but
+   * the `hook_data' struct, so it is up to the caller to free the
+   * data field. */
+  client->events = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_free);
+  g_hash_table_insert (client->events, "connected", NULL);
+  g_hash_table_insert (client->events, "authenticated", NULL);
+  g_hash_table_insert (client->events, "authentication-failed", NULL);
   return client;
 }
 
@@ -138,6 +178,8 @@ ta_xmpp_client_free (ta_xmpp_client_t *client)
     ta_log_free (client->log);
   if (client->error)
     ta_error_free (client->error);
+  if (client->events)
+    g_hash_table_unref (client->events);
   free (client);
 }
 
@@ -240,6 +282,17 @@ int
 ta_xmpp_client_connect (ta_xmpp_client_t *client)
 {
   int err;
+
+  /* Iksemel stuff */
+  client->parser = iks_stream_new (IKS_NS_CLIENT, client,
+                                   _ta_xmpp_client_hook);
+  client->id = iks_id_new (iks_parser_stack (client->parser), client->jid);
+  client->filter = iks_filter_new ();
+
+#ifdef DEBUG
+  iks_set_log_hook (client->parser, (iksLogHook *) _xmpp_clienta_log_hook);
+#endif
+
   if ((err = iks_connect_via (client->parser, client->host,
                               client->port, client->id->server)) != IKS_OK)
     {
@@ -274,6 +327,21 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
     {
       ta_log_info (client->log, "Connected to xmpp:%s:%d",
                    client->host, client->port);
+
+      /* Calling user defined hooks for the `connected' event. */
+      _ta_xmpp_client_call_event_hooks (client, "connected", NULL);
+
+      /* Adding authentication handling rules to iksemel filter. This
+       * stuff will be integrated with our simple event system. The
+       * delcared callbacks only calls the user defined hook list. */
+
+      iks_filter_add_rule (client->filter,
+                           (iksFilterHook *) _ta_xmpp_client_ikshook_authenticated,
+                           client,
+                           IKS_RULE_TYPE, IKS_PAK_IQ,
+                           IKS_RULE_SUBTYPE, IKS_TYPE_RESULT,
+                           IKS_RULE_ID, "auth",
+                           IKS_RULE_DONE);
       return 1;
     }
 }
@@ -281,6 +349,8 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
 int
 ta_xmpp_client_run (ta_xmpp_client_t *client, int detach)
 {
+  client->running = 1;
+
   /* Detaching our main loop thread if requested */
   if (detach)
     {
@@ -298,36 +368,81 @@ void
 ta_xmpp_client_disconnect (ta_xmpp_client_t *client)
 {
   client->running = 0;
-  iks_disconnect (client->parser);
+  if (client->parser)
+    {
+      iks_parser_delete (client->parser);
+      client->parser = NULL;
+    }
   ta_log_info (client->log, "Disconnected");
 }
 
-void
-ta_xmpp_client_set_auth_success_cb (ta_xmpp_client_t *client,
-                                    iksFilterHook *cb,
-                                    void *user_data)
+int
+ta_xmpp_client_event_connect (ta_xmpp_client_t *client,
+                              const char *event,
+                              ta_xmpp_client_hook_t hook,
+                              void *user_data)
 {
-  client->on_auth_success = cb;
-  client->on_auth_success_data = user_data;
-  iks_filter_add_rule (client->filter, (iksFilterHook *) cb, user_data,
-                       IKS_RULE_TYPE, IKS_PAK_IQ,
-                       IKS_RULE_SUBTYPE, IKS_TYPE_RESULT,
-                       IKS_RULE_ID, "auth",
-                       IKS_RULE_DONE);
+  ta_list_t *hooks;
+  struct hook_data *hdata;
+  hdata = malloc (sizeof (struct hook_data));
+  hdata->hook = hook;
+  hdata->data = user_data;
+
+  /* Looking for an already created list. If already exists, we just
+   * append a new value. Otherwise, we create it and re-add the entry
+   * to the hash table. */
+  if (!g_hash_table_lookup_extended (client->events, event, NULL,
+                                     (gpointer) &hooks))
+    {
+      if (client->error)
+        ta_error_free (client->error);
+      client->error = ta_error_new ();
+      ta_error_set_name (client->error, "NoSuchEvent");
+      ta_error_set_message (client->error, "XMPP client has no event called %s",
+                            event);
+      ta_error_set_code (client->error, XMPP_NO_SUCH_EVENT_ERROR);
+      return 0;
+    }
+  if (hooks == NULL)
+    {
+      hooks = ta_list_append (hooks, hdata);
+      g_hash_table_insert (client->events, (gpointer) event, hooks);
+    }
+  else
+    hooks = ta_list_append (hooks, hdata);
+  return 1;
 }
 
-void
-ta_xmpp_client_set_auth_failure_cb (ta_xmpp_client_t  *client,
-                                    iksFilterHook *cb,
-                                    void *user_data)
+int
+ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
+                                 const char *event,
+                                 ta_xmpp_client_hook_t hook)
 {
-  client->on_auth_failure = cb;
-  client->on_auth_failure_data = user_data;
-  iks_filter_add_rule (client->filter, cb, user_data,
-                       IKS_RULE_TYPE, IKS_PAK_IQ,
-                       IKS_RULE_SUBTYPE, IKS_TYPE_ERROR,
-                       IKS_RULE_ID, "auth",
-                       IKS_RULE_DONE);
+  ta_list_t *hooks;
+
+  /* Looks for the hook list in event hash table. If it is found, the
+   * hook is removed from the list and then the hook list is
+   * re-inserted in the hash table. This only works because the
+   * _insert function of the hash table replaces entries with same
+   * keys. */
+  if (!g_hash_table_lookup_extended (client->events, event, NULL,
+                                     (gpointer) &hooks))
+    {
+      if (client->error)
+        ta_error_free (client->error);
+      client->error = ta_error_new ();
+      ta_error_set_name (client->error, "NoSuchEvent");
+      ta_error_set_message (client->error, "XMPP client has no event called %s",
+                            event);
+      ta_error_set_code (client->error, XMPP_NO_SUCH_EVENT_ERROR);
+      return 0;
+    }
+  if (hooks != NULL)
+    {
+      hooks = ta_list_remove (hooks, hook);
+      g_hash_table_insert (client->events, (gpointer) event, hooks);
+    }
+  return 1;
 }
 
 /* ---- End of public API ---- */
@@ -384,13 +499,12 @@ _ta_xmpp_client_hook (void *data, int type, iks *node)
         }
       else if (strcmp (name, "failure") == 0)
         {
+          ikspak *pak;
           ta_log_info (client->log, "authentication failed");
-          if (client->on_auth_failure)
-            {
-              ikspak *pak;
-              pak = iks_packet (node);
-              client->on_auth_failure (client->on_auth_failure_data, pak);
-            }
+
+          /* Calling hooks for `authentication-failed' event. */
+          pak = iks_packet (node);
+          _ta_xmpp_client_call_event_hooks (client, "authentication-failed", pak);
         }
       else if (strcmp (name, "success") == 0)
         {
@@ -427,7 +541,6 @@ _ta_xmpp_client_do_run (void *user_data)
   int ret = 1;
 
   client = (ta_xmpp_client_t *) user_data;
-  client->running = 1;
 
   while (client->running)
     {
@@ -458,5 +571,6 @@ _ta_xmpp_client_do_run (void *user_data)
           break;
         }
     }
+  ta_log_info (client->log, "Main loop thread dying");
   return ret;
 }
