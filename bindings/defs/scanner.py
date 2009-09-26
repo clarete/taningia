@@ -20,7 +20,13 @@
 import sys
 import re
 import os
+import warnings
 import simplejson
+
+# This is a standard of our library. For example, our main library is
+# called `taningia', so our namespace starts with `ta'. Sure it
+# doesn't fit other libraries, so be carefull.
+LIBPREFIX = 'ta_'
 
 def camel_to_underscore(content):
     """Convert names like TAtomEntry to t_atom_entry.
@@ -42,7 +48,7 @@ def clear_spaces(buf):
         buf = buf.replace('  ', ' ')
     return buf.strip()
 
-def clear_params(params):
+def clear_params(params, dparams):
     """Scan the `params' string and return a dict with parsed
     information.
     """
@@ -57,10 +63,10 @@ def clear_params(params):
         return []
 
     # Params dict has the following fields: name, type and
-    # modifiers. These `modifiers' are empty macros declared after the
-    # param name to give some more info about the parameter. The
-    # current possible modifiers are `out' and `optional'.
-    pat = re.compile('((?:const\s+)?\w+\s*\**)(\w+)(?:\s+([\w\s]+))?')
+    # modifiers. These `modifiers' give some more info about the
+    # parameter, they are declared in the method docstring. The
+    # current possible modifiers are `out', `optional' and `len'.
+    pat = re.compile('((?:const\s+)?\w+\s*\**)(\w+)')
     for i in eparams:
         param = i.strip()
         if param == '...':
@@ -69,8 +75,12 @@ def clear_params(params):
             modifiers = ['optional']
         else:
             found = pat.findall(i)
-            ptype, name, modifiers = found[0]
-            modifiers = modifiers.split()
+            ptype, name = found[0]
+            modifiers = []
+            # Looking for parameter modifiers declared
+            for dparam in dparams.get('params', []):
+                if dparam['name'] == name:
+                    modifiers = dparam['modifiers']
         new_params.append({
                 'type': ptype.strip(),
                 'name': name,
@@ -97,7 +107,108 @@ def strip_comments(buf):
             break
     return ''.join(newbuf)
 
-def scan_file(libprefix, fname):
+def docstrings(buf):
+    result = []
+    lastidx = 0
+    while True:
+        start = buf.find('/**', lastidx)
+        stop = buf.find('*/', start)
+        if start >= 0:
+            result.append(buf[start+3:stop])
+            lastidx = stop
+        else:
+            break
+    return result
+
+def parse_docstring(dstring):
+    # Result will be put here
+    ret = {}
+
+    # Clearing `*' chars from the docstring
+    newbuf = []
+    for i in dstring.split('\n'):
+        line = re.sub('^\s*\*\s*', '', i).strip()
+        newbuf.append(line)
+
+    # Splitting parameters from the description
+    broken = '\n'.join(newbuf).split('\n\n')
+
+    # Handling parameters starting with @
+    params = broken[0]
+    dvars = re.findall('@([^:]+):\s*([^@]+)', params)
+    params = {}
+    for key, val in dvars:
+        skey = key.strip()
+        if skey == 'name':
+            ret['cname'] = val.strip()
+        elif skey == 'raise':
+            ret['raise'] = [x.strip() for x in val.strip().split(',')]
+        elif skey == 'return':
+            if '(' in val:
+                # The user is trying to say that the object being
+                # returned is a container and the objects inside the
+                # container are described between parenthesis, like
+                # this:
+                #
+                # /* @name: ...
+                #  * @return: ta_list (ta_atom_simple_element)
+                #  */
+                #
+                # So, we need to grab this info and pass to the
+                # binding writing programs.
+                pval = val.replace(')', '')
+                pval, subtype = pval.split('(')
+                pval = pval.strip()
+                subtype = subtype.strip()
+            else:
+                pval = val
+                subtype = ''
+            ret['return'] = {'type': pval, 'subtype': subtype}
+        elif skey.startswith('param'):
+            nil, pname = skey.split(' ', 1)
+            modifiers = []
+            if '(' in pname:
+                # We found modifiers! let's handle it.
+                pname = pname.replace(')', '')
+                pname, modifiers = pname.split('(')
+                pname = pname.strip()
+                modifiers = [x.strip() for x in modifiers.split(',')]
+
+            # This will be the entry in the return list.
+            pfull = {'name': pname, 'modifiers': modifiers}
+
+            # Now we'll test if any other param was already added. If
+            # not, we will need to start a new list.
+            if ret.get('params'):
+                ret['params'].append(pfull)
+            else:
+                ret['params'] = [pfull]
+        elif skey == 'type':
+            try:
+                typen, classn = val.strip().rsplit(' ', 1)
+            except ValueError:
+                raise Exception('Docstring parsing error')
+            ret['type'] = typen
+            if typen in ('getter', 'setter'):
+                sval = classn.split(':')
+                ret['class'] = sval[0]
+                ret['prop'] = sval[1]
+            else:
+                ret['class'] = classn            
+        params[key.strip()] = val.strip()
+
+    if 'class' in ret:
+        ret['name'] = ret['cname'] \
+            .replace('%s_' % ret['class'], '') \
+            .replace(LIBPREFIX, '')
+
+    # Handling description if it is found
+    if len(broken) > 1:
+        description = broken[1]
+        ret['doc'] = description.strip()
+    return ret
+
+def scan_file(fname):
     """Opens the file `fname' and looks for types, functions methods
     and other kinds of structures in a header file.
 
@@ -106,6 +217,12 @@ def scan_file(libprefix, fname):
 
     # Cleaning content
     content = open(fname).read()
+    allds = []
+    dstrings = {}
+    for i in docstrings(content):
+        allds.append(parse_docstring(i))
+        parsed = parse_docstring(i)
+        dstrings[parsed['cname']] = parsed
     ccont = clear_spaces(strip_comments(content))
 
     # Building header
@@ -114,7 +231,7 @@ def scan_file(libprefix, fname):
     module['name'] = os.path.basename(fname).replace('.h', '')
 
     # Looking for types
-    pat = re.compile('typedef struct _.+ ([^;]+)')
+    pat = re.compile('typedef struct _.+ ([^;]+)_t')
     type_names = pat.findall(ccont)
 
     # Looking for enums
@@ -144,61 +261,64 @@ def scan_file(libprefix, fname):
     methods = []
     for i in pat.findall(ccont):
         rtype, name, params = i
+        try:
+            pparams = clear_params(params, dstrings[name])
+        except KeyError:
+            warnings.warn('C identifier %s has no docstring or it is wrong' %
+                          name)
+            continue
         methods.append({
                 'name': name,
                 'rtype': rtype.strip(),
-                'params': clear_params(params),
+                'rinfo': dstrings[name].get('return'),
+                'params': pparams,
         })
 
     # Associating a method to its `class'.
     types = []
     for i in type_names:
-        # All methods of a `class' starts with its underscored name,
-        # like this: TAtomEntry methods starts with the t_atom_entry_
-        # prefix.
-        prefix = '%s_' % camel_to_underscore(i)
         fmethods = []
 
         # The type dict has the following fields: name, constructor,
         # destructor and methods (another dict build bellow). We don't
         # have anything like `fields', since we use getters and
         # setters in our C library.
-        thetype = {'cname': i}
+        thetype = {}
 
         # Finding module name
-        name = i.replace(libprefix.upper(), '', 1)
+        name = i.replace(LIBPREFIX, '', 1)
         thetype['name'] = name
+        thetype['cname'] = '%s_t' % i
 
         for method in methods:
             name = method['name']
-            # FIXME: This line tries to match things like
-            # "t_atom_entry_set_title".startswith("t_atom_entry"). This
-            # actually is not right, since we can have another type
-            # called "t_atom_entry_content". So, this will need to be
-            # rewriten. This works now because there is no clash in
-            # our type names today.
-            mnames = [len(name.replace(y, '')) for y in
-                      [camel_to_underscore(x) for x in type_names]]
-            choosen_type = type_names[mnames.index(min(mnames))]
-            if choosen_type == i and name.startswith(prefix):
-                # method dict has the following fields: name, cname,
-                # rtype and params (another dict)
-                nmethod = {}
-                newname = name.replace(prefix, '')
-                nmethod['name'] = newname
-                nmethod['cname'] = name
-                nmethod['rtype'] = method['rtype']
-                nmethod['params'] = method['params']
+            dsmethod = None
+            cclass = thetype['cname'].replace('_t', '')
+            for i in allds:
+                if i['cname'] == name and i['class'] == cclass:
+                    dsmethod = i
+                    break
+            if not dsmethod:
+                continue
 
-                # Handling constructor
-                if newname == 'new':
-                    thetype['constructor'] = nmethod
-                # Handling destructor
-                elif newname == 'free':
-                    thetype['destructor'] = nmethod
-                # Normal method
-                else:
-                    fmethods.append(nmethod)
+            # method dict has the following fields: name, cname, rtype
+            # and params (another dict)
+            nmethod = {}
+            nmethod.update(dsmethod)
+            nmethod['rtype'] = method['rtype']
+            nmethod['params'] = method['params']
+
+            # Handling constructor
+            if dsmethod['name'] == 'new':
+                thetype['constructor'] = nmethod
+
+            # Handling destructor
+            elif dsmethod['name'] == 'free':
+                thetype['destructor'] = nmethod
+
+            # Normal method
+            else:
+                fmethods.append(nmethod)
         thetype['methods'] = fmethods
         types.append(thetype)
     module['types'] = types
@@ -209,16 +329,11 @@ def get_defs(libname, files):
     from files declared in `files'.
     """
 
-    # This is a standard of our library. For example, our main library
-    # is called `taningia', so our namespace starts with `t'. Sure it
-    # doesn't fit other libraries, so be carefull.
-    libprefix = libname[0]
-
     # Scaning file by file
     modules = []
     for i in files:
         absname = os.path.abspath(i)
-        modules.append(scan_file(libprefix, absname))
+        modules.append(scan_file(absname))
 
     # Dependencies. Today they are hardcoded, maybe some day we could
     # do something more generic.
@@ -227,7 +342,7 @@ def get_defs(libname, files):
 
     # This is our final answer. A dict containing all collected and
     # (un)useful info about our library.
-    library = {'name': libname, 'prefix': libprefix, 'modules': modules,
+    library = {'name': libname, 'prefix': LIBPREFIX, 'modules': modules,
                'dependencies': {'priv': priv_deps, 'public': public_deps}}
 
     return library

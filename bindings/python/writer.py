@@ -1,6 +1,6 @@
 # -*- coding: utf-8; -*-
 #
-# Copyright (C) 2009 Lincoln de Sousa <lincoln@minaslivre.org>
+# Copyright (C) 2009  Lincoln de Sousa <lincoln@minaslivre.org>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -19,6 +19,7 @@
 
 import simplejson
 import sys
+import warnings
 import scanner
 from overrides import OVERRIDES
 
@@ -47,11 +48,18 @@ RETURN_MAP = {
 LOCALDEP_MAP = {
     'atom': ['error', 'iri'],
     'error': [],
-    'filter': ['error', 'log'],
     'iri': ['error'],
     'log': ['error'],
     'pubsub': ['error', 'log'],
-    'xmpp': ['error', 'log', 'filter']
+    'xmpp': ['error', 'log'],
+}
+
+# List that holds modules that should not be built. The first module
+# that we don't want to build is the `list' module, we'll prefer to
+# use python list type, that is more robust than anything we'll
+# implement here.
+BLACKLISTEDMODULES = {
+    'list': 'pylist_from_tlist',
 }
 
 # ---- .h file templates ----
@@ -421,6 +429,19 @@ def macro_py2c(name):
            'type': pytypename(name),
            }
 
+def underscore_to_camel(name):
+    nname = ''
+    nsize = len(name)
+    i = 0
+    while i < nsize:
+        if name[i] == '_':
+            i += 1
+            nname += name[i].upper()
+        else:
+            nname += name[i]
+        i += 1
+    return nname
+
 class Helper(object):
     cyclegctypes = []
 
@@ -607,7 +628,7 @@ class Module(Helper):
                 increfs.append(name)
             elif nopointer == 'time_t':
                 check = ''
-                if not '_nullable_' in modifiers:
+                if not 'nullable' in modifiers:
                     check = TEMPLATE_C_CHEKC_DATE % name
                 app(TEMPLATE_C_PARAM_DATE % {
                         'name': name,
@@ -635,7 +656,7 @@ class Module(Helper):
             if ptype in self.allenums:
                 pytype = 'i'
 
-            if '_optional_' in modifiers:
+            if 'optional' in modifiers:
                 # Python optional flag is not per parameter, if a
                 # parameter is optional in a function, all of the next
                 # params are going to be too. So, only one `|'
@@ -644,9 +665,9 @@ class Module(Helper):
                     types += pytype
                 else:
                     types += '|' + pytype
-            elif '_len_' in modifiers:
+            elif 'len' in modifiers:
                 types += '#'
-            elif '_out_' in modifiers:
+            elif 'out' in modifiers:
                 # We're not handling this kind of modifier yet, we're
                 # writting overrides for them. we actually have just a
                 # few placess with it, so don't care about it now...
@@ -705,14 +726,14 @@ class Module(Helper):
                 varargs = 1
                 continue
             if nopointer in self.alltypes:
-                if '_optional_' in modifiers:
+                if 'optional' in modifiers:
                     newparams.append(optional(name))
                 else:
                     newparams.append(required(name))
             elif nopointer == 'time_t':
                 newparams.append('_time_%s' % name)
             elif nopointer == 'iks':
-                if '_optional_' in modifiers:
+                if 'optional' in modifiers:
                     newparams.append(optional(name))
                 else:
                     newparams.append(required(name))
@@ -725,6 +746,14 @@ class Module(Helper):
         bval = RETURN_MAP.get(rtype)
         if bval:
             return bval
+
+        # Looking for our special list type
+        if rtype == 'ta_list_t *':
+            fname = prototypename(obj['name'])
+            subtype = method['return']['subtype'].replace('ta_', '')
+            typename = pytypename(subtype)
+            return 'Py_BuildValue ("O", t_list_to_py_list (ret, ' \
+                '(TListConvertFunc) %s, &%s))' % (fname, typename)
 
         # Looking in our registered types for an already known one
         for i in self.alltypes:
@@ -750,6 +779,7 @@ class Module(Helper):
         app('#include <Python.h>')
         app('#include <structmember.h>')
         app('#include <time.h>')
+        app('#include "listconverter.h"')
         for dep in self.defs['dependencies']['public']:
             app.append('#include <%s>' % dep)
         for dep in self.defs['dependencies']['priv']:
@@ -803,7 +833,11 @@ class Module(Helper):
         return '\n'.join(parts)
 
     def constructor(self, ctype):
-        cname = ctype['constructor']['cname']
+        try:
+            cname = ctype['constructor']['cname']
+        except KeyError:
+            warnings.warn('Type %s has no constructor' % ctype['name'])
+            return ''
         if cname in OVERRIDES:
             return OVERRIDES[cname]()
         ctx = {'pyname': pyname(ctype['name']),
@@ -818,8 +852,11 @@ class Module(Helper):
         # implements cgc, so aborting.
         if self.iscgctype(pyname(ctype['name'])):
             return ''
-
-        cname = ctype['destructor']['cname']
+        try:
+            cname = ctype['constructor']['cname']
+        except KeyError:
+            warnings.warn('Type %s has no destructor' % ctype['name'])
+            return ''
         if cname in OVERRIDES:
             return OVERRIDES[cname]()
         ctx = {'pyname': pyname(ctype['name']),
@@ -863,7 +900,7 @@ class Module(Helper):
                     'name': method['name'],
                     'pyname': pyname(ctype['name']),
                     'arg': arg,
-                    'doc': method.get('doc', ''),
+                    'doc': method.get('doc', '').replace('\n', '\\n'),
                     })
         return TEMPLATE_C_METHOD_DEFS % {
             'pyname': pyname(ctype['name']),
@@ -931,7 +968,8 @@ class Module(Helper):
             pymodname = name
 
         return TEMPLATE_C_TYPE % {
-            'name': '%s.%s.%s' % (self.lib, mname, pymodname),
+            'name': '%s.%s.%s' % (self.lib, mname,
+                                  underscore_to_camel(pymodname)),
             'pyname': pyname(ctype['name']),
             'type': pytypename(ctype['name']),
             'tp_flags': ' | ' .join(tp_flags),
@@ -990,7 +1028,7 @@ class Module(Helper):
                 pymodname = name
             ctypes.append(TEMPLATE_C_MODULE_INIT % {
                     'mname': module['name'].lower(),
-                    'name': pymodname,
+                    'name': underscore_to_camel(pymodname),
                     'pytype': pytypename(ctype['name'])
                     })
 
@@ -1001,7 +1039,7 @@ class Module(Helper):
                 'imports': '\n'.join(imports),
                 'enums': self.enums(module),
                 'modules': '\n'.join(ctypes),
-                'doc': module.get('doc', ''),
+                'doc': module.get('doc', '').replace('\n', '\\n'),
                 })
 
     def __str__(self):
@@ -1038,8 +1076,9 @@ class CFile(Helper):
 def main(args):
     defs = simplejson.loads(open(args[1]).read())
     for module in defs['modules']:
-        open('%smodule.h' % module['name'], 'w').write(str(Header(defs, module)))
-        open('%smodule.c' % module['name'], 'w').write(str(Module(defs, module)))
+        if module['name'] not in BLACKLISTEDMODULES:
+            open('%smodule.h' % module['name'], 'w').write(str(Header(defs, module)))
+            open('%smodule.c' % module['name'], 'w').write(str(Module(defs, module)))
 
 if __name__ == '__main__':
     main(sys.argv)

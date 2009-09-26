@@ -2,51 +2,42 @@ DEFSDIR = $(top_srcdir)/bindings/defs
 DEFSFILE = $(DEFSDIR)/$(PACKAGE).json
 
 pyexecdir = $(pythondir)/taningia
-pyexec_LTLIBRARIES = atom.la error.la filter.la iri.la log.la pubsub.la xmpp.la
+pyexec_LTLIBRARIES = atom.la error.la iri.la log.la pubsub.la xmpp.la
 pyexec_SCRIPTS = __init__.py
+
+DEPS = listconverter.c
 
 atom_la_SOURCES = \
 	atommodule.c \
-	atommodule.h
+	atommodule.h \
+	$(DEPS)
 
 atom_la_CFLAGS = \
 	-DPyAtom_BUILD_CORE \
-	-DPyFilter_BUILD_CORE \
 	-DPyLog_BUILD_CORE \
 	-DPyPubsub_BUILD_CORE \
 	-DPyXmpp_BUILD_CORE
 
 error_la_SOURCES = \
 	errormodule.c \
-	errormodule.h
+	errormodule.h \
+	$(DEPS)
 
 error_la_CFLAGS = \
 	-DPyAtom_BUILD_CORE \
 	-DPyError_BUILD_CORE \
-	-DPyFilter_BUILD_CORE \
 	-DPyIri_BUILD_CORE \
 	-DPyLog_BUILD_CORE \
 	-DPyPubsub_BUILD_CORE \
 	-DPyXmpp_BUILD_CORE
 
-filter_la_SOURCES = \
-	filtermodule.c \
-	filtermodule.h
-
-filter_la_CFLAGS = \
-	-DPyAtom_BUILD_CORE \
-	-DPyFilter_BUILD_CORE \
-	-DPyIri_BUILD_CORE \
-	-DPyPubsub_BUILD_CORE \
-	-DPyXmpp_BUILD_CORE
-
 iri_la_SOURCES = \
 	irimodule.c \
-	irimodule.h
+	irimodule.h \
+	$(DEPS)
 
 iri_la_CFLAGS = \
 	-DPyAtom_BUILD_CORE \
-	-DPyFilter_BUILD_CORE \
 	-DPyIri_BUILD_CORE \
 	-DPyLog_BUILD_CORE \
 	-DPyPubsub_BUILD_CORE \
@@ -54,11 +45,11 @@ iri_la_CFLAGS = \
 
 log_la_SOURCES = \
 	logmodule.c \
-	logmodule.h
+	logmodule.h \
+	$(DEPS)
 
 log_la_CFLAGS = \
 	-DPyAtom_BUILD_CORE \
-	-DPyFilter_BUILD_CORE \
 	-DPyIri_BUILD_CORE \
 	-DPyLog_BUILD_CORE \
 	-DPyPubsub_BUILD_CORE \
@@ -66,18 +57,19 @@ log_la_CFLAGS = \
 
 pubsub_la_SOURCES = \
 	pubsubmodule.c \
-	pubsubmodule.h
+	pubsubmodule.h \
+	$(DEPS)
 
 pubsub_la_CFLAGS = \
 	-DPyAtom_BUILD_CORE \
-	-DPyFilter_BUILD_CORE \
 	-DPyIri_BUILD_CORE \
 	-DPyPubsub_BUILD_CORE \
 	-DPyXmpp_BUILD_CORE
 
 xmpp_la_SOURCES = \
 	xmppmodule.c \
-	xmppmodule.h
+	xmppmodule.h \
+	$(DEPS)
 
 xmpp_la_CFLAGS = \
 	-DPyAtom_BUILD_CORE \
@@ -106,17 +98,9 @@ AM_LDFLAGS = \
 EXTRA_DIST = writer.py overrides.py \
 	$(atom_la_SOURCES) \
 	$(error_la_SOURCES) \
-	$(filter_la_SOURCES) \
 	$(iri_la_SOURCES) \
 	$(log_la_SOURCES) \
 	$(pubsub_la_SOURCES) \
 	$(xmpp_la_SOURCES)
 
-CLEANFILES = \
-	$(atom_la_SOURCES) \
-	$(error_la_SOURCES) \
-	$(filter_la_SOURCES) \
-	$(iri_la_SOURCES) \
-	$(log_la_SOURCES) \
-	$(pubsub_la_SOURCES) \
-	$(xmpp_la_SOURCES)
+CLEANFILES = *module.[ch]
