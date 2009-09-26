@@ -64,6 +64,10 @@ ta_iri_free (ta_iri_t *iri)
     free (iri->host);
   if (iri->path)
     free (iri->path);
+  if (iri->query)
+    free (iri->query);
+  if (iri->fragment)
+    free (iri->fragment);
   if (iri->error)
     ta_error_free (iri->error);
   free (iri);
@@ -331,7 +335,6 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
   size = p - string;
   iri->scheme = malloc (size);
   memcpy (iri->scheme, string, size);
-  iri->scheme[size] = '\0';
 
   /* Delimiter to the end of the ihier part */
   query = strchr (p, '?');
