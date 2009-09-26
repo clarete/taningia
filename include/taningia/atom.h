@@ -338,7 +338,7 @@ void ta_atom_person_set_iri (ta_atom_person_t *person, ta_iri_t *iri);
  * @type: method ta_atom_person
  * @param element: The element that will be added to the person.
  *
- * Adds an ta_atom simple ext element to the person instance.
+ * Adds an atom simple ext element to the person instance.
  */
 void ta_atom_person_add_see (ta_atom_person_t *person, ta_atom_simple_element_t *element);
 
@@ -346,7 +346,7 @@ void ta_atom_person_add_see (ta_atom_person_t *person, ta_atom_simple_element_t 
  * @name: ta_atom_person_del_see
  * @type: method ta_atom_person
  *
- * Removes all ta_atom simple ext elements from the person instance.
+ * Removes all atom simple ext elements from the person instance.
  */
 void ta_atom_person_del_see (ta_atom_person_t *person);
 
@@ -453,7 +453,7 @@ void ta_atom_entry_free (ta_atom_entry_t *entry);
  * @param fname: Name of the file to be loaded
  * @raise: TA_ATOM_LOAD_ERROR, TA_ATOM_PARSING_ERROR
  *
- * Load a file to an ta_atom entry.
+ * Load a file to an atom entry.
  */
 int ta_atom_entry_set_from_file (ta_atom_entry_t *entry, const char *fname);
 
@@ -463,7 +463,7 @@ int ta_atom_entry_set_from_file (ta_atom_entry_t *entry, const char *fname);
  * @param iks: iks object to be parsed
  * @raise: TA_ATOM_PARSING_ERROR
  *
- * Load an iks xml structure to an ta_atom entry.
+ * Load an iks xml structure to an atom entry.
  */
 int ta_atom_entry_set_from_iks (ta_atom_entry_t *entry, iks *ik);
 
@@ -471,7 +471,7 @@ int ta_atom_entry_set_from_iks (ta_atom_entry_t *entry, iks *ik);
  * @name: ta_atom_entry_to_iks
  * @type: method ta_atom_entry
  *
- * Returns an iks representation of an ta_atom entry.
+ * Returns an iks representation of an atom entry.
  */
 iks *ta_atom_entry_to_iks (ta_atom_entry_t *entry);
 
@@ -479,7 +479,7 @@ iks *ta_atom_entry_to_iks (ta_atom_entry_t *entry);
  * @name: ta_atom_entry_to_string
  * @type: method ta_atom_entry
  *
- * Returns a xml string representation of an ta_atom entry.
+ * Returns a xml string representation of an atom entry.
  */
 char *ta_atom_entry_to_string (ta_atom_entry_t *entry);
 
@@ -587,7 +587,7 @@ void ta_atom_entry_set_content (ta_atom_entry_t *entry, ta_atom_content_t *conte
  * @type: method ta_atom_entry
  * @return: ta_list (ta_atom_person)
  *
- * Returns the list of authors of an ta_atom entry instance.
+ * Returns the list of authors of an atom entry instance.
  */
 ta_list_t *ta_atom_entry_get_authors (ta_atom_entry_t *entry);
 
@@ -614,7 +614,7 @@ void ta_atom_entry_del_authors (ta_atom_entry_t *entry);
  * @type: method ta_atom_entry
  * @return: ta_list (ta_atom_category)
  *
- * Returns the list of categories of an ta_atom entry instance.
+ * Returns the list of categories of an atom entry instance.
  */
 ta_list_t *ta_atom_entry_get_categories (ta_atom_entry_t *entry);
 
@@ -641,7 +641,7 @@ void ta_atom_entry_del_categories (ta_atom_entry_t *entry);
  * @type: method ta_atom_entry
  * @return: ta_list (ta_atom_link)
  *
- * Returns the list of links of an ta_atom entry instance.
+ * Returns the list of links of an atom entry instance.
  */
 ta_list_t *ta_atom_entry_get_links (ta_atom_entry_t *entry);
 
@@ -668,7 +668,7 @@ void ta_atom_entry_del_links (ta_atom_entry_t *entry);
  * @type: method ta_atom_entry
  * @return: ta_list (ta_atom_simple_element)
  *
- * Returns the list of simple elements of an ta_atom entry instance.
+ * Returns the list of simple elements of an atom entry instance.
  */
 ta_list_t *ta_atom_entry_get_see (ta_atom_entry_t *entry);
 
@@ -710,7 +710,7 @@ void ta_atom_feed_free (ta_atom_feed_t *feed);
  * @name: ta_atom_feed_to_iks
  * @type: method ta_atom_feed
  *
- * Returns an iks representation of an ta_atom feed.
+ * Returns an iks representation of an atom feed.
  */
 iks *ta_atom_feed_to_iks (ta_atom_feed_t *feed);
 
@@ -718,7 +718,7 @@ iks *ta_atom_feed_to_iks (ta_atom_feed_t *feed);
  * @name: ta_atom_feed_to_string
  * @type: method ta_atom_feed
  *
- * Returns a xml string representation of an ta_atom feed.
+ * Returns a xml string representation of an atom feed.
  */
 char *ta_atom_feed_to_string (ta_atom_feed_t *feed);
 
@@ -778,7 +778,7 @@ void ta_atom_feed_set_updated (ta_atom_feed_t *feed, time_t updated);
  * @type: method ta_atom_feed
  * @return: ta_list (ta_atom_person)
  *
- * Returns the list of authors of an ta_atom feed instance.
+ * Returns the list of authors of an atom feed instance.
  */
 ta_list_t *ta_atom_feed_get_authors (ta_atom_feed_t *feed);
 
@@ -805,7 +805,7 @@ void ta_atom_feed_del_authors (ta_atom_feed_t *feed);
  * @type: method ta_atom_feed
  * @return: ta_list (ta_atom_category)
  *
- * Returns the list of categories of an ta_atom feed instance.
+ * Returns the list of categories of an atom feed instance.
  */
 ta_list_t *ta_atom_feed_get_categories (ta_atom_feed_t *feed);
 
@@ -832,7 +832,7 @@ void ta_atom_feed_del_categories (ta_atom_feed_t *feed);
  * @type: method ta_atom_feed
  * @return: ta_list (ta_atom_link)
  *
- * Returns the list of links of an ta_atom feed instance.
+ * Returns the list of links of an atom feed instance.
  */
 ta_list_t *ta_atom_feed_get_links (ta_atom_feed_t *feed);
 
@@ -859,7 +859,7 @@ void ta_atom_feed_del_links (ta_atom_feed_t *feed);
  * @type: method ta_atom_feed
  * @return: ta_list (ta_atom_entry)
  *
- * Returns the list of entries of an ta_atom feed instance.
+ * Returns the list of entries of an atom feed instance.
  */
 ta_list_t *ta_atom_feed_get_entries (ta_atom_feed_t *feed);
 
