@@ -138,6 +138,8 @@ _ta_log_localtime (ta_log_t * log)
   struct tm * timeinfo;
   time_t rawtime = time (NULL);
   char *buffer = malloc (MAX_DATE_SIZE);
+  if (buffer == NULL)
+    return NULL;
 
   time (&rawtime);
   timeinfo = localtime (&rawtime);
@@ -178,6 +180,7 @@ ta_log_info (ta_log_t *log, const char *fmt, ...)
              msg);
 
   free (ta_log_time);
+  free (msg);
 }
 
 void
@@ -206,6 +209,7 @@ ta_log_warn (ta_log_t *log, const char *fmt, ...)
              msg);
 
   free (ta_log_time);
+  free (msg);
 }
 
 void
@@ -234,6 +238,7 @@ ta_log_debug (ta_log_t *log, const char *fmt, ...)
              msg);
 
   free (ta_log_time);
+  free (msg);
 }
 
 void
@@ -262,6 +267,7 @@ ta_log_critical (ta_log_t *log, const char *fmt, ...)
              msg);
 
   free (ta_log_time);
+  free (msg);
 }
 
 void
@@ -290,4 +296,5 @@ ta_log_error (ta_log_t *log, const char *fmt, ...)
              msg);
 
   free (ta_log_time);
+  free (msg);
 }
