@@ -33,7 +33,7 @@ void
 ta_list_free (ta_list_t *list)
 {
   ta_list_t *node;
-  for (node = list->next; node; node = node->next)
+  for (node = list; node; node = node->next)
     free (node);
 }
 
