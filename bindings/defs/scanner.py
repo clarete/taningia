@@ -131,7 +131,7 @@ def parse_docstring(dstring):
         newbuf.append(line)
 
     # Splitting parameters from the description
-    broken = '\n'.join(newbuf).split('\n\n')
+    broken = '\n'.join(newbuf).split('\n\n', 1)
 
     # Handling parameters starting with @
     params = broken[0]

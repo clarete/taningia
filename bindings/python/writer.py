@@ -442,6 +442,12 @@ def underscore_to_camel(name):
         i += 1
     return nname.capitalize()
 
+def escapedoc(doc):
+    return doc \
+        .replace('\n', '\\n') \
+        .replace('\'', '\\\'') \
+        .replace('"', '\\"')
+
 class Helper(object):
     cyclegctypes = []
 
@@ -900,7 +906,7 @@ class Module(Helper):
                     'name': method['name'],
                     'pyname': pyname(ctype['name']),
                     'arg': arg,
-                    'doc': method.get('doc', '').replace('\n', '\\n'),
+                    'doc': escapedoc(method.get('doc', '')),
                     })
         return TEMPLATE_C_METHOD_DEFS % {
             'pyname': pyname(ctype['name']),
@@ -1039,7 +1045,7 @@ class Module(Helper):
                 'imports': '\n'.join(imports),
                 'enums': self.enums(module),
                 'modules': '\n'.join(ctypes),
-                'doc': module.get('doc', '').replace('\n', '\\n'),
+                'doc': escapedoc(module.get('doc', '')),
                 })
 
     def __str__(self):
