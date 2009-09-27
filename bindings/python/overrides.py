@@ -20,15 +20,16 @@
 def pylogobject():
     return ['handler_callback', 'handler_data']
 
-def t_log_set_handler():
+def ta_log_set_handler():
     return '''
 static void
-_call_py_log_handler (TLog *log, TLogLevel level, const char *msg, void *user_data)
+_call_py_log_handler (ta_log_t *log, ta_log_level_t level,
+                      const char *msg, void *user_data)
 {
-  PyLogObject *self;
+  PylogObject *self;
   PyObject *args;
   PyObject *result;
-  self = (PyLogObject *) user_data;
+  self = (PylogObject *) user_data;
   args = Py_BuildValue ("(OisO)", self, level, msg, self->handler_data);
   result = PyObject_CallObject (self->handler_callback, args);
   Py_DECREF (args);
@@ -39,7 +40,7 @@ _call_py_log_handler (TLog *log, TLogLevel level, const char *msg, void *user_da
 }
 
 static PyObject *
-PyLogObject_set_handler (PyLogObject *self,
+PylogObject_set_handler (PylogObject *self,
                          PyObject    *args)
 {
   PyObject *callback = NULL;
@@ -67,21 +68,22 @@ PyLogObject_set_handler (PyLogObject *self,
       self->handler_data = Py_None;
     }
   Py_INCREF (self);
-  t_log_set_handler (self->inner, (TLogHandlerFunc) _call_py_log_handler, self);
+  ta_log_set_handler (self->inner,
+      (ta_log_handler_func_t) _call_py_log_handler, self);
 
   Py_INCREF (Py_None);
   return Py_None;
 }
 '''
 
-def t_pubsub_node_createv():
+def ta_pubsub_node_createv():
     return ''
 
-def t_pubsub_node_create():
+def ta_pubsub_node_create():
     return '''
 static PyObject *
-PyPubsubNodeObject_create (PyPubsubNodeObject *self,
-                           PyObject           *args)
+Pypubsub_nodeObject_create (Pypubsub_nodeObject *self,
+                            PyObject            *args)
 {
   PyObject *dict = NULL;
   char **params = NULL;
@@ -140,7 +142,7 @@ PyPubsubNodeObject_create (PyPubsubNodeObject *self,
 
       /* Yep, we must use createv() here to pass a char ** to it.
        * the create() one uses va_lists in (...) form. */
-      riq = t_pubsub_node_createv (self->inner, (const char **) params);
+      riq = ta_pubsub_node_createv (self->inner, (const char **) params);
 
       /* Freeing param container */
       while ((arg = params[c++]) != NULL)
@@ -151,15 +153,17 @@ PyPubsubNodeObject_create (PyPubsubNodeObject *self,
     }
   else
     {
-      iks *riq = t_pubsub_node_create (self->inner, NULL);
+      iks *riq = ta_pubsub_node_create (self->inner, NULL);
       return PyIks_FromIks (riq);
     }
 }
 '''
 
+
+
 OVERRIDES = {
-    'PyLogObject': pylogobject,
-    't_log_set_handler': t_log_set_handler,
-    't_pubsub_node_createv': t_pubsub_node_createv,
-    't_pubsub_node_create': t_pubsub_node_create,
+    'PylogObject': pylogobject,
+    'ta_log_set_handler': ta_log_set_handler,
+    'ta_pubsub_node_createv': ta_pubsub_node_createv,
+    'ta_pubsub_node_create': ta_pubsub_node_create,
 }
