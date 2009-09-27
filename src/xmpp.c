@@ -37,6 +37,7 @@ struct _ta_xmpp_client_t {
   int port;
 
   iksparser *parser;
+  ikstack *idstack;
   iksid *id;
   iksfilter *filter;
 
@@ -88,7 +89,7 @@ _ta_xmpp_client_ikshook_authenticated (void *data, ikspak *pak)
   ta_xmpp_client_t *client;
   client = (ta_xmpp_client_t *) data;
   _ta_xmpp_client_call_event_hooks (client, "authenticated", pak);
-  return IKS_FILTER_PASS;
+  return IKS_FILTER_EAT;
 }
 
 #ifdef DEBUG
@@ -120,9 +121,11 @@ ta_xmpp_client_new (const char *jid,
                     int         port)
 {
   ta_xmpp_client_t *client;
+  int jid_len;
   client = malloc (sizeof (ta_xmpp_client_t));
   client->jid = strdup (jid);
   client->password = strdup (password);
+  jid_len = strlen (jid);
 
   /* Control flags */
   client->features = 0;
@@ -132,7 +135,8 @@ ta_xmpp_client_new (const char *jid,
   /* iksemel stuff */
   client->parser = NULL;
   client->filter = NULL;
-  client->id = NULL;
+  client->idstack = iks_stack_new (jid_len, jid_len);
+  client->id = iks_id_new (client->idstack, client->jid);
 
   /* Handling optional parameters */
   if (host == NULL)
@@ -170,6 +174,8 @@ ta_xmpp_client_free (ta_xmpp_client_t *client)
     free (client->password);
   if (client->host)
     free (client->host);
+  if (client->idstack)
+    iks_stack_delete (client->idstack);
   if (client->parser)
     iks_parser_delete (client->parser);
   if (client->filter)
@@ -195,6 +201,7 @@ ta_xmpp_client_set_jid (ta_xmpp_client_t *client, const char *jid)
   if (client->jid)
     free (client->jid);
   client->jid = strdup (jid);
+  client->id = iks_id_new (client->idstack, jid);
 }
 
 const char *
@@ -286,7 +293,6 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
   /* Iksemel stuff */
   client->parser = iks_stream_new (IKS_NS_CLIENT, client,
                                    _ta_xmpp_client_hook);
-  client->id = iks_id_new (iks_parser_stack (client->parser), client->jid);
   client->filter = iks_filter_new ();
 
 #ifdef DEBUG
@@ -368,10 +374,18 @@ void
 ta_xmpp_client_disconnect (ta_xmpp_client_t *client)
 {
   client->running = 0;
+
+  /* These fields are going to be filled again by the connect
+   * method if called again. */
   if (client->parser)
     {
       iks_parser_delete (client->parser);
       client->parser = NULL;
+    }
+  if (client->filter)
+    {
+      iks_filter_delete (client->filter);
+      client->filter = NULL;
     }
   ta_log_info (client->log, "Disconnected");
 }
@@ -512,7 +526,7 @@ _ta_xmpp_client_hook (void *data, int type, iks *node)
           iks_send_header (client->parser, client->id->server);
           ta_log_info (client->log, "authentication successful");
         }
-      else
+      else if (client->filter != NULL)
         {
           ikspak *pak;
           pak = iks_packet (node);
