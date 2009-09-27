@@ -159,11 +159,80 @@ Pypubsub_nodeObject_create (Pypubsub_nodeObject *self,
 }
 '''
 
+def ta_xmpp_client_event_connect():
+    return '''
+struct py_hook_data {
+  PyObject *callback;
+  PyObject *data;
+};
 
+static int
+_call_py_xmpp_client_event_connect (ta_xmpp_client_t *client,
+                                    void *data1, void *data2)
+{
+  PyObject *result, *args;
+  struct py_hook_data *hdata = (struct py_hook_data *) data2;
+  PyGILState_STATE threadstate;
+
+  threadstate = PyGILState_Ensure ();
+  args = Py_BuildValue ("(O)", hdata->data);
+  result = PyObject_CallObject (hdata->callback, args);
+
+  /* Time to free stuff */
+  Py_DECREF (args);
+  if (result == NULL)
+    PyErr_Print ();
+  else
+    Py_DECREF (result);
+  free (hdata);
+
+  PyGILState_Release (threadstate);
+  return 0;
+}
+
+static PyObject *
+Pyxmpp_clientObject_event_connect (Pyxmpp_clientObject *self, PyObject *args)
+{
+  int ret;
+  const char *event = NULL;
+  PyObject *callback = NULL;
+  PyObject *user_data = NULL;
+
+  if (!PyArg_ParseTuple (args, "sO|O", &event, &callback, &user_data))
+    return NULL;
+  if (!PyCallable_Check (callback))
+    {
+      PyErr_SetString (PyExc_TypeError, "Param 2 must be callable.");
+      return NULL;
+    }
+  else
+    {
+      PyObject *data = NULL;
+      struct py_hook_data *hook_data;
+      if (user_data)
+        data = user_data;
+      else
+        data = Py_None;
+
+      hook_data = malloc (sizeof (struct py_hook_data));
+
+      Py_INCREF (callback);
+      hook_data->callback = callback;
+
+      Py_INCREF (data);
+      hook_data->data = data;
+      ret = ta_xmpp_client_event_connect (self->inner, event,
+                                          _call_py_xmpp_client_event_connect,
+                                          hook_data);
+      return Py_BuildValue ("i", ret);
+    }
+}
+'''
 
 OVERRIDES = {
     'PylogObject': pylogobject,
     'ta_log_set_handler': ta_log_set_handler,
     'ta_pubsub_node_createv': ta_pubsub_node_createv,
     'ta_pubsub_node_create': ta_pubsub_node_create,
+    'ta_xmpp_client_event_connect': ta_xmpp_client_event_connect,
 }
