@@ -175,7 +175,8 @@ int ta_xmpp_client_is_running (ta_xmpp_client_t *ctx);
  * @name: ta_xmpp_client_event_connect
  * @type: method ta_xmpp_client
  * @param event: Name of the event to connected the hook.
- * @param hook: The hook to be connected to the event.
+ * @param hook (callable): The hook to be
+ * connected to the event.
  * @param user_data: User defined value to be passed to the hook.
  * @raise: XMPP_NO_SUCH_EVENT_ERROR
  *
@@ -211,7 +212,8 @@ int ta_xmpp_client_event_connect (ta_xmpp_client_t *client,
  * @name: ta_xmpp_client_event_disconnect
  * @type: method ta_xmpp_client
  * @param event: The event name
- * @param hook: Hook to be disconnected from the event.
+ * @param hook (callable): Hook to be
+ * disconnected from the event.
  * @raise: XMPP_NO_SUCH_EVENT_ERROR
  *
  * Disconnects a previously connected hook from an event.
