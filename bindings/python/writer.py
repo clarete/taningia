@@ -438,9 +438,12 @@ def underscore_to_camel(name):
             i += 1
             nname += name[i].upper()
         else:
-            nname += name[i]
+            if i == 0:
+                nname += name[i].upper()
+            else:
+                nname += name[i]
         i += 1
-    return nname.capitalize()
+    return nname
 
 def escapedoc(doc):
     return doc \
