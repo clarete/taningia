@@ -240,7 +240,7 @@ def scan_file(fname):
     for i in pat.findall(ccont):
         econt, name = i
         econt = clear_spaces(econt.replace('\n', ''))
-        vals = [x for x in econt.split(',') if x]
+        vals = [x.strip() for x in econt.split(',') if x]
         isflags = '<<' in econt
         if isflags:
             entries = []
@@ -285,20 +285,17 @@ def scan_file(fname):
         # setters in our C library.
         thetype = {}
 
-        # Finding module name
-        name = i.replace(LIBPREFIX, '', 1)
-        thetype['name'] = name
+        thetype['name'] = i.replace(LIBPREFIX, '', 1)
         thetype['cname'] = '%s_t' % i
 
+        # Removing the _t sufix without screwing up class name.
+        cclass = thetype['cname'][:-2]
         for method in methods:
             name = method['name']
-            dsmethod = None
-            cclass = thetype['cname'].replace('_t', '')
-            for i in allds:
-                if i['cname'] == name and i['class'] == cclass:
-                    dsmethod = i
-                    break
+            dsmethod = dstrings.get(name)
             if not dsmethod:
+                continue
+            if not dsmethod['class'] == cclass:
                 continue
 
             # method dict has the following fields: name, cname, rtype
