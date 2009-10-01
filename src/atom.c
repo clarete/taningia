@@ -357,9 +357,9 @@ ta_atom_content_to_iks (ta_atom_content_t *content)
        * "text/xhtml" an xhtml div element should be created */
       if (!strcmp (content->type, "xhtml"))
         {
-          iks *div = iks_insert (ct, "div");
-          iks_insert_attrib (div, "xmlns", "http://www.w3.org/1999/xhtml");
-          iks_insert_cdata (div, content->content, content->len);
+          iks *divel = iks_insert (ct, "div");
+          iks_insert_attrib (divel, "xmlns", "http://www.w3.org/1999/xhtml");
+          iks_insert_cdata (divel, content->content, content->len);
         }
       else
         {

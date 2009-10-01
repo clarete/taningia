@@ -23,7 +23,7 @@ def pylogobject():
 def ta_log_set_handler():
     return '''
 static void
-_call_py_log_handler (ta_log_t *log, ta_log_level_t level,
+_call_py_log_handler (ta_log_t *loginst, ta_log_level_t level,
                       const char *msg, void *user_data)
 {
   PylogObject *self;

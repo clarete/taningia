@@ -395,16 +395,16 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
       if (port)
         {
           const char *pp;
-          char c;
+          char ch;
 
           pp = port+1;
 
           /* Only digits are going to be added to the port
            * attribute. This while breaks in the first non digit char
            * and it will be the first char of `iri->path' */
-          while ((c = *pp++))
+          while ((ch = *pp++))
             {
-              if (!isdigit (c))
+              if (!isdigit (ch))
                 break;
               port_len++;
             }
@@ -451,14 +451,14 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
       if (path)
         {
           const char *pathp;
-          char c;
+          char ch;
           int path_len;
 
           pathp = path;
           path_len = 0;
-          while ((c = *pathp++))
+          while ((ch = *pathp++))
             {
-              if (c == '?' || c == '#')
+              if (ch == '?' || ch == '#')
                 break;
               path_len++;
             }
