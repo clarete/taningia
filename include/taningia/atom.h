@@ -27,6 +27,7 @@
 #include <taningia/list.h>
 
 #define TA_ATOM_NS "http://www.w3.org/2005/Atom"
+#define TA_ATOM_THREADING_NS "http://purl.org/syndication/thread/1.0"
 
 typedef struct _ta_atom_feed_t         ta_atom_feed_t;
 typedef struct _ta_atom_entry_t        ta_atom_entry_t;
@@ -35,13 +36,14 @@ typedef struct _ta_atom_person_t       ta_atom_person_t;
 typedef struct _ta_atom_content_t      ta_atom_content_t;
 typedef struct _ta_atom_link_t         ta_atom_link_t;
 typedef struct _ta_atom_simple_element_t  ta_atom_simple_element_t;
+typedef struct _ta_atom_in_reply_to_t  ta_atom_in_reply_to_t;
 
 typedef enum {
   TA_ATOM_LOAD_ERROR,
   TA_ATOM_PARSING_ERROR
 } ta_atom_error_t;
 
-/* -- Ta_Atom Simple Ext Element -- */
+/* -- Atom Simple Ext Element -- */
 
 /**
  * @name: ta_atom_simple_element_new
@@ -98,7 +100,7 @@ const char *ta_atom_simple_element_get_value (ta_atom_simple_element_t *sse);
 void ta_atom_simple_element_set_value (ta_atom_simple_element_t *sse,
                                        const char *value);
 
-/* -- Ta_Atom Link -- */
+/* -- Atom Link -- */
 
 /**
  * @name: ta_atom_link_new
@@ -189,7 +191,7 @@ const char *ta_atom_link_get_length (ta_atom_link_t *link);
  */
 void ta_atom_link_set_length (ta_atom_link_t *link, const char *length);
 
-/* -- Ta_Atom Content -- */
+/* -- Atom Content -- */
 
 /**
  * @name: ta_atom_content_new
@@ -258,7 +260,7 @@ const char *ta_atom_content_get_content (ta_atom_content_t *content, int *len);
  */
 void ta_atom_content_set_content (ta_atom_content_t *content, const char *text, int len);
 
-/* -- Ta_Atom Person -- */
+/* -- Atom Person -- */
 
 /**
  * @name: ta_atom_person_new
@@ -361,7 +363,7 @@ void ta_atom_person_del_see (ta_atom_person_t *person);
  **/
 ta_list_t *ta_atom_person_get_see (ta_atom_person_t *person);
 
-/* -- Ta_Atom Category -- */
+/* -- Atom Category -- */
 
 /**
  * @name: ta_atom_category_new
@@ -432,7 +434,86 @@ ta_iri_t *ta_atom_category_get_scheme (ta_atom_category_t *category);
  */
 void ta_atom_category_set_scheme (ta_atom_category_t *category, ta_iri_t *scheme);
 
-/* -- Ta_Atom Entry -- */
+/* -- Atom Thread In reply to -- */
+
+/**
+ * @name: ta_atom_in_reply_to_new
+ * @type: constructor ta_atom_in_reply_to
+ * @param ref: The IRI reference to the entry that is responsed to.
+ */
+ta_atom_in_reply_to_t *ta_atom_in_reply_to_new (ta_iri_t *ref);
+
+/**
+ * @name: ta_atom_in_reply_to_free
+ * @type: destructor ta_atom_in_reply_to
+ */
+void ta_atom_in_reply_to_free (ta_atom_in_reply_to_t *irt);
+
+/**
+ * @name: ta_atom_in_reply_to_to_iks
+ * @type: method ta_atom_in_reply_to
+ *
+ * Returns an iks representation of the in reply to instance.
+ */
+iks *ta_atom_in_reply_to_to_iks (ta_atom_in_reply_to_t *irt);
+
+/**
+ * @name: ta_atom_in_reply_to_to_string
+ * @type: method ta_atom_in_reply_to
+ *
+ * Returns an xmp representation of the in reply to instance.
+ */
+char *ta_atom_in_reply_to_to_string (ta_atom_in_reply_to_t *irt);
+
+/**
+ * @name: ta_atom_in_reply_to_get_ref
+ * @type: getter ta_atom_in_reply_to:ref
+ */
+ta_iri_t *ta_atom_in_reply_to_get_ref (ta_atom_in_reply_to_t *irt);
+
+/**
+ * @name: ta_atom_in_reply_to_set_ref
+ * @type: setter ta_atom_in_reply_to:ref
+ */
+void ta_atom_in_reply_to_set_ref (ta_atom_in_reply_to_t *irt, ta_iri_t *ref);
+
+/**
+ * @name: ta_atom_in_reply_to_get_href
+ * @type: getter ta_atom_in_reply_to:href
+ */
+ta_iri_t *ta_atom_in_reply_to_get_href (ta_atom_in_reply_to_t *irt);
+
+/**
+ * @name: ta_atom_in_reply_to_set_href
+ * @type: setter ta_atom_in_reply_to:href
+ */
+void ta_atom_in_reply_to_set_href (ta_atom_in_reply_to_t *irt, ta_iri_t *href);
+
+/**
+ * @name: ta_atom_in_reply_to_get_source
+ * @type: getter ta_atom_in_reply_to:source
+ */
+ta_iri_t *ta_atom_in_reply_to_get_source (ta_atom_in_reply_to_t *irt);
+
+/**
+ * @name: ta_atom_in_reply_to_set_source
+ * @type: setter ta_atom_in_reply_to:source
+ */
+void ta_atom_in_reply_to_set_source (ta_atom_in_reply_to_t *irt, ta_iri_t *source);
+
+/**
+ * @name: ta_atom_in_reply_to_get_type
+ * @type: getter ta_atom_in_reply_to:type
+ */
+const char *ta_atom_in_reply_to_get_type (ta_atom_in_reply_to_t *irt);
+
+/**
+ * @name: ta_atom_in_reply_to_set_type
+ * @type: setter ta_atom_in_reply_to:type
+ */
+void ta_atom_in_reply_to_set_type (ta_atom_in_reply_to_t *irt, const char *type);
+
+/* -- Atom Entry -- */
 
 /**
  * @name: ta_atom_entry_new
@@ -691,7 +772,37 @@ void ta_atom_entry_add_see (ta_atom_entry_t *entry, ta_atom_simple_element_t *el
  */
 void ta_atom_entry_del_see (ta_atom_entry_t *entry);
 
-/* -- Ta_Atom Feed -- */
+/**
+ * @name: ta_atom_entry_get_inreplyto
+ * @type: method ta_atom_entry
+ * @return: ta_list (ta_atom_in_reply_to)
+ *
+ * Returns the list of <code>in_reply_to</code> elements of an atom
+ * entry instance.
+ */
+ta_list_t *ta_atom_entry_get_inreplyto (ta_atom_entry_t *entry);
+
+/**
+ * @name: ta_atom_entry_add_inreplyto
+ * @type: method ta_atom_entry
+ * @param element: The in reply to instance to be added.
+ *
+ * Adds an <code>in_reply_to</code> instance to the entry. After that,
+ * you should not free the added instance, it will be done by
+ * `ta_atom_entry_free'.
+ */
+void ta_atom_entry_add_inreplyto (ta_atom_entry_t *entry, ta_atom_in_reply_to_t *irt);
+
+/**
+ * @name: ta_atom_entry_del_inreplyto
+ * @type: method ta_atom_entry
+ *
+ * Remove all <em>in_reply_to</em> elements from the entry. They will
+ * be freed too.
+ */
+void ta_atom_entry_del_inreplyto (ta_atom_entry_t *entry);
+
+/* -- Atom Feed -- */
 
 /**
  * @name: ta_atom_feed_new

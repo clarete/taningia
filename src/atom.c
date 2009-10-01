@@ -29,6 +29,14 @@
 #include <taningia/error.h>
 #include <taningia/list.h>
 
+struct _ta_atom_in_reply_to_t
+{
+  ta_iri_t *ref;
+  ta_iri_t *href;
+  ta_iri_t *source;
+  char *type;
+};
+
 struct _ta_atom_simple_element_t
 {
   char *name;
@@ -81,6 +89,7 @@ struct _ta_atom_entry_t
   ta_atom_content_t *content;
   ta_error_t       *error;
   ta_list_t        *ext_elements;
+  ta_list_t *in_reply_to;
 };
 
 struct _ta_atom_feed_t
@@ -111,6 +120,126 @@ _ta_atom_free_ext_elements (ta_list_t *list)
   for (tmp = list; tmp; tmp = tmp->next)
     ta_atom_simple_element_free (tmp->data);
   ta_list_free (list);
+}
+
+/* ta_atom_in_reply_to_t */
+
+ta_atom_in_reply_to_t *
+ta_atom_in_reply_to_new (ta_iri_t *ref)
+{
+  ta_atom_in_reply_to_t *irt;
+  irt = malloc (sizeof (ta_atom_in_reply_to_t));
+  irt->ref = ref;
+  irt->href = NULL;
+  irt->source = NULL;
+  irt->type = NULL;
+  return irt;
+}
+
+void
+ta_atom_in_reply_to_free (ta_atom_in_reply_to_t *irt)
+{
+  if (irt->ref)
+    ta_iri_free (irt->ref);
+  if (irt->href)
+    ta_iri_free (irt->href);
+  if (irt->source)
+    ta_iri_free (irt->source);
+  if (irt->type)
+    free (irt->type);
+  free (irt);
+}
+
+iks *
+ta_atom_in_reply_to_to_iks (ta_atom_in_reply_to_t *irt)
+{
+  iks *iksirt;
+  char *iri;
+  iksirt = iks_new ("in-reply-to");
+  iks_insert_attrib (iksirt, "xmlns", TA_ATOM_THREADING_NS);
+
+  iri = ta_iri_to_string (irt->ref);
+  iks_insert_attrib (iksirt, "ref", iri);
+  free (iri);
+
+  if (irt->href)
+    {
+      iri = ta_iri_to_string (irt->href);
+      iks_insert_attrib (iksirt, "href", iri);
+      free (iri);
+    }
+  if (irt->source)
+    {
+      iri = ta_iri_to_string (irt->source);
+      iks_insert_attrib (iksirt, "source", iri);
+      free (iri);
+    }
+  if (irt->type)
+    iks_insert_attrib (iksirt, "type", irt->type);
+  return iksirt;
+}
+
+char *
+ta_atom_in_reply_to_to_string (ta_atom_in_reply_to_t *irt)
+{
+  iks *ik = ta_atom_in_reply_to_to_iks (irt);
+  return strdup (iks_string (iks_stack (ik), ik));
+}
+
+ta_iri_t *
+ta_atom_in_reply_to_get_ref (ta_atom_in_reply_to_t *irt)
+{
+  return irt->ref;
+}
+
+void
+ta_atom_in_reply_to_set_ref (ta_atom_in_reply_to_t *irt, ta_iri_t *ref)
+{
+  if (irt->ref)
+    ta_iri_free (irt->ref);
+  irt->ref = ref;
+}
+
+ta_iri_t *
+ta_atom_in_reply_to_get_href (ta_atom_in_reply_to_t *irt)
+{
+  return irt->href;
+}
+
+void
+ta_atom_in_reply_to_set_href (ta_atom_in_reply_to_t *irt, ta_iri_t *href)
+{
+  if (irt->href)
+    ta_iri_free (irt->href);
+  irt->href = href;
+}
+
+ta_iri_t *
+ta_atom_in_reply_to_get_source (ta_atom_in_reply_to_t *irt)
+{
+  return irt->source;
+}
+
+void
+ta_atom_in_reply_to_set_source (ta_atom_in_reply_to_t *irt, ta_iri_t *source)
+{
+  if (irt->source)
+    ta_iri_free (irt->source);
+  irt->source = source;
+}
+
+const char *
+ta_atom_in_reply_to_get_type (ta_atom_in_reply_to_t *irt)
+{
+  return irt->type;
+}
+
+void
+ta_atom_in_reply_to_set_type (ta_atom_in_reply_to_t *irt, const char *type)
+{
+  if (irt->type)
+    free (irt->type);
+  irt->type = strdup (type);
 }
 
 /* ta_atom_simple_element_t */
@@ -685,6 +814,7 @@ ta_atom_entry_new (const char *title)
   entry->authors = NULL;
   entry->categories = NULL;
   entry->links = NULL;
+  entry->in_reply_to = NULL;
   entry->summary = NULL;
   entry->content = NULL;
   entry->error = NULL;
@@ -939,6 +1069,93 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
           cat = ta_atom_category_new (term, label, iri);
           ta_atom_entry_add_category (entry, cat);
         }
+      if (!strcmp (iks_name (child), "in-reply-to"))
+        {
+          ta_atom_in_reply_to_t *irt;
+          ta_iri_t *iri_ref;
+          char *ref, *href, *source, *type;
+          ref = iks_find_attrib (child, "ref");
+          href = iks_find_attrib (child, "href");
+          source = iks_find_attrib (child, "source");
+          type = iks_find_attrib (child, "type");
+          if (!ref)
+            {
+              if (entry->error)
+                ta_error_free (entry->error);
+              entry->error = ta_error_new ();
+              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
+                                 "ParsingError",
+                                 "InReplyTo element with no ref attribute.");
+              return 0;
+            }
+
+          iri_ref = ta_iri_new ();
+          if (!ta_iri_set_from_string (iri_ref, ref))
+            {
+              const char *error_message;
+              if (entry->error)
+                ta_error_free (entry->error);
+              entry->error = ta_error_new ();
+              error_message = ta_error_get_message (ta_iri_get_error (iri_ref));
+              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
+                                 "ParsingError",
+                                 "InReplyTo element with an invalid ref "
+                                 "attribute: %s",
+                                 error_message);
+              return 0;
+            }
+          else
+            irt = ta_atom_in_reply_to_new (iri_ref);
+
+          if (href)
+            {
+              ta_iri_t *iri_href;
+              iri_href = ta_iri_new ();
+              if (!ta_iri_set_from_string (iri_href, href))
+                {
+                  const char *error_message;
+                  if (entry->error)
+                    ta_error_free (entry->error);
+                  entry->error = ta_error_new ();
+                  error_message =
+                    ta_error_get_message (ta_iri_get_error (iri_href));
+                  ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
+                                     "ParsingError",
+                                     "InReplyTo element with an invalid href "
+                                     "attribute: %s",
+                                     error_message);
+                  ta_atom_in_reply_to_free (irt);
+                }
+              else
+                ta_atom_in_reply_to_set_href (irt, iri_href);
+            }
+
+          if (source)
+            {
+              ta_iri_t *iri_source;
+              iri_source = ta_iri_new ();
+              if (!ta_iri_set_from_string (iri_source, source))
+                {
+                  const char *error_message;
+                  if (entry->error)
+                    ta_error_free (entry->error);
+                  entry->error = ta_error_new ();
+                  error_message =
+                    ta_error_get_message (ta_iri_get_error (iri_source));
+                  ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
+                                     "ParsingError",
+                                     "InReplyTo element with an invalid "
+                                     "source attribute: %s",
+                                     error_message);
+                  ta_atom_in_reply_to_free (irt);
+                }
+              else
+                ta_atom_in_reply_to_set_source (irt, iri_source);
+            }
+
+          if (type)
+            ta_atom_in_reply_to_set_type (irt, type);
+        }
     }
   return 1;
 }
@@ -956,6 +1173,8 @@ ta_atom_entry_free (ta_atom_entry_t *entry)
     ta_atom_entry_del_authors (entry);
   if (entry->categories)
     ta_atom_entry_del_categories (entry);
+  if (entry->in_reply_to)
+    ta_atom_entry_del_inreplyto (entry);
   if (entry->summary)
     free (entry->summary);
   if (entry->content)
@@ -1040,6 +1259,12 @@ ta_atom_entry_to_iks (ta_atom_entry_t *entry)
         iks *links =
           ta_atom_link_to_iks (tmp->data);
         iks_insert_node (ik, links);
+      }
+  if (entry->in_reply_to)
+    for (tmp = entry->in_reply_to; tmp; tmp = tmp->next)
+      {
+        iks *irt = ta_atom_in_reply_to_to_iks (tmp->data);
+        iks_insert_node (ik, irt);
       }
   if (entry->summary)
     iks_insert_cdata (iks_insert (ik, "summary"), entry->summary, 0);
@@ -1256,6 +1481,28 @@ ta_list_t *
 ta_atom_entry_get_see (ta_atom_entry_t *entry)
 {
   return entry->ext_elements;
+}
+
+void
+ta_atom_entry_add_inreplyto (ta_atom_entry_t *entry, ta_atom_in_reply_to_t *irt)
+{
+  entry->in_reply_to = ta_list_append (entry->in_reply_to, irt);
+}
+
+void
+ta_atom_entry_del_inreplyto (ta_atom_entry_t *entry)
+{
+  ta_list_t *tmp;
+  for (tmp = entry->in_reply_to; tmp; tmp = tmp->next)
+    ta_atom_in_reply_to_free (tmp->data);
+  ta_list_free (entry->in_reply_to);
+  entry->ext_elements = NULL;
+}
+
+ta_list_t *
+ta_atom_entry_get_inreplyto (ta_atom_entry_t *entry)
+{
+  return entry->in_reply_to;
 }
 
 /* ta_atom_feed_t */
