@@ -25,18 +25,6 @@
 #include <taningia/iri.h>
 #include <taningia/error.h>
 
-struct _ta_iri_t
-{
-  char *scheme;
-  char *user;
-  char *host;
-  int port;
-  char *path;
-  char *query;
-  char *fragment;
-  ta_error_t *error;
-};
-
 ta_iri_t *
 ta_iri_new (void)
 {
@@ -189,11 +177,11 @@ ta_iri_to_string (ta_iri_t *iri)
   char *ret;
   int position = 0;
 
-  /* Things really necessary to continue */
-  if (!iri->scheme || !iri->host)
-    return NULL;
+  /* This is really necessary to continue */
+    if (!iri->scheme)
+      return NULL;
   scheme_size = strlen (iri->scheme);
-  host_size = strlen (iri->host),
+  host_size = iri->host ? strlen (iri->host) : 0;
 
     /* Calculating the size of our return var */
     static_part = 3 + 4;          /* ://, portnumber */
@@ -228,8 +216,19 @@ ta_iri_to_string (ta_iri_t *iri)
     goto error;
   memcpy (ret, iri->scheme, scheme_size);
   position += scheme_size;
-  memcpy ((ret+position), "://", 3);
-  position += 3;
+
+  /* So, if we have a host set in the uri, we add the double
+   * slashes!*/
+  if (iri->host)
+    {
+      memcpy ((ret+position), "://", 3);
+      position += 3;
+    }
+  else
+    {
+      memcpy ((ret+position), ":", 1);
+      position++;
+    }
 
   /* User handling*/
   if (iri->user)
@@ -241,10 +240,11 @@ ta_iri_to_string (ta_iri_t *iri)
     }
 
   /* Host */
-  if (!iri->host)
-    goto error;
-  memcpy ((ret+position), iri->host, host_size);
-  position += host_size;
+  if (iri->host)
+    {
+      memcpy ((ret+position), iri->host, host_size);
+      position += host_size;
+    }
 
   /* Port number */
   if (iri->port)
@@ -489,4 +489,149 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
     }
 
   return 1;
+}
+
+ta_tag_t *
+ta_tag_new (void)
+{
+  ta_tag_t *tag;
+  tag = malloc (sizeof (ta_tag_t));
+  tag->parent = ta_iri_new ();
+  tag->authority = NULL;
+  tag->date = NULL;
+  tag->specific = NULL;
+  return tag;
+}
+
+void
+ta_tag_free (ta_tag_t *tag)
+{
+  ta_iri_free (TA_IRI (tag));
+  if (tag->authority)
+    free (tag->authority);
+  if (tag->date)
+    free (tag->date);
+  if (tag->specific)
+    free (tag->specific);
+  free (tag);
+}
+
+/* This helper function will be called at the end of all setters that
+ * change the iri path in some way to update it in the base class and
+ * make it possible to use ta_iri_to_string to our tag type.
+ */
+static void
+_ta_tag_update_path (ta_tag_t *tag)
+{
+  ta_iri_t *parent = TA_IRI (tag);
+  if (parent->path)
+    free (parent->path);
+  parent->path = malloc (strlen (tag->authority) +
+                         strlen (tag->date) +
+                         strlen (tag->specific) +
+                         2);
+  sprintf (parent->path, "%s,%s:%s",
+           tag->authority, tag->date, tag->specific);
+}
+
+const char *
+ta_tag_get_authority (ta_tag_t *tag)
+{
+  return tag->authority;
+}
+
+void
+ta_tag_set_authority (ta_tag_t *tag, const char *authority)
+{
+  if (tag->authority)
+    free (tag->authority);
+  tag->authority = strdup (authority);
+  _ta_tag_update_path (tag);
+}
+
+const char *
+ta_tag_get_date (ta_tag_t *tag)
+{
+  return tag->date;
+}
+
+void
+ta_tag_set_date (ta_tag_t *tag, const char *date)
+{
+  if (tag->date)
+    free (tag->date);
+  tag->date = strdup (date);
+  _ta_tag_update_path (tag);
+}
+
+const char *
+ta_tag_get_specific (ta_tag_t *tag)
+{
+  return tag->specific;
+}
+
+void
+ta_tag_set_specific (ta_tag_t *tag, const char *specific)
+{
+  if (tag->specific)
+    free (tag->specific);
+  tag->specific = strdup (specific);
+  _ta_tag_update_path (tag);
+}
+
+int
+ta_tag_set_from_string (ta_tag_t *tag, const char *tagstr)
+{
+  /* The rest of our function will use parameters set by the next
+   * line. If something wrong happens, user will need to handle this
+   * error like any other error caused by the tag parsing*/
+  if (!ta_iri_set_from_string (TA_IRI (tag), tagstr))
+    return 0;
+  else
+    {
+      const char *path, *date, *specific;
+      path = ta_iri_get_path (TA_IRI (tag));
+
+      /* Looking for the first separator.
+       *
+       *   taggingEntity = authorityName "," date
+       *
+       */
+      date = strchr (path, ',');
+      if (!date)
+        {
+          ta_iri_t *parent;
+          parent = TA_IRI (tag);
+          if (parent->error)
+            ta_error_free (parent->error);
+          parent->error = ta_error_new ();
+          ta_error_set_full (parent->error, TA_TAG_PARSING_ERROR,
+                             "ParsingError", "Date field missing in tag");
+          return 0;
+        }
+      tag->authority = strndup (path, date - path);
+
+      /* Looking for the specific part */
+      specific = strchr (date, ':');
+      if (!specific)
+        {
+          ta_iri_t *parent;
+          parent = TA_IRI (tag);
+          if (parent->error)
+            ta_error_free (parent->error);
+          parent->error = ta_error_new ();
+          ta_error_set_full (parent->error, TA_TAG_PARSING_ERROR,
+                             "ParsingError", "Domain specific not provided");
+          return 0;
+        }
+
+      /* Storing already found date info. TODO: Validate date */
+      tag->date = strndup (date+1, specific - date - 1);
+
+      /* Altough specification says that `query' is part of specific,
+       * it was already parsed `iri_set_from_string', so let's go to
+       * the end of the string */
+      tag->specific = strdup (specific+1);
+      return 1;
+    }
 }

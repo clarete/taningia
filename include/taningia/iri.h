@@ -22,10 +22,49 @@
 
 #include <taningia/error.h>
 
-typedef struct _ta_iri_t ta_iri_t;
+#define TA_IRI(o) (o->parent)
+
+/**
+ * @name: ta_iri
+ * @type: class
+ *
+ * Implementation of the Internationalized Resource Identifiers
+ * standard defined by the RFC 3987. This implementation is not
+ * complete yet, there are some really important things missing, like
+ * transform an iri in an uri.
+ */
+typedef struct
+{
+  char *scheme;
+  char *user;
+  char *host;
+  int port;
+  char *path;
+  char *query;
+  char *fragment;
+  ta_error_t *error;
+} ta_iri_t;
+
+/**
+ * @name: ta_tag
+ * @type: class
+ * @super: ta_iri
+ * @since: 0.2
+ *
+ * Implementation of the Tag Unique Resource Identifier Scheme,
+ * defined in RFC 4151.
+ */
+typedef struct
+{
+  ta_iri_t *parent;
+  char *authority;
+  char *date;
+  char *specific;
+} ta_tag_t;
 
 typedef enum {
-  TA_IRI_PARSING_ERROR
+  TA_IRI_PARSING_ERROR,
+  TA_TAG_PARSING_ERROR
 } ta_iri_error_t;
 
 /**
@@ -146,5 +185,62 @@ ta_error_t *ta_iri_get_error (ta_iri_t *iri);
  * Parses a string into an iri.
  */
 int ta_iri_set_from_string (ta_iri_t *iri, const char *iristr);
+
+/**
+ * @name: ta_tag_new
+ * @type: constructor ta_tag
+ */
+ta_tag_t *ta_tag_new (void);
+
+/**
+ * @name: ta_tag_free
+ * @type: destructor ta_tag
+ */
+void ta_tag_free (ta_tag_t *tag);
+
+/**
+ * @name: ta_tag_get_authority
+ * @type: getter ta_tag:authority
+ */
+const char *ta_tag_get_authority (ta_tag_t *tag);
+
+/**
+ * @name: ta_tag_set_authority
+ * @type: setter ta_tag:authority
+ */
+void ta_tag_set_authority (ta_tag_t *tag, const char *authority);
+
+/**
+ * @name: ta_tag_get_date
+ * @type: getter ta_tag:date
+ */
+const char *ta_tag_get_date (ta_tag_t *tag);
+
+/**
+ * @name: ta_tag_set_date
+ * @type: setter ta_tag:date
+ */
+void ta_tag_set_date (ta_tag_t *tag, const char *date);
+
+/**
+ * @name: ta_tag_get_specific
+ * @type: getter ta_tag:specific
+ */
+const char *ta_tag_get_specific (ta_tag_t *tag);
+
+/**
+ * @name: ta_tag_set_specific
+ * @type: setter ta_tag:specific
+ */
+void ta_tag_set_specific (ta_tag_t *tag, const char *specific);
+
+/**
+ * @name: ta_tag_set_from_string
+ * @type: method ta_tag
+ * @raises: TA_IRI_PARSING_ERROR, TA_TAG_PARSING_ERROR
+ *
+ * Parses a string into a tag iri.
+ */
+int ta_tag_set_from_string (ta_tag_t *tag, const char *tagstr);
 
 #endif /* _TANINGIA_IRI_H_ */

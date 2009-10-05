@@ -24,8 +24,8 @@
 #include <taningia/iri.h>
 #include <taningia/error.h>
 
-int
-main (int argc, char **argv)
+void
+test_iri (void)
 {
   ta_iri_t *iri;
   char *ta_iri_string;
@@ -48,38 +48,84 @@ main (int argc, char **argv)
                    "http://lincoln@localhost:80/hello/there"));
   free (ta_iri_string);
   ta_iri_free (iri);
+}
+
+void
+build_iri (const char *iristr)
+{
+  ta_iri_t *myiri;
+  char *mystr;
+  myiri = ta_iri_new ();
+  if (ta_iri_set_from_string (myiri, iristr))
+    {
+      printf ("scheme:     %s\n", ta_iri_get_scheme (myiri));
+      printf ("user:       %s\n", ta_iri_get_user (myiri));
+      printf ("host:       %s\n", ta_iri_get_host (myiri));
+      printf ("port:       %d\n", ta_iri_get_port (myiri));
+      printf ("path:       %s\n", ta_iri_get_path (myiri));
+      printf ("query:      %s\n", ta_iri_get_query (myiri));
+      printf ("fragment:   %s\n", ta_iri_get_fragment (myiri));
+
+      mystr = ta_iri_to_string (myiri);
+      if (mystr)
+        {
+          printf ("built IRI:  %s\n", mystr);
+          free (mystr);
+        }
+      ta_iri_free (myiri);
+    }
+  else
+    {
+      ta_error_t *error;
+      error = ta_iri_get_error (myiri);
+      fprintf (stderr, "%s: %s\n",
+               ta_error_get_name (error),
+               ta_error_get_message (error));
+    }
+}
+
+/* An example of a type based on the basic iri implementation. The tag
+ * type. This example shows how to use an extended type too, only
+ * `overrided' or methods that iri doesn't have that should be called
+ * directly.
+ */
+void
+test_tag (void)
+{
+  ta_tag_t *tag;
+  tag = ta_tag_new ();
+  printf ("Parsing tag uri: %s\n", "tag:minaslivre.org,2009-10:/web/blah?a=1#blah=2");
+  if (ta_tag_set_from_string (tag, "tag:minaslivre.org,2009-10:/web/blah?a=1#blah=2"))
+    {
+      printf ("scheme:     %s\n", ta_iri_get_scheme (TA_IRI (tag)));
+      printf ("path:       %s\n", ta_iri_get_path (TA_IRI (tag)));
+      printf ("query:      %s\n", ta_iri_get_query (TA_IRI (tag)));
+      printf ("fragment:   %s\n", ta_iri_get_fragment (TA_IRI (tag)));
+      printf ("authority:  %s\n", ta_tag_get_authority (tag));
+      printf ("date:       %s\n", ta_tag_get_date (tag));
+      printf ("specific:   %s\n", ta_tag_get_specific (tag));
+
+      /* Result */
+      printf ("regenerated uri: %s\n", ta_iri_to_string (TA_IRI (tag)));
+    }
+  else
+    {
+      ta_error_t *error;
+      error = ta_iri_get_error (TA_IRI (tag));
+      fprintf (stderr, "%s: %s\n",
+               ta_error_get_name (error),
+               ta_error_get_message (error));
+    }
+}
+
+int
+main (int argc, char **argv)
+{
+  test_iri ();
+
+  test_tag ();
 
   if (argc == 2)
-    {
-      ta_iri_t *myiri;
-      char *mystr;
-      myiri = ta_iri_new ();
-      if (ta_iri_set_from_string (myiri, argv[1]))
-        {
-          printf ("scheme:     %s\n", ta_iri_get_scheme (iri));
-          printf ("user:       %s\n", ta_iri_get_user (iri));
-          printf ("host:       %s\n", ta_iri_get_host (iri));
-          printf ("port:       %d\n", ta_iri_get_port (iri));
-          printf ("path:       %s\n", ta_iri_get_path (iri));
-          printf ("query:      %s\n", ta_iri_get_query (iri));
-          printf ("fragment:   %s\n", ta_iri_get_fragment (iri));
-
-          mystr = ta_iri_to_string (myiri);
-          if (mystr)
-            {
-              printf ("built IRI:  %s\n", mystr);
-              free (mystr);
-            }
-          ta_iri_free (myiri);
-        }
-      else
-        {
-          ta_error_t *error;
-          error = ta_iri_get_error (myiri);
-          fprintf (stderr, "%s: %s\n",
-                   ta_error_get_name (error),
-                   ta_error_get_message (error));
-        }
-    }
+    build_iri (argv[1]);
   return 0;
 }
