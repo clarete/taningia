@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Copyright (C) 2009  Lincoln de Sousa <lincoln@minaslivre.org>
 #
@@ -27,7 +27,7 @@ which autoreconf || {
     echo "You don't have the autoreconf program installed. You should "
     echo "install the autotools package (aptitude install autotools in "
     echo "Debian systems)"
-    return 1
+    exit 1
 }
 
 autoreconf -i
