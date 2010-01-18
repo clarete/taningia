@@ -1,4 +1,4 @@
-SUBDIRS = include src bindings examples
+SUBDIRS = include src examples
 
 EXTRA_DIST = taningia.pc.in
 
