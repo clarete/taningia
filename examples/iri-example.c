@@ -106,7 +106,7 @@ test_tag (void)
       printf ("specific:   %s\n", ta_tag_get_specific (tag));
 
       /* Result */
-      printf ("regenerated uri: %s\n", ta_iri_to_string (TA_IRI (tag)));
+      printf ("regenerated uri: %s\n\n", ta_iri_to_string (TA_IRI (tag)));
     }
   else
     {

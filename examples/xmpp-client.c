@@ -84,8 +84,7 @@ main (int argc, char **argv)
 
   /* Connecting callbacks to some events dispatched by our client.  If
    * you try to connect to an unknown event, `event_connect' method
-   * returns `0' and an error will be set.
-   */
+   * returns `0' and an error will be set. */
   ta_xmpp_client_event_connect (xmpp, "connected",
                                 (ta_xmpp_client_hook_t) connected_cb,
                                 NULL);
@@ -102,7 +101,8 @@ main (int argc, char **argv)
    * xmpp client instance. To know more about the log object, look at
    * the `log-system.c' example */
   logger = ta_xmpp_client_get_logger (xmpp);
-  ta_log_set_level (logger, ta_log_get_level (logger) | TA_LOG_INFO | TA_LOG_DEBUG);
+  ta_log_set_level (logger, ta_log_get_level (logger) |
+                    TA_LOG_INFO | TA_LOG_DEBUG);
   ta_log_set_use_colors (logger, 1);
 
   /* Connecting to the host */

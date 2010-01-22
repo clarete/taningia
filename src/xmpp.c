@@ -74,7 +74,7 @@ _ta_xmpp_client_call_event_hooks (ta_xmpp_client_t *client,
   struct hook_data *hdata;
   for (tmp = hooks; tmp; tmp = tmp->next)
     {
-      hdata = (struct hook_data *) tmp->data; 
+      hdata = (struct hook_data *) tmp->data;
       if ((*hdata->hook) (client, data, hdata->data))
         return;
     }
@@ -156,7 +156,8 @@ ta_xmpp_client_new (const char *jid,
    * currently supported events. We actually don't free anything but
    * the `hook_data' struct, so it is up to the caller to free the
    * data field. */
-  client->events = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_free);
+  client->events = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                          NULL, g_free);
   g_hash_table_insert (client->events, "connected", NULL);
   g_hash_table_insert (client->events, "authenticated", NULL);
   g_hash_table_insert (client->events, "authentication-failed", NULL);
@@ -361,7 +362,8 @@ ta_xmpp_client_run (ta_xmpp_client_t *client, int detach)
   if (detach)
     {
       pthread_t th;
-      pthread_create (&th, NULL, (void *) _ta_xmpp_client_do_run, (void *) client);
+      pthread_create (&th, NULL, (void *) _ta_xmpp_client_do_run,
+                      (void *) client);
       pthread_detach (th);
       ta_log_info (client->log, "Detaching xmpp client main loop thread");
       return -1;
@@ -518,7 +520,8 @@ _ta_xmpp_client_hook (void *data, int type, iks *node)
 
           /* Calling hooks for `authentication-failed' event. */
           pak = iks_packet (node);
-          _ta_xmpp_client_call_event_hooks (client, "authentication-failed", pak);
+          _ta_xmpp_client_call_event_hooks (client, "authentication-failed",
+                                            pak);
         }
       else if (strcmp (name, "success") == 0)
         {
