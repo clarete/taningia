@@ -92,6 +92,15 @@ _ta_xmpp_client_ikshook_authenticated (void *data, ikspak *pak)
   return IKS_FILTER_EAT;
 }
 
+static int
+_ta_xmpp_client_ikshook_message_received (void *data, ikspak *pak)
+{
+  ta_xmpp_client_t *client;
+  client = (ta_xmpp_client_t *) data;
+  _ta_xmpp_client_call_event_hooks (client, "message-received", pak);
+  return IKS_FILTER_EAT;
+}
+
 #ifdef DEBUG
 
 static void
@@ -161,6 +170,7 @@ ta_xmpp_client_new (const char *jid,
   g_hash_table_insert (client->events, "connected", NULL);
   g_hash_table_insert (client->events, "authenticated", NULL);
   g_hash_table_insert (client->events, "authentication-failed", NULL);
+  g_hash_table_insert (client->events, "message-received", NULL);
   return client;
 }
 
@@ -348,6 +358,12 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
                            IKS_RULE_TYPE, IKS_PAK_IQ,
                            IKS_RULE_SUBTYPE, IKS_TYPE_RESULT,
                            IKS_RULE_ID, "auth",
+                           IKS_RULE_DONE);
+
+      iks_filter_add_rule (client->filter,
+                           (iksFilterHook *) _ta_xmpp_client_ikshook_message_received,
+                           client,
+                           IKS_RULE_TYPE, IKS_PAK_MESSAGE,
                            IKS_RULE_DONE);
       return 1;
     }
