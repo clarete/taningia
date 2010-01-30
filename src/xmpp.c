@@ -195,6 +195,13 @@ ta_xmpp_client_free (ta_xmpp_client_t *client)
     ta_log_free (client->log);
   if (client->error)
     ta_error_free (client->error);
+
+  /* Freeing all hooks for all events. Maybe it is better to be done
+   * automatically. */
+  ta_xmpp_client_event_disconnect_all (client, "connected");
+  ta_xmpp_client_event_disconnect_all (client, "authenticated");
+  ta_xmpp_client_event_disconnect_all (client, "authentication-failed");
+  ta_xmpp_client_event_disconnect_all (client, "message-received");
   if (client->events)
     g_hash_table_unref (client->events);
   free (client);
@@ -472,7 +479,35 @@ ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
   if (hooks != NULL)
     {
       hooks = ta_list_remove (hooks, hook);
+      free (hook);
       g_hash_table_insert (client->events, (gpointer) event, hooks);
+    }
+  return 1;
+}
+
+int
+ta_xmpp_client_event_disconnect_all (ta_xmpp_client_t *client,
+                                     const char *event)
+{
+  ta_list_t *hooks;
+  if (!g_hash_table_lookup_extended (client->events, event, NULL,
+                                     (gpointer) &hooks))
+    {
+      if (client->error)
+        ta_error_free (client->error);
+      client->error = ta_error_new ();
+      ta_error_set_name (client->error, "NoSuchEvent");
+      ta_error_set_message (client->error, "XMPP client has no event called %s",
+                            event);
+      ta_error_set_code (client->error, XMPP_NO_SUCH_EVENT_ERROR);
+      return 0;
+    }
+  if (hooks != NULL)
+    {
+      ta_list_t *node;
+      for (node = hooks; node; node = node->next)
+        if (node->data)
+          free (node->data);
     }
   return 1;
 }

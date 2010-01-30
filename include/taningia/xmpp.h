@@ -225,4 +225,16 @@ int ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
                                      const char *event,
                                      ta_xmpp_client_hook_t hook);
 
+/**
+ * @name: ta_xmpp_client_event_disconnect_all
+ * @type: method ta_xmpp_client
+ * @param event: The event name.
+ * @raise: XMPP_NO_SUCH_EVENT_ERROR
+ *
+ * Disconnects all hooks previously connected to an event.
+ */
+int
+ta_xmpp_client_event_disconnect_all (ta_xmpp_client_t *client,
+                                     const char *event);
+
 #endif /* _TANINGIA_XMPP_H_ */
