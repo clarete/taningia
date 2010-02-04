@@ -92,12 +92,25 @@ _ta_xmpp_client_ikshook_authenticated (void *data, ikspak *pak)
   return IKS_FILTER_EAT;
 }
 
+/* Callback fired when a <message /> is received by the xmpp
+ * client. */
 static int
 _ta_xmpp_client_ikshook_message_received (void *data, ikspak *pak)
 {
   ta_xmpp_client_t *client;
   client = (ta_xmpp_client_t *) data;
   _ta_xmpp_client_call_event_hooks (client, "message-received", pak);
+  return IKS_FILTER_EAT;
+}
+
+/* Callback fired when a <presence /> is received by the xmpp
+ * client. */
+static int
+_ta_xmpp_client_ikshook_presence_noticed (void *data, ikspak *pak)
+{
+  ta_xmpp_client_t *client;
+  client = (ta_xmpp_client_t *) data;
+  _ta_xmpp_client_call_event_hooks (client, "presence-noticed", pak);
   return IKS_FILTER_EAT;
 }
 
@@ -171,6 +184,7 @@ ta_xmpp_client_new (const char *jid,
   g_hash_table_insert (client->events, "authenticated", NULL);
   g_hash_table_insert (client->events, "authentication-failed", NULL);
   g_hash_table_insert (client->events, "message-received", NULL);
+  g_hash_table_insert (client->events, "presence-noticed", NULL);
   return client;
 }
 
@@ -202,6 +216,7 @@ ta_xmpp_client_free (ta_xmpp_client_t *client)
   ta_xmpp_client_event_disconnect_all (client, "authenticated");
   ta_xmpp_client_event_disconnect_all (client, "authentication-failed");
   ta_xmpp_client_event_disconnect_all (client, "message-received");
+  ta_xmpp_client_event_disconnect_all (client, "presence-noticed");
   if (client->events)
     g_hash_table_unref (client->events);
   free (client);
@@ -371,6 +386,12 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
                            (iksFilterHook *) _ta_xmpp_client_ikshook_message_received,
                            client,
                            IKS_RULE_TYPE, IKS_PAK_MESSAGE,
+                           IKS_RULE_DONE);
+
+      iks_filter_add_rule (client->filter,
+                           (iksFilterHook *) _ta_xmpp_client_ikshook_presence_noticed,
+                           client,
+                           IKS_RULE_TYPE, IKS_PAK_PRESENCE,
                            IKS_RULE_DONE);
       return 1;
     }
