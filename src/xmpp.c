@@ -27,8 +27,8 @@
 #include <taningia/log.h>
 #include <taningia/list.h>
 
-/* To use GHashTable. Soon it will be replaced. */
-#include <glib.h>
+#include "hashtable.h"
+#include "hashtable-utils.h"
 
 struct _ta_xmpp_client_t {
   char *jid;
@@ -48,7 +48,7 @@ struct _ta_xmpp_client_t {
   ta_log_t *log;
   ta_error_t *error;
 
-  GHashTable *events;
+  hashtable_t *events;
 };
 
 struct hook_data {
@@ -70,7 +70,7 @@ _ta_xmpp_client_call_event_hooks (ta_xmpp_client_t *client,
                                   const char *event, void *data)
 {
   ta_list_t *tmp;
-  ta_list_t *hooks = g_hash_table_lookup (client->events, event);
+  ta_list_t *hooks = hashtable_get (client->events, event);
   struct hook_data *hdata;
   for (tmp = hooks; tmp; tmp = tmp->next)
     {
@@ -178,13 +178,12 @@ ta_xmpp_client_new (const char *jid,
    * currently supported events. We actually don't free anything but
    * the `hook_data' struct, so it is up to the caller to free the
    * data field. */
-  client->events = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                          NULL, g_free);
-  g_hash_table_insert (client->events, "connected", NULL);
-  g_hash_table_insert (client->events, "authenticated", NULL);
-  g_hash_table_insert (client->events, "authentication-failed", NULL);
-  g_hash_table_insert (client->events, "message-received", NULL);
-  g_hash_table_insert (client->events, "presence-noticed", NULL);
+  client->events = hashtable_create (hash_string, string_equal, NULL, free);
+  hashtable_set (client->events, "connected", NULL);
+  hashtable_set (client->events, "authenticated", NULL);
+  hashtable_set (client->events, "authentication-failed", NULL);
+  hashtable_set (client->events, "message-received", NULL);
+  hashtable_set (client->events, "presence-noticed", NULL);
   return client;
 }
 
@@ -218,7 +217,7 @@ ta_xmpp_client_free (ta_xmpp_client_t *client)
   ta_xmpp_client_event_disconnect_all (client, "message-received");
   ta_xmpp_client_event_disconnect_all (client, "presence-noticed");
   if (client->events)
-    g_hash_table_unref (client->events);
+    hashtable_destroy (client->events);
   free (client);
 }
 
@@ -442,7 +441,7 @@ ta_xmpp_client_event_connect (ta_xmpp_client_t *client,
                               ta_xmpp_client_hook_t hook,
                               void *user_data)
 {
-  ta_list_t *hooks;
+  ta_list_t *hooks = NULL;
   struct hook_data *hdata;
   hdata = malloc (sizeof (struct hook_data));
   hdata->hook = hook;
@@ -451,8 +450,7 @@ ta_xmpp_client_event_connect (ta_xmpp_client_t *client,
   /* Looking for an already created list. If already exists, we just
    * append a new value. Otherwise, we create it and re-add the entry
    * to the hash table. */
-  if (!g_hash_table_lookup_extended (client->events, event, NULL,
-                                     (gpointer) &hooks))
+  if (!hashtable_get_test (client->events, event, hooks))
     {
       if (client->error)
         ta_error_free (client->error);
@@ -466,7 +464,7 @@ ta_xmpp_client_event_connect (ta_xmpp_client_t *client,
   if (hooks == NULL)
     {
       hooks = ta_list_append (hooks, hdata);
-      g_hash_table_insert (client->events, (gpointer) event, hooks);
+      hashtable_set (client->events, (void *) event, hooks);
     }
   else
     hooks = ta_list_append (hooks, hdata);
@@ -478,15 +476,14 @@ ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
                                  const char *event,
                                  ta_xmpp_client_hook_t hook)
 {
-  ta_list_t *hooks;
+  ta_list_t *hooks = NULL;
 
   /* Looks for the hook list in event hash table. If it is found, the
    * hook is removed from the list and then the hook list is
    * re-inserted in the hash table. This only works because the
    * _insert function of the hash table replaces entries with same
    * keys. */
-  if (!g_hash_table_lookup_extended (client->events, event, NULL,
-                                     (gpointer) &hooks))
+  if (!hashtable_get_test (client->events, event, hooks))
     {
       if (client->error)
         ta_error_free (client->error);
@@ -501,7 +498,7 @@ ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
     {
       hooks = ta_list_remove (hooks, hook);
       free (hook);
-      g_hash_table_insert (client->events, (gpointer) event, hooks);
+      hashtable_set (client->events, (void *) event, hooks);
     }
   return 1;
 }
@@ -510,9 +507,8 @@ int
 ta_xmpp_client_event_disconnect_all (ta_xmpp_client_t *client,
                                      const char *event)
 {
-  ta_list_t *hooks;
-  if (!g_hash_table_lookup_extended (client->events, event, NULL,
-                                     (gpointer) &hooks))
+  ta_list_t *hooks = NULL;
+  if (!hashtable_get_test (client->events, event, hooks))
     {
       if (client->error)
         ta_error_free (client->error);

@@ -19,11 +19,11 @@
 
 #define _GNU_SOURCE
 #define _XOPEN_SOURCE       /* glibc 2.0 needs this to use strptime */
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <iksemel.h>
-#include <glib.h>               /* to g_time_val_to_iso8601 */
 #include <taningia/atom.h>
 #include <taningia/iri.h>
 #include <taningia/error.h>
@@ -1193,10 +1193,22 @@ ta_atom_entry_get_error (ta_atom_entry_t *entry)
 static char *
 time_to_iso8601 (time_t t)
 {
-  GTimeVal gtv;
-  gtv.tv_sec = t;
-  gtv.tv_usec = 0;
-  return g_time_val_to_iso8601 (&gtv);
+  struct tm *tm;
+  size_t bufsize = 20;
+  char *date_iso;
+
+  tm = gmtime (&t);
+  if ((date_iso = malloc (bufsize)) == NULL)
+    return NULL;
+  snprintf (date_iso, bufsize,
+            "%4d-%02d-%02dT%02d:%02d:%02dZ",
+            tm->tm_year + 1900,
+            tm->tm_mon + 1,
+            tm->tm_mday,
+            tm->tm_hour,
+            tm->tm_min,
+            tm->tm_sec);
+  return date_iso;
 }
 
 static time_t
