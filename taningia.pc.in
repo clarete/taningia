@@ -3,7 +3,7 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@prefix@/include
 
-Name: Lib Jarvis
+Name: Taningia
 Description: A true web 3.0 library!
 Version: @VERSION@
 Requres: iksemel
