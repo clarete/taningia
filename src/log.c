@@ -171,12 +171,14 @@ ta_log_info (ta_log_t *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[  INFO ] [ %s ] %s\n", ta_log_time, msg);
+    fprintf (stderr, "[  INFO ] [ %s ] [ %s ] %s\n", ta_log_time,
+             log->name, msg);
   else
     /* Cyan */
     fprintf (stderr,
-             "\033[;36m[  INFO ] [ %s ]\033[;0m \033[;0m%s\033[;0m\n",
+             "\033[;36m[  INFO ] [ %s ]\033[;0m \033[;0m[ %s ] %s\033[;0m\n",
              ta_log_time,
+             log->name,
              msg);
 
   free (ta_log_time);
@@ -200,12 +202,14 @@ ta_log_warn (ta_log_t *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[  WARN ] [ %s ] %s\n", ta_log_time, msg);
+    fprintf (stderr, "[  WARN ] [ %s ] [ %s ]  %s\n", ta_log_time,
+             log->name, msg);
   else
     /* Yellow */
     fprintf (stderr,
-             "\033[;33m[  WARN ] [ %s ]\033[;0m \033[;0m%s\033[;0m\n",
+             "\033[;33m[  WARN ] [ %s ]\033[;0m \033[;0m[ %s ] %s\033[;0m\n",
              ta_log_time,
+             log->name,
              msg);
 
   free (ta_log_time);
@@ -229,12 +233,14 @@ ta_log_debug (ta_log_t *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ DEBUG ] [ %s ] %s\n", ta_log_time, msg);
+    fprintf (stderr, "[ DEBUG ] [ %s ] [ %s ]  %s\n", ta_log_time,
+             log->name, msg);
   else
     /* Blue */
     fprintf (stderr,
-             "\033[;34m[ DEBUG ] [ %s ]\033[;0m \033[0;0m%s\033[;0m\n",
+             "\033[;34m[ DEBUG ] [ %s ]\033[;0m \033[0;0m[ %s ] %s\033[;0m\n",
              ta_log_time,
+             log->name,
              msg);
 
   free (ta_log_time);
@@ -258,12 +264,14 @@ ta_log_critical (ta_log_t *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ CRITI ] [ %s ] %s\n", ta_log_time, msg);
+    fprintf (stderr, "[ CRITI ] [ %s ] [ %s ]  %s\n", ta_log_time,
+             log->name, msg);
   else
     /* Red with no bold */
     fprintf (stderr,
-             "\033[;31m[ CRITI ] [ %s ]\033[;0m \033[;0m%s\033[;0m\n",
+             "\033[;31m[ CRITI ] [ %s ]\033[;0m \033[;0m[ %s ] %s\033[;0m\n",
              ta_log_time,
+             log->name,
              msg);
 
   free (ta_log_time);
@@ -287,12 +295,15 @@ ta_log_error (ta_log_t *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ ERROR ] [ %s ] %s\n", ta_log_time, msg);
+    fprintf (stderr, "[ ERROR ] [ %s ] [ %s ]  %s\n", ta_log_time,
+             log->name, msg);
   else
     /* Red foreground */
     fprintf (stderr,
-             "\033[1;31m[ ERROR ] [ %s ]\033[1;0m \033[1;1m%s\033[1;0m\n",
+             "\033[1;31m[ ERROR ] [ %s ]\033[1;0m "
+             "\033[1;1m [ %s ] %s\033[1;0m\n",
              ta_log_time,
+             log->name,
              msg);
 
   free (ta_log_time);
