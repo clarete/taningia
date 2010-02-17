@@ -29,7 +29,7 @@ typedef enum {
   TA_LOG_WARN     = 1 << 2,
   TA_LOG_DEBUG    = 1 << 3,
   TA_LOG_CRITICAL = 1 << 4,
-  TA_LOG_ERROR    = 1 << 5,
+  TA_LOG_ERROR    = 1 << 5
 } ta_log_level_t;
 
 typedef int *(*ta_log_handler_func_t) (ta_log_t *, ta_log_level_t, const char *, void *);
