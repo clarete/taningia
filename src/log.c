@@ -295,12 +295,12 @@ ta_log_error (ta_log_t *log, const char *fmt, ...)
       return;
 
   if (!log->use_colors)
-    fprintf (stderr, "[ ERROR ] [ %s ] [ %s ]  %s\n", ta_log_time,
+    fprintf (stderr, "[ ERROR ] [ %s ] [ %s ] %s\n", ta_log_time,
              log->name, msg);
   else
     /* Red foreground */
     fprintf (stderr,
-             "\033[1;31m[ ERROR ] [ %s ]\033[1;0m "
+             "\033[1;31m[ ERROR ] [ %s ]\033[1;0m"
              "\033[1;1m [ %s ] %s\033[1;0m\n",
              ta_log_time,
              log->name,
