@@ -77,7 +77,7 @@ main (int argc, char **argv)
   newlist = ta_list_append (newlist, "3");
 
   printf ("removing element `1' from newlist:\n");
-  newlist = ta_list_remove (newlist, "1");
+  newlist = ta_list_remove (newlist, "1", NULL);
   printf ("new size: %d\n", ta_list_len (newlist));
   for (node = newlist; node; node = node->next)
     printf (" %s\n", (char *) node->data);

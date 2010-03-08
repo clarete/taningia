@@ -20,6 +20,8 @@
 #ifndef _TANINGIA_LIST_H_
 #define _TANINGIA_LIST_H_
 
+#include <taningia/mem.h>
+
 typedef struct _ta_list_t ta_list_t;
 
 struct _ta_list_t
@@ -134,12 +136,15 @@ ta_list_t *ta_list_insert (ta_list_t *list, void *data, int position);
 /**
  * @name: ta_list_remove
  * @type: method ta_list
- * @param data: The element to be removed from the list.
+ * @param data: The element data to be removed from the list.
+ * @param data_free_cb: Callback to free data.
  *
  * Removes the element that holds the `data' value from the list, but
- * it only frees that found. Not `data', it is up to the caller.
+ * it only frees the found element. To free data, you will have to
+ * pass the `data_free_cb' parameter too.
  */
-ta_list_t *ta_list_remove (ta_list_t *list, void *data);
+ta_list_t *ta_list_remove (ta_list_t *list, void *data,
+                           ta_free_func_t data_free_cb);
 
 /**
  * @name: ta_list_reverse

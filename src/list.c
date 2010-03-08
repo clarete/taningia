@@ -188,7 +188,7 @@ ta_list_insert (ta_list_t *list, void *data, int position)
 }
 
 ta_list_t *
-ta_list_remove (ta_list_t *list, void *data)
+ta_list_remove (ta_list_t *list, void *data, ta_free_func_t data_free_cb)
 {
   ta_list_t *node = list;
   while (node)
@@ -207,11 +207,13 @@ ta_list_remove (ta_list_t *list, void *data)
           if (node == list)
             {
               list = list->next;
-              list->prev = NULL;
+              if (list)
+                list->prev = NULL;
             }
 
-          /* Freeing the element, not its data, so be carefull with
-           * memory leaks */
+          /* Freeing the element and its data */
+          if (data_free_cb)
+            data_free_cb (node->data);
           free (node);
           break;
         }
