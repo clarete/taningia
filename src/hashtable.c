@@ -275,7 +275,7 @@ int hashtable_set(hashtable_t *hashtable, void *key, void *value)
     return 0;
 }
 
-int hashtable_get_test(hashtable_t *hashtable, const void *key, void *value)
+int hashtable_get_test(hashtable_t *hashtable, const void *key, void **value)
 {
     pair_t *pair;
     unsigned int hash;
@@ -288,7 +288,7 @@ int hashtable_get_test(hashtable_t *hashtable, const void *key, void *value)
         return 0;
     else
     {
-        value = pair->value;
+        *value = pair->value;
         return 1;
     }
 }

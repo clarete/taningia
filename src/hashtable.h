@@ -144,7 +144,7 @@ void *hashtable_get(hashtable_t *hashtable, const void *key);
  *
  * Returns 1 if the key was found and 0 otherwise.
  */
-int hashtable_get_test(hashtable_t *hashtable, const void *key, void *value);
+int hashtable_get_test(hashtable_t *hashtable, const void *key, void **value);
 
 /**
  * hashtable_del - Remove a value from the hashtable
