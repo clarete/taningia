@@ -145,8 +145,10 @@ _ta_log_localtime (ta_log_t * log)
   timeinfo = localtime (&rawtime);
 
   if (log->date_format == NULL)
-    return NULL;
-
+    {
+      free (buffer);
+      return NULL;
+    }
   if (strftime (buffer, MAX_DATE_SIZE, log->date_format, timeinfo))
     return buffer;
 
@@ -157,7 +159,7 @@ _ta_log_localtime (ta_log_t * log)
 void
 ta_log_info (ta_log_t *log, const char *fmt, ...)
 {
-  char *ta_log_time = _ta_log_localtime (log);
+  char *ta_log_time;
 
   if (!(log->level & TA_LOG_INFO))
     return;
@@ -170,6 +172,7 @@ ta_log_info (ta_log_t *log, const char *fmt, ...)
     if (log->handler (log, TA_LOG_INFO, msg, log->handler_data))
       return;
 
+  ta_log_time = _ta_log_localtime (log);
   if (!log->use_colors)
     fprintf (stderr, "[  INFO ] [ %s ] [ %s ] %s\n", ta_log_time,
              log->name, msg);
@@ -188,7 +191,7 @@ ta_log_info (ta_log_t *log, const char *fmt, ...)
 void
 ta_log_warn (ta_log_t *log, const char *fmt, ...)
 {
-  char *ta_log_time = _ta_log_localtime (log);
+  char *ta_log_time;
 
   if (!(log->level & TA_LOG_WARN))
     return;
@@ -201,6 +204,7 @@ ta_log_warn (ta_log_t *log, const char *fmt, ...)
     if (log->handler (log, TA_LOG_WARN, msg, log->handler_data))
       return;
 
+  ta_log_time = _ta_log_localtime (log);
   if (!log->use_colors)
     fprintf (stderr, "[  WARN ] [ %s ] [ %s ]  %s\n", ta_log_time,
              log->name, msg);
@@ -219,7 +223,7 @@ ta_log_warn (ta_log_t *log, const char *fmt, ...)
 void
 ta_log_debug (ta_log_t *log, const char *fmt, ...)
 {
-  char *ta_log_time = _ta_log_localtime (log);
+  char *ta_log_time;
 
   if (!(log->level & TA_LOG_DEBUG))
     return;
@@ -232,6 +236,7 @@ ta_log_debug (ta_log_t *log, const char *fmt, ...)
     if (log->handler (log, TA_LOG_DEBUG, msg, log->handler_data))
       return;
 
+  ta_log_time = _ta_log_localtime (log);
   if (!log->use_colors)
     fprintf (stderr, "[ DEBUG ] [ %s ] [ %s ]  %s\n", ta_log_time,
              log->name, msg);
@@ -250,7 +255,7 @@ ta_log_debug (ta_log_t *log, const char *fmt, ...)
 void
 ta_log_critical (ta_log_t *log, const char *fmt, ...)
 {
-  char *ta_log_time = _ta_log_localtime (log);
+  char *ta_log_time;
 
   if (!(log->level & TA_LOG_CRITICAL))
     return;
@@ -263,6 +268,7 @@ ta_log_critical (ta_log_t *log, const char *fmt, ...)
     if (log->handler (log, TA_LOG_CRITICAL, msg, log->handler_data))
       return;
 
+  ta_log_time = _ta_log_localtime (log);
   if (!log->use_colors)
     fprintf (stderr, "[ CRITI ] [ %s ] [ %s ]  %s\n", ta_log_time,
              log->name, msg);
@@ -281,7 +287,7 @@ ta_log_critical (ta_log_t *log, const char *fmt, ...)
 void
 ta_log_error (ta_log_t *log, const char *fmt, ...)
 {
-  char *ta_log_time = _ta_log_localtime (log);
+  char *ta_log_time;
 
   if (!(log->level & TA_LOG_ERROR))
     return;
@@ -294,6 +300,7 @@ ta_log_error (ta_log_t *log, const char *fmt, ...)
     if (log->handler (log, TA_LOG_ERROR, msg, log->handler_data))
       return;
 
+  ta_log_time = _ta_log_localtime (log);
   if (!log->use_colors)
     fprintf (stderr, "[ ERROR ] [ %s ] [ %s ] %s\n", ta_log_time,
              log->name, msg);
