@@ -23,6 +23,7 @@
 #include <pthread.h>
 #include <iksemel.h>
 
+#include <taningia/mem.h>
 #include <taningia/xmpp.h>
 #include <taningia/log.h>
 #include <taningia/list.h>
@@ -54,6 +55,7 @@ struct _ta_xmpp_client_t {
 struct hook_data {
   ta_xmpp_client_hook_t hook;
   void *data;
+  ta_free_func_t free_data_func;
 };
 
 /* Prototypes of some local functions */
@@ -61,6 +63,27 @@ struct hook_data {
 static int _ta_xmpp_client_hook   (void *data, int type, iks *node);
 
 static int _ta_xmpp_client_do_run (void *user_data);
+
+/* hook_data helpers */
+static struct hook_data *
+hdata_new (ta_xmpp_client_hook_t hook, void *data, ta_free_func_t free_data)
+{
+  struct hook_data *hdata;
+  hdata = malloc (sizeof (struct hook_data));
+  hdata->hook = hook;
+  hdata->data = data;
+  hdata->free_data_func = free_data;
+  return hdata;
+}
+
+static void
+hdata_free (void *val)
+{
+  struct hook_data *hdata = (struct hook_data *) val;
+  if (hdata->free_data_func)
+    hdata->free_data_func (hdata->data);
+  free (hdata);
+}
 
 /* Look for an entry called `event' in the client event hash table and
  * then executes all hooks added to the list in that entry. If a hook
@@ -178,7 +201,7 @@ ta_xmpp_client_new (const char *jid,
    * currently supported events. We actually don't free anything but
    * the `hook_data' struct, so it is up to the caller to free the
    * data field. */
-  client->events = hashtable_create (hash_string, string_equal, NULL, free);
+  client->events = hashtable_create (hash_string, string_equal, NULL, NULL);
   hashtable_set (client->events, "connected", NULL);
   hashtable_set (client->events, "authenticated", NULL);
   hashtable_set (client->events, "authentication-failed", NULL);
@@ -211,11 +234,11 @@ ta_xmpp_client_free (ta_xmpp_client_t *client)
 
   /* Freeing all hooks for all events. Maybe it is better to be done
    * automatically. */
-  ta_xmpp_client_event_disconnect_all (client, "connected");
-  ta_xmpp_client_event_disconnect_all (client, "authenticated");
-  ta_xmpp_client_event_disconnect_all (client, "authentication-failed");
-  ta_xmpp_client_event_disconnect_all (client, "message-received");
-  ta_xmpp_client_event_disconnect_all (client, "presence-noticed");
+  ta_xmpp_client_event_disconnect (client, "connected", NULL);
+  ta_xmpp_client_event_disconnect (client, "authenticated", NULL);
+  ta_xmpp_client_event_disconnect (client, "authentication-failed", NULL);
+  ta_xmpp_client_event_disconnect (client, "message-received", NULL);
+  ta_xmpp_client_event_disconnect (client, "presence-noticed", NULL);
   if (client->events)
     hashtable_destroy (client->events);
   free (client);
@@ -443,14 +466,12 @@ ta_xmpp_client_event_connect (ta_xmpp_client_t *client,
 {
   ta_list_t *hooks = NULL;
   struct hook_data *hdata;
-  hdata = malloc (sizeof (struct hook_data));
-  hdata->hook = hook;
-  hdata->data = user_data;
+  hdata = hdata_new (hook, user_data, NULL);
 
   /* Looking for an already created list. If already exists, we just
    * append a new value. Otherwise, we create it and re-add the entry
    * to the hash table. */
-  if (!hashtable_get_test (client->events, event, hooks))
+  if (!hashtable_get_test (client->events, event, (void **) &hooks))
     {
       if (client->error)
         ta_error_free (client->error);
@@ -476,14 +497,14 @@ ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
                                  const char *event,
                                  ta_xmpp_client_hook_t hook)
 {
-  ta_list_t *hooks = NULL;
+  ta_list_t *hooks = NULL, *tmp = NULL, *elm = NULL;
 
   /* Looks for the hook list in event hash table. If it is found, the
    * hook is removed from the list and then the hook list is
    * re-inserted in the hash table. This only works because the
    * _insert function of the hash table replaces entries with same
    * keys. */
-  if (!hashtable_get_test (client->events, event, hooks))
+  if (!hashtable_get_test (client->events, event, (void **) &hooks))
     {
       if (client->error)
         ta_error_free (client->error);
@@ -494,38 +515,32 @@ ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
       ta_error_set_code (client->error, XMPP_NO_SUCH_EVENT_ERROR);
       return 0;
     }
-  if (hooks != NULL)
-    {
-      hooks = ta_list_remove (hooks, hook);
-      free (hook);
-      hashtable_set (client->events, (void *) event, hooks);
-    }
-  return 1;
-}
 
-int
-ta_xmpp_client_event_disconnect_all (ta_xmpp_client_t *client,
-                                     const char *event)
-{
-  ta_list_t *hooks = NULL;
-  if (!hashtable_get_test (client->events, event, hooks))
+  /* Nothing will work if hooks is NULL. */
+  tmp = hooks;
+  while (tmp)
     {
-      if (client->error)
-        ta_error_free (client->error);
-      client->error = ta_error_new ();
-      ta_error_set_name (client->error, "NoSuchEvent");
-      ta_error_set_message (client->error, "XMPP client has no event called %s",
-                            event);
-      ta_error_set_code (client->error, XMPP_NO_SUCH_EVENT_ERROR);
-      return 0;
+      /* The `tmp' element should be preserved because of the loop,
+       * let's cache its current value in the `elm' var and continue
+       * to iterate over the list. */
+      elm = tmp;
+      tmp = tmp->next;
+
+       /* If hook is null, all events are going to match this and will
+        * be deleted. */
+      if (hook != NULL && ((struct hook_data *) elm->data)->hook != hook)
+        continue;
+
+      /* We cannot use ta_list_remove function directly because we
+       * receive the hook reference that is just a member of the
+       * hook_data struct stored in the list iter. So, before removing
+       * we have to find the right element. It is done by the above
+       * `if' statement. */
+      hooks = ta_list_remove (hooks, elm->data, hdata_free);
     }
-  if (hooks != NULL)
-    {
-      ta_list_t *node;
-      for (node = hooks; node; node = node->next)
-        if (node->data)
-          free (node->data);
-    }
+
+  /* Updating callback list in the event hashtable. */
+  hashtable_set (client->events, (void *) event, hooks);
   return 1;
 }
 
