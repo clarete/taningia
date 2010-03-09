@@ -59,14 +59,14 @@ main (int argc, char **argv)
   /* Default log level is TA_LOG_CRITICAL | TA_LOG_ERROR | TA_LOG_WARN, to
    * receive info and debug messages I'll just extend the flag
    * field */
-  ta_log_set_level (log, ta_log_get_level (log) | TA_LOG_INFO | TA_LOG_DEBUG);
+  ta_log_set_level (log, TA_LOG_DEBUG);
 
   /* Now, the messages... */
+  ta_log_debug (log, "Hey, I'm a debug message");
   ta_log_info (log, "Testing, 1, %d, %d, testing", 2, 3);
   ta_log_warn (log, "This is a warning message");
-  ta_log_debug (log, "Hey, I'm a debug message");
-  ta_log_critical (log, "hello there, I'm a critical message");
   ta_log_error (log, "Humm, something got screwd... I'm an error message");
+  ta_log_critical (log, "hello there, I'm a critical message");
 
   /* Cleaning our log object */
   ta_log_free (log);

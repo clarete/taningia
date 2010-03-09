@@ -40,7 +40,7 @@ ta_log_new (const char *domain_name)
   ta_log_t *log;
   log = malloc (sizeof (ta_log_t));
   log->name = strdup (domain_name);
-  log->level = TA_LOG_CRITICAL | TA_LOG_ERROR | TA_LOG_WARN;
+  log->level = TA_LOG_WARN;
   log->handler = NULL;
   log->handler_data = NULL;
   log->use_colors = 0;
@@ -161,7 +161,7 @@ ta_log_info (ta_log_t *log, const char *fmt, ...)
 {
   char *ta_log_time;
 
-  if (!(log->level & TA_LOG_INFO))
+  if (!(log->level <= TA_LOG_INFO))
     return;
 
   get_message (fmt, argp);
@@ -193,7 +193,7 @@ ta_log_warn (ta_log_t *log, const char *fmt, ...)
 {
   char *ta_log_time;
 
-  if (!(log->level & TA_LOG_WARN))
+  if (!(log->level <= TA_LOG_WARN))
     return;
 
   get_message (fmt, argp);
@@ -225,7 +225,7 @@ ta_log_debug (ta_log_t *log, const char *fmt, ...)
 {
   char *ta_log_time;
 
-  if (!(log->level & TA_LOG_DEBUG))
+  if (!(log->level <= TA_LOG_DEBUG))
     return;
 
   get_message (fmt, argp);
@@ -257,7 +257,7 @@ ta_log_critical (ta_log_t *log, const char *fmt, ...)
 {
   char *ta_log_time;
 
-  if (!(log->level & TA_LOG_CRITICAL))
+  if (!(log->level <= TA_LOG_CRITICAL))
     return;
 
   get_message (fmt, argp);
@@ -289,7 +289,7 @@ ta_log_error (ta_log_t *log, const char *fmt, ...)
 {
   char *ta_log_time;
 
-  if (!(log->level & TA_LOG_ERROR))
+  if (!(log->level <= TA_LOG_ERROR))
     return;
 
   get_message (fmt, argp);
