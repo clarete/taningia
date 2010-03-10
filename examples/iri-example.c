@@ -97,6 +97,7 @@ test_tag (void)
   printf ("Parsing tag uri: %s\n", "tag:minaslivre.org,2009-10:/web/blah?a=1#blah=2");
   if (ta_tag_set_from_string (tag, "tag:minaslivre.org,2009-10:/web/blah?a=1#blah=2"))
     {
+      char *res = NULL;
       printf ("scheme:     %s\n", ta_iri_get_scheme (TA_IRI (tag)));
       printf ("path:       %s\n", ta_iri_get_path (TA_IRI (tag)));
       printf ("query:      %s\n", ta_iri_get_query (TA_IRI (tag)));
@@ -106,7 +107,12 @@ test_tag (void)
       printf ("specific:   %s\n", ta_tag_get_specific (tag));
 
       /* Result */
-      printf ("regenerated uri: %s\n\n", ta_iri_to_string (TA_IRI (tag)));
+      res = ta_iri_to_string (TA_IRI (tag));
+      if (res)
+        {
+          printf ("regenerated uri: %s\n\n", res);
+          free (res);
+        }
     }
   else
     {
@@ -116,6 +122,7 @@ test_tag (void)
                ta_error_get_name (error),
                ta_error_get_message (error));
     }
+  ta_tag_free (tag);
 }
 
 int

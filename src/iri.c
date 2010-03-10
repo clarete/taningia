@@ -333,8 +333,9 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
       c = *p++;
     }
   size = p - string;
-  iri->scheme = malloc (size);
-  memcpy (iri->scheme, string, size);
+  iri->scheme = malloc (size+1);
+  memcpy (iri->scheme, string, size+1);
+  iri->scheme[size] = '\0';
 
   /* Delimiter to the end of the ihier part */
   query = strchr (p, '?');
