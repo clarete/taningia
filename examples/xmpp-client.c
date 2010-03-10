@@ -64,18 +64,20 @@ main (int argc, char **argv)
 {
   ta_xmpp_client_t *xmpp;
   ta_log_t *logger;
-  const char *jid, *passwd, *host;
+  const char *jid, *passwd, *host = NULL;
 
   /* Getting connection parameters from the command line */
   if (argc < 3)
     {
-      fprintf (stderr, "Usage: %s: <jid> <passwd> <host>\n", argv[0]);
+      fprintf (stderr, "Usage: %s: <jid> <passwd> [<host>]\n", argv[0]);
       return 1;
     }
 
   jid = argv[1];
   passwd = argv[2];
-  host = argv[3];
+
+  if (argc == 4)
+    host = argv[3];
 
   /* To initialize a client, you can pass the jid, password, host and
    * port number. Host can be NULL, in this case the domain part of

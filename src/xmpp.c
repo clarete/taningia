@@ -185,7 +185,7 @@ ta_xmpp_client_new (const char *jid,
 
   /* Handling optional parameters */
   if (host == NULL)
-    client->host = strdup (client->id->server);
+    client->host = NULL;
   else
     client->host = strdup (host);
   if (port)
@@ -354,8 +354,12 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
   iks_set_log_hook (client->parser, (iksLogHook *) _xmpp_clienta_log_hook);
 #endif
 
-  if ((err = iks_connect_via (client->parser, client->host,
-                              client->port, client->id->server)) != IKS_OK)
+  if (client->host)
+    err = iks_connect_via (client->parser, client->host,
+                           client->port, client->id->server);
+  else
+    err = iks_connect_tcp (client->parser, client->id->server, client->port);
+  if (err != IKS_OK)
     {
       /* Something didnt't work properly here, so we need to handle
        * the error and send some useful result to the user. */
@@ -387,7 +391,8 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
   else
     {
       ta_log_info (client->log, "Connected to xmpp:%s:%d",
-                   client->host, client->port);
+                   client->host == NULL ? client->id->server : client->host,
+                   client->port);
 
       /* Calling user defined hooks for the `connected' event. */
       _ta_xmpp_client_call_event_hooks (client, "connected", NULL);
