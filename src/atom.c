@@ -113,13 +113,54 @@ static time_t  iso8601_to_time   (const char *dt);
 
 /* helper functions */
 
-void
+static void
+_free_iks_childs (iks *root)
+{
+  iks *child = NULL, *tmp = NULL;
+
+  child = iks_child (root);
+  while (child)
+    {
+      if (child != root)
+        _free_iks_childs (child);
+      if (iks_stack (root) == iks_stack (child))
+        {
+          child = iks_next (child);
+          continue;
+        }
+      else
+        {
+          tmp = child;
+          child = iks_next (child);
+          iks_delete (tmp);
+        }
+    }
+}
+
+static char *
+_get_iks_string (iks *ik)
+{
+  if (ik)
+    {
+      char *ret = strdup (iks_string (iks_stack (ik), ik));
+      _free_iks_childs (ik);
+      iks_delete (ik);
+      return ret;
+    }
+  return NULL;
+}
+
+static void
 _ta_atom_free_ext_elements (ta_list_t *list)
 {
-  ta_list_t *tmp;
-  for (tmp = list; tmp; tmp = tmp->next)
-    ta_atom_simple_element_free (tmp->data);
-  ta_list_free (list);
+  ta_list_t *node = list, *tmp = NULL;
+  while (node)
+    {
+      tmp = node;
+      node = node->next;
+      ta_atom_simple_element_free (tmp->data);
+      free (tmp);
+    }
 }
 
 /* ta_atom_in_reply_to_t */
@@ -183,7 +224,7 @@ char *
 ta_atom_in_reply_to_to_string (ta_atom_in_reply_to_t *irt)
 {
   iks *ik = ta_atom_in_reply_to_to_iks (irt);
-  return strdup (iks_string (iks_stack (ik), ik));
+  return _get_iks_string (ik);
 }
 
 ta_iri_t *
@@ -277,7 +318,7 @@ char *
 ta_atom_simple_element_to_string (ta_atom_simple_element_t *see)
 {
   iks *ik = ta_atom_simple_element_to_iks (see);
-  return iks_string (iks_stack (ik), ik);
+  return _get_iks_string (ik);
 }
 
 const char *
@@ -363,7 +404,7 @@ char *
 ta_atom_link_to_string (ta_atom_link_t *link)
 {
   iks *ik = ta_atom_link_to_iks (link);
-  return iks_string (iks_stack (ik), ik);
+  return _get_iks_string (ik);
 }
 
 ta_iri_t *
@@ -502,7 +543,7 @@ char *
 ta_atom_content_to_string (ta_atom_content_t *content)
 {
   iks *ik = ta_atom_content_to_iks (content);
-  return iks_string (iks_stack (ik), ik);
+  return _get_iks_string (ik);
 }
 
 const char *
@@ -631,7 +672,7 @@ char *
 ta_atom_person_to_string (ta_atom_person_t *person, const char *element)
 {
   iks *ik = ta_atom_person_to_iks (person, element);
-  return strdup (iks_string (iks_stack (ik), ik));
+  return _get_iks_string (ik);
 }
 
 const char *
@@ -745,7 +786,7 @@ char *
 ta_atom_category_to_string (ta_atom_category_t  *category)
 {
   iks *ik = ta_atom_category_to_iks (category);
-  return iks_string (iks_stack (ik), ik);
+  return _get_iks_string (ik);
 }
 
 const char *
@@ -1289,9 +1330,7 @@ char *
 ta_atom_entry_to_string (ta_atom_entry_t *entry)
 {
   iks *ik = ta_atom_entry_to_iks (entry);
-  if (ik)
-    return strdup (iks_string (iks_stack (ik), ik));
-  return NULL;
+  return _get_iks_string (ik);
 }
 
 int
@@ -1530,6 +1569,7 @@ ta_atom_feed_new (const char *title)
   feed->authors = NULL;
   feed->categories = NULL;
   feed->entries = NULL;
+  feed->error = NULL;
   return feed;
 }
 
@@ -1751,9 +1791,7 @@ char *
 ta_atom_feed_to_string (ta_atom_feed_t *feed)
 {
   iks *ik = ta_atom_feed_to_iks (feed);
-  if (ik)
-    return strdup (iks_string (iks_stack (ik), ik));
-  return NULL;
+  return _get_iks_string (ik);
 }
 
 int
@@ -1821,10 +1859,14 @@ ta_atom_feed_add_author (ta_atom_feed_t  *feed,
 void
 ta_atom_feed_del_authors (ta_atom_feed_t *feed)
 {
-  ta_list_t *tmp;
-  for (tmp = feed->authors; tmp; tmp = tmp->next)
-    ta_atom_person_free (tmp->data);
-  ta_list_free (feed->authors);
+  ta_list_t *node = feed->authors, *tmp = NULL;
+  while (node)
+    {
+      tmp = node;
+      node = node->next;
+      ta_atom_person_free (tmp->data);
+      free (tmp);
+    }
   feed->authors = NULL;
 }
 
@@ -1889,9 +1931,13 @@ ta_atom_feed_add_entry (ta_atom_feed_t  *feed,
 void
 ta_atom_feed_del_entries (ta_atom_feed_t *feed)
 {
-  ta_list_t *tmp;
-  for (tmp = feed->entries; tmp; tmp = tmp->next)
-    ta_atom_entry_free (tmp->data);
-  ta_list_free (feed->entries);
+  ta_list_t *node = feed->entries, *tmp = NULL;
+  while (node)
+    {
+      tmp = node;
+      node = node->next;
+      ta_atom_entry_free (tmp->data);
+      free (tmp);
+    }
   feed->entries = NULL;
 }
