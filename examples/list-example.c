@@ -58,6 +58,8 @@ main (int argc, char **argv)
 
   /* extend, index and item */
 
+  /* ps.: do not free otherlist. If you do that, you are going to free
+   * a piece of the extended list. */
   extended = ta_list_extend (list, otherlist);
   printf ("extended list items:\n");
   for (node = extended; node; node = node->next)
@@ -85,16 +87,16 @@ main (int argc, char **argv)
 
   /* insert */
 
-  printf ("reinserting `1' in the first position:\n");
+  printf ("reinserting `1' in the 1st position:\n");
   newlist = ta_list_insert (newlist, "1", 0);
 
-  printf ("inserting `1.5' at the second position:\n");
+  printf ("inserting `1.5' at the 2nd position:\n");
   newlist = ta_list_insert (newlist, "1.5", 1);
 
-  printf ("inserting `2.5' at the second position:\n");
+  printf ("inserting `2.5' at the 3rd position:\n");
   newlist = ta_list_insert (newlist, "2.5", 3);
 
-  printf ("inserting `3.5' at the second position:\n");
+  printf ("inserting `3.5' at the 5th position:\n");
   newlist = ta_list_insert (newlist, "3.5", 5);
 
   printf ("new size: %d\n", ta_list_len (newlist));
@@ -112,12 +114,12 @@ main (int argc, char **argv)
   newlist = ta_list_append (newlist, "c");
 
   printf ("reversed newlist items:\n");
-  for (node = ta_list_reverse (newlist); node; node = node->next)
+  newlist = ta_list_reverse (newlist);
+  for (node = newlist; node; node = node->next)
     printf (" %s\n", (char *) node->data);
   printf ("\n");
 
   ta_list_free (list);
-  ta_list_free (otherlist);
   ta_list_free (newlist);
   return 0;
 }

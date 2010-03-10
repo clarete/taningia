@@ -32,27 +32,37 @@ ta_list_new (void)
 void
 ta_list_free (ta_list_t *list)
 {
-  ta_list_t *node;
-  for (node = list; node; node = node->next)
-    free (node);
+  ta_list_t *node = list, *tmp = NULL;
+  while (node)
+    {
+      tmp = node;
+      node = node->next;
+      free (tmp);
+    }
 }
 
 ta_list_t *
 ta_list_first (ta_list_t *list)
 {
-  if (list)
-    while (list->prev)
-      list = list->prev;
-  return list;
+  ta_list_t *node = list, *tmp = NULL;
+  while (node)
+    {
+      tmp = node;
+      node = node->prev;
+    }
+  return tmp;
 }
 
 ta_list_t *
 ta_list_last (ta_list_t *list)
 {
-  if (list)
-    while (list->next)
-      list = list->next;
-  return list;
+  ta_list_t *node = list, *tmp = NULL;
+  while (node)
+    {
+      tmp = node;
+      node = node->next;
+    }
+  return tmp;
 }
 
 int
@@ -69,6 +79,9 @@ ta_list_t *
 ta_list_append (ta_list_t *list, void *data)
 {
   ta_list_t *node;
+  if (data == NULL)
+    return list;
+
   node = ta_list_new ();
 
   /* This is going to be the last one, so we have no next entry */
@@ -83,14 +96,13 @@ ta_list_append (ta_list_t *list, void *data)
       last = ta_list_last (list);
       last->next = node;
       node->prev = last;
-      return list;
     }
   else
     {
       /* Our list is empty, so let's set our node as its first
        * child */
       node->prev = NULL;
-      return node;
+      list = node;
     }
   return list;
 }
@@ -182,7 +194,10 @@ ta_list_insert (ta_list_t *list, void *data, int position)
 
   /* inserting the new element in the end of the list. */
   if (!node && !found)
-    list = ta_list_append (list, data);
+    {
+      free (newnode);
+      list = ta_list_append (list, data);
+    }
 
   return list;
 }
