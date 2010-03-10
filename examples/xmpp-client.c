@@ -101,8 +101,7 @@ main (int argc, char **argv)
    * xmpp client instance. To know more about the log object, look at
    * the `log-system.c' example */
   logger = ta_xmpp_client_get_logger (xmpp);
-  ta_log_set_level (logger, ta_log_get_level (logger) |
-                    TA_LOG_INFO | TA_LOG_DEBUG);
+  ta_log_set_level (logger, TA_LOG_DEBUG);
   ta_log_set_use_colors (logger, 1);
 
   /* Connecting to the host */
