@@ -29,6 +29,7 @@
 #define NS_INFO "http://jabber.org/protocol/disco#info"
 #define NS_ITEM "http://jabber.org/protocol/disco#items"
 #define NS_PS_CONFIG "http://jabber.org/protocol/pubsub#node_config"
+#define NS_PS_OWNER  "http://jabber.org/protocol/pubsub#owner"
 
 #ifdef DEBUG
 # define debugiq(x) fprintf (stderr, "[ps] %s\n", iks_string (iks_stack (x), x))
@@ -395,6 +396,29 @@ ta_pubsub_node_publish_iks (ta_pubsub_node_t *node,
     {
       ta_log_warn (node->ctx->log,
                    "Calling Node.publish_iks method with no name set");
+      return NULL;
+    }
+}
+
+iks *
+ta_pubsub_node_delete (ta_pubsub_node_t *node)
+{
+  if (node->name)
+    {
+      iks *iq, *ps, *del;
+      iq = createiqps (node->ctx, IKS_TYPE_SET);
+      ps = iks_child (iq);
+      iks_insert_attrib (ps, "xmlns", NS_PS_OWNER);
+
+      del = iks_new ("delete");
+      iks_insert_attrib (del, "node", node->name);
+      iks_insert_node (ps, del);
+      return iq;
+    }
+  else
+    {
+      ta_log_warn (node->ctx->log,
+                   "Calling Node.delete method with no name set");
       return NULL;
     }
 }

@@ -182,6 +182,15 @@ iks *ta_pubsub_node_publish_text (ta_pubsub_node_t *node, const char *id,
 iks *ta_pubsub_node_publish_iks (ta_pubsub_node_t *node, const char *id, iks *child);
 
 /**
+ * @name: ta_pubsub_node_delete
+ * @type: method ta_pubsub_node
+ * @param id: The id of the node to be deleted.
+ *
+ * Builds a stanza to delete a node.
+ */
+iks *ta_pubsub_node_delete (ta_pubsub_node_t *node);
+
+/**
  * @name: ta_pubsub_node_delete_item
  * @type: method ta_pubsub_node
  * @param id: The id of the object to be deleted.
