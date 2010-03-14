@@ -57,7 +57,8 @@ ta_log_free (ta_log_t *log)
 }
 
 void
-ta_log_set_handler (ta_log_t *log, ta_log_handler_func_t handler, void *user_data)
+ta_log_set_handler (ta_log_t *log, ta_log_handler_func_t handler,
+                    void *user_data)
 {
   log->handler = handler;
   log->handler_data = user_data;

@@ -32,7 +32,8 @@ typedef enum {
   TA_LOG_CRITICAL
 } ta_log_level_t;
 
-typedef int *(*ta_log_handler_func_t) (ta_log_t *, ta_log_level_t, const char *, void *);
+typedef int *(*ta_log_handler_func_t) (ta_log_t *, ta_log_level_t,
+                                       const char *, void *);
 
 /**
  * @name: ta_log_new
@@ -79,7 +80,8 @@ ta_log_level_t ta_log_get_level (ta_log_t *log);
  * Sets a hook to be called when any of the info, warn, debug, error
  * or critical methods of a log instance is called.
  */
-void ta_log_set_handler (ta_log_t *log, ta_log_handler_func_t handler, void *user_data);
+void ta_log_set_handler (ta_log_t *log, ta_log_handler_func_t handler,
+                         void *user_data);
 
 /**
  * @name: ta_log_info

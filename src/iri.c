@@ -327,7 +327,8 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
             ta_error_free (iri->error);
           iri->error = ta_error_new ();
           ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR, "ParsingError",
-                             "Schema should only have the following chars: [a-Z][0-9][-+.]");
+                             "Schema should only have the following chars: "
+                             "[a-Z][0-9][-+.]");
           return 0;
         }
       c = *p++;
@@ -418,8 +419,8 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
               if (iri->error)
                 ta_error_free (iri->error);
               iri->error = ta_error_new ();
-              ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR, "ParsingError",
-                                 "Invalid port number");
+              ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR,
+                                 "ParsingError", "Invalid port number");
               return 0;
             }
 

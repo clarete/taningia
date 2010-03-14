@@ -32,7 +32,8 @@
 #define NS_PS_OWNER  "http://jabber.org/protocol/pubsub#owner"
 
 #ifdef DEBUG
-# define debugiq(x) fprintf (stderr, "[ps] %s\n", iks_string (iks_stack (x), x))
+# define debugiq(x)                                             \
+  fprintf (stderr, "[ps] %s\n", iks_string (iks_stack (x), x))
 #else
 # define debugiq(x)
 #endif
@@ -462,7 +463,8 @@ ta_pubsub_node_create (ta_pubsub_node_t *node,
         {
           size_t size = strlen (node->name) + strlen (node->ctx->node_prefix);
           char *full_name = malloc (size)-1;
-          snprintf (full_name, size, "%s%s", node->ctx->node_prefix, node->name);
+          snprintf (full_name, size, "%s%s", node->ctx->node_prefix,
+                    node->name);
           iks_insert_attrib (create, "node", full_name);
           free (full_name);
         }
@@ -531,7 +533,8 @@ ta_pubsub_node_createv (ta_pubsub_node_t *node,
         {
           size_t size = strlen (node->name) + strlen (node->ctx->node_prefix);
           char *full_name = malloc (size)-1;
-          snprintf (full_name, size, "%s%s", node->ctx->node_prefix, node->name);
+          snprintf (full_name, size, "%s%s", node->ctx->node_prefix,
+                    node->name);
           iks_insert_attrib (create, "node", full_name);
           free (full_name);
         }

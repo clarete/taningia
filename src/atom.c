@@ -328,7 +328,8 @@ ta_atom_simple_element_get_name (ta_atom_simple_element_t *see)
 }
 
 void
-ta_atom_simple_element_set_name (ta_atom_simple_element_t *see, const char *name)
+ta_atom_simple_element_set_name (ta_atom_simple_element_t *see,
+                                 const char *name)
 {
   if (see->name)
     free (see->name);
@@ -342,7 +343,8 @@ ta_atom_simple_element_get_value (ta_atom_simple_element_t *see)
 }
 
 void
-ta_atom_simple_element_set_value (ta_atom_simple_element_t *see, const char *value)
+ta_atom_simple_element_set_value (ta_atom_simple_element_t *see,
+                                  const char *value)
 {
   if (see->value)
     free (see->value);
@@ -721,7 +723,8 @@ ta_atom_person_set_iri (ta_atom_person_t *person,
 }
 
 void
-ta_atom_person_add_see (ta_atom_person_t *person, ta_atom_simple_element_t *element)
+ta_atom_person_add_see (ta_atom_person_t *person,
+                        ta_atom_simple_element_t *element)
 {
   person->ext_elements = ta_list_append (person->ext_elements, element);
 }
@@ -983,7 +986,8 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
           if (entry->error)
             ta_error_free (entry->error);
           entry->error = ta_error_new ();
-          ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+          ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
+                             "ParsingError",
                              "No \"type\" attribute specified for content "
                              "element");
           return 0;
@@ -996,7 +1000,8 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
           if (entry->error)
             ta_error_free (entry->error);
           entry->error = ta_error_new ();
-          ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+          ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
+                             "ParsingError",
                              "Invalid content, it has the src attribute set "
                              "and content tag is filled");
           return 0;
@@ -1006,7 +1011,8 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
           if (entry->error)
             ta_error_free (entry->error);
           entry->error = ta_error_new ();
-          ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+          ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
+                             "ParsingError",
                              "No src attribute or content in content tag");
           return 0;
         }
@@ -1023,7 +1029,8 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
               if (entry->error)
                 ta_error_free (entry->error);
               entry->error = ta_error_new ();
-              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
+                                 "ParsingError",
                                  "Invalid iri in content src attribute");
               ta_iri_free (srci);
               ta_atom_content_free (ct);
@@ -1053,8 +1060,8 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
               if (entry->error)
                 ta_error_free (entry->error);
               entry->error = ta_error_new ();
-              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
-                                 "Author with no name");
+              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
+                                 "ParsingError", "Author with no name");
               return 0;
             }
           email = iks_find_cdata (child, "email");
@@ -1068,7 +1075,8 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
               if (entry->error)
                 ta_error_free (entry->error);
               entry->error = ta_error_new ();
-              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
+                                 "ParsingError",
                                  "Author with an invalid iri in uri field");
               ta_iri_free (iri);
               return 0;
@@ -1089,7 +1097,8 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
               if (entry->error)
                 ta_error_free (entry->error);
               entry->error = ta_error_new ();
-              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+              ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
+                                 "ParsingError",
                                  "Category with no term attribute");
               return 0;
             }
@@ -1101,8 +1110,10 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
                   if (entry->error)
                     ta_error_free (entry->error);
                   entry->error = ta_error_new ();
-                  ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
-                                     "Category scheme attribute is not a valid iri");
+                  ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
+                                     "ParsingError",
+                                     "Category scheme attribute is not a "
+                                     "valid iri");
                   ta_iri_free (iri);
                   return 0;
                 }
@@ -1137,7 +1148,8 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
               if (entry->error)
                 ta_error_free (entry->error);
               entry->error = ta_error_new ();
-              error_message = ta_error_get_message (ta_iri_get_error (iri_ref));
+              error_message =
+                ta_error_get_message (ta_iri_get_error (iri_ref));
               ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
                                  "ParsingError",
                                  "InReplyTo element with an invalid ref "
@@ -1513,7 +1525,8 @@ ta_atom_entry_set_content (ta_atom_entry_t   *entry,
 }
 
 void
-ta_atom_entry_add_see (ta_atom_entry_t *entry, ta_atom_simple_element_t *element)
+ta_atom_entry_add_see (ta_atom_entry_t *entry,
+                       ta_atom_simple_element_t *element)
 {
   entry->ext_elements = ta_list_append (entry->ext_elements, element);
 }
@@ -1535,7 +1548,8 @@ ta_atom_entry_get_see (ta_atom_entry_t *entry)
 }
 
 void
-ta_atom_entry_add_inreplyto (ta_atom_entry_t *entry, ta_atom_in_reply_to_t *irt)
+ta_atom_entry_add_inreplyto (ta_atom_entry_t *entry,
+                             ta_atom_in_reply_to_t *irt)
 {
   entry->in_reply_to = ta_list_append (entry->in_reply_to, irt);
 }
@@ -1656,8 +1670,8 @@ ta_atom_feed_set_from_file (ta_atom_feed_t  *feed,
               if (feed->error)
                 ta_error_free (feed->error);
               feed->error = ta_error_new ();
-              ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
-                                 "Author with no name");
+              ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR,
+                                 "ParsingError", "Author with no name");
               return 0;
             }
           email = iks_find_cdata (child, "email");
@@ -1673,7 +1687,8 @@ ta_atom_feed_set_from_file (ta_atom_feed_t  *feed,
               if (feed->error)
                 ta_error_free (feed->error);
               feed->error = ta_error_new ();
-              ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+              ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR,
+                                 "ParsingError",
                                  "Author with an invalid iri in uri field");
               ta_iri_free (iri);
               return 0;
@@ -1694,7 +1709,8 @@ ta_atom_feed_set_from_file (ta_atom_feed_t  *feed,
               if (feed->error)
                 ta_error_free (feed->error);
               feed->error = ta_error_new ();
-              ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
+              ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR,
+                                 "ParsingError",
                                  "Category with no term attribute");
               return 0;
             }
@@ -1706,8 +1722,10 @@ ta_atom_feed_set_from_file (ta_atom_feed_t  *feed,
                   if (feed->error)
                     ta_error_free (feed->error);
                   feed->error = ta_error_new ();
-                  ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
-                                     "Category scheme attribute is not a valid iri");
+                  ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR,
+                                     "ParsingError",
+                                     "Category scheme attribute is not a "
+                                     "valid iri");
                   ta_iri_free (iri);
                   return 0;
                 }

@@ -402,7 +402,8 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
        * delcared callbacks only calls the user defined hook list. */
 
       iks_filter_add_rule (client->filter,
-                           (iksFilterHook *) _ta_xmpp_client_ikshook_authenticated,
+                           (iksFilterHook *)
+                             _ta_xmpp_client_ikshook_authenticated,
                            client,
                            IKS_RULE_TYPE, IKS_PAK_IQ,
                            IKS_RULE_SUBTYPE, IKS_TYPE_RESULT,
@@ -410,13 +411,15 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
                            IKS_RULE_DONE);
 
       iks_filter_add_rule (client->filter,
-                           (iksFilterHook *) _ta_xmpp_client_ikshook_message_received,
+                           (iksFilterHook *)
+                             _ta_xmpp_client_ikshook_message_received,
                            client,
                            IKS_RULE_TYPE, IKS_PAK_MESSAGE,
                            IKS_RULE_DONE);
 
       iks_filter_add_rule (client->filter,
-                           (iksFilterHook *) _ta_xmpp_client_ikshook_presence_noticed,
+                           (iksFilterHook *)
+                             _ta_xmpp_client_ikshook_presence_noticed,
                            client,
                            IKS_RULE_TYPE, IKS_PAK_PRESENCE,
                            IKS_RULE_DONE);
@@ -482,8 +485,8 @@ ta_xmpp_client_event_connect (ta_xmpp_client_t *client,
         ta_error_free (client->error);
       client->error = ta_error_new ();
       ta_error_set_name (client->error, "NoSuchEvent");
-      ta_error_set_message (client->error, "XMPP client has no event called %s",
-                            event);
+      ta_error_set_message (client->error,
+                            "XMPP client has no event called %s", event);
       ta_error_set_code (client->error, XMPP_NO_SUCH_EVENT_ERROR);
       return 0;
     }
@@ -515,8 +518,8 @@ ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
         ta_error_free (client->error);
       client->error = ta_error_new ();
       ta_error_set_name (client->error, "NoSuchEvent");
-      ta_error_set_message (client->error, "XMPP client has no event called %s",
-                            event);
+      ta_error_set_message (client->error,
+                            "XMPP client has no event called %s", event);
       ta_error_set_code (client->error, XMPP_NO_SUCH_EVENT_ERROR);
       return 0;
     }
@@ -656,7 +659,8 @@ _ta_xmpp_client_do_run (void *user_data)
           break;
 
         case IKS_NET_NOCONN:
-          ta_log_info (client->log, "Client not connected, stopping main loop");
+          ta_log_info (client->log,
+                       "Client not connected, stopping main loop");
           client->running = 0;
           break;
 

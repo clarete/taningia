@@ -138,7 +138,7 @@ iks *ta_pubsub_node_subscribe (ta_pubsub_node_t *node, const char *jid);
  *
  * Build a stanza to unsubscribe from a node. If no `jid' is passed,
  * the jid set in context will be used.
- * 
+ *
  */
 iks *ta_pubsub_node_unsubscribe (ta_pubsub_node_t *node, const char *jid);
 
@@ -179,7 +179,8 @@ iks *ta_pubsub_node_publish_text (ta_pubsub_node_t *node, const char *id,
  *
  * Build a stanza to publish an iks object in the node.
  */
-iks *ta_pubsub_node_publish_iks (ta_pubsub_node_t *node, const char *id, iks *child);
+iks *ta_pubsub_node_publish_iks (ta_pubsub_node_t *node, const char *id,
+                                 iks *child);
 
 /**
  * @name: ta_pubsub_node_delete

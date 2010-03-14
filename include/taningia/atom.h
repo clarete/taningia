@@ -258,7 +258,8 @@ const char *ta_atom_content_get_content (ta_atom_content_t *content, int *len);
  * @name: ta_atom_content_set_content
  * @type: setter ta_atom_content:content
  */
-void ta_atom_content_set_content (ta_atom_content_t *content, const char *text, int len);
+void ta_atom_content_set_content (ta_atom_content_t *content, const char *text,
+                                  int len);
 
 /* -- Atom Person -- */
 
@@ -269,7 +270,8 @@ void ta_atom_content_set_content (ta_atom_content_t *content, const char *text, 
  * @param email (optional): Person's email address.
  * @param iri (optional): The iri of the person's website.
  */
-ta_atom_person_t *ta_atom_person_new (const char *name, const char *email, ta_iri_t *iri);
+ta_atom_person_t *ta_atom_person_new (const char *name, const char *email,
+                                      ta_iri_t *iri);
 
 /**
  * @name: ta_atom_person_free
@@ -342,7 +344,8 @@ void ta_atom_person_set_iri (ta_atom_person_t *person, ta_iri_t *iri);
  *
  * Adds an atom simple ext element to the person instance.
  */
-void ta_atom_person_add_see (ta_atom_person_t *person, ta_atom_simple_element_t *element);
+void ta_atom_person_add_see (ta_atom_person_t *person,
+                             ta_atom_simple_element_t *element);
 
 /**
  * @name: ta_atom_person_del_see
@@ -369,10 +372,12 @@ ta_list_t *ta_atom_person_get_see (ta_atom_person_t *person);
  * @name: ta_atom_category_new
  * @type: constructor ta_atom_category
  * @param term: The category term.
- * @param label (optional): A human readable string containing the category label.
+ * @param label (optional): A human readable string containing the
+ * category label.
  * @param scheme (optional): An iri pointing to a reachable category resource.
  */
-ta_atom_category_t *ta_atom_category_new (const char *term, const char *label, ta_iri_t *scheme);
+ta_atom_category_t *ta_atom_category_new (const char *term, const char *label,
+                                          ta_iri_t *scheme);
 
 /**
  * @name: ta_atom_category_free
@@ -408,7 +413,8 @@ const char *ta_atom_category_get_label (ta_atom_category_t  *category);
  * @name: ta_atom_category_set_label
  * @type: setter ta_atom_category:label
  */
-void ta_atom_category_set_label (ta_atom_category_t *category, const char *label);
+void ta_atom_category_set_label (ta_atom_category_t *category,
+                                 const char *label);
 
 /**
  * @name: ta_atom_category_get_term
@@ -420,7 +426,8 @@ const char *ta_atom_category_get_term (ta_atom_category_t *category);
  * @name: ta_atom_category_set_term
  * @type: setter ta_atom_category:term
  */
-void ta_atom_category_set_term (ta_atom_category_t *category, const char *term);
+void ta_atom_category_set_term (ta_atom_category_t *category,
+                                const char *term);
 
 /**
  * @name: ta_atom_category_get_scheme
@@ -432,7 +439,8 @@ ta_iri_t *ta_atom_category_get_scheme (ta_atom_category_t *category);
  * @name: ta_atom_category_set_scheme
  * @type: setter ta_atom_category:scheme
  */
-void ta_atom_category_set_scheme (ta_atom_category_t *category, ta_iri_t *scheme);
+void ta_atom_category_set_scheme (ta_atom_category_t *category,
+                                  ta_iri_t *scheme);
 
 /* -- Atom Thread In reply to -- */
 
@@ -499,7 +507,8 @@ ta_iri_t *ta_atom_in_reply_to_get_source (ta_atom_in_reply_to_t *irt);
  * @name: ta_atom_in_reply_to_set_source
  * @type: setter ta_atom_in_reply_to:source
  */
-void ta_atom_in_reply_to_set_source (ta_atom_in_reply_to_t *irt, ta_iri_t *source);
+void ta_atom_in_reply_to_set_source (ta_atom_in_reply_to_t *irt,
+                                     ta_iri_t *source);
 
 /**
  * @name: ta_atom_in_reply_to_get_type
@@ -511,7 +520,8 @@ const char *ta_atom_in_reply_to_get_type (ta_atom_in_reply_to_t *irt);
  * @name: ta_atom_in_reply_to_set_type
  * @type: setter ta_atom_in_reply_to:type
  */
-void ta_atom_in_reply_to_set_type (ta_atom_in_reply_to_t *irt, const char *type);
+void ta_atom_in_reply_to_set_type (ta_atom_in_reply_to_t *irt,
+                                   const char *type);
 
 /* -- Atom Entry -- */
 
@@ -661,7 +671,8 @@ ta_atom_content_t *ta_atom_entry_get_content (ta_atom_entry_t *entry);
  * @name: ta_atom_entry_set_content
  * @type: setter ta_atom_entry:content
  */
-void ta_atom_entry_set_content (ta_atom_entry_t *entry, ta_atom_content_t *content);
+void ta_atom_entry_set_content (ta_atom_entry_t *entry,
+                                ta_atom_content_t *content);
 
 /**
  * @name: ta_atom_entry_get_authors
@@ -680,7 +691,8 @@ ta_list_t *ta_atom_entry_get_authors (ta_atom_entry_t *entry);
  * Adds an author instance to the entry. After that, you should not
  * free the author instance, it will be done by `ta_atom_entry_free'.
  */
-void ta_atom_entry_add_author (ta_atom_entry_t *entry, ta_atom_person_t *author);
+void ta_atom_entry_add_author (ta_atom_entry_t *entry,
+                               ta_atom_person_t *author);
 
 /**
  * @name: ta_atom_entry_del_authors
@@ -707,7 +719,8 @@ ta_list_t *ta_atom_entry_get_categories (ta_atom_entry_t *entry);
  * Adds an category instance to the entry. After that, you should not
  * free the category instance, it will be done by `ta_atom_entry_free'.
  */
-void ta_atom_entry_add_category (ta_atom_entry_t *entry, ta_atom_category_t *category);
+void ta_atom_entry_add_category (ta_atom_entry_t *entry,
+                                 ta_atom_category_t *category);
 
 /**
  * @name: ta_atom_entry_del_categories
@@ -762,7 +775,8 @@ ta_list_t *ta_atom_entry_get_see (ta_atom_entry_t *entry);
  * not free the element instance, it will be done by
  * `ta_atom_entry_free'.
  */
-void ta_atom_entry_add_see (ta_atom_entry_t *entry, ta_atom_simple_element_t *element);
+void ta_atom_entry_add_see (ta_atom_entry_t *entry,
+                            ta_atom_simple_element_t *element);
 
 /**
  * @name: ta_atom_entry_del_see
@@ -791,7 +805,8 @@ ta_list_t *ta_atom_entry_get_inreplyto (ta_atom_entry_t *entry);
  * you should not free the added instance, it will be done by
  * `ta_atom_entry_free'.
  */
-void ta_atom_entry_add_inreplyto (ta_atom_entry_t *entry, ta_atom_in_reply_to_t *irt);
+void ta_atom_entry_add_inreplyto (ta_atom_entry_t *entry,
+                                  ta_atom_in_reply_to_t *irt);
 
 /**
  * @name: ta_atom_entry_del_inreplyto
@@ -928,7 +943,8 @@ ta_list_t *ta_atom_feed_get_categories (ta_atom_feed_t *feed);
  * Adds an category instance to the feed. After that, you should not
  * free the category instance, it will be done by `ta_atom_feed_free'.
  */
-void ta_atom_feed_add_category (ta_atom_feed_t *feed, ta_atom_category_t *category);
+void ta_atom_feed_add_category (ta_atom_feed_t *feed,
+                                ta_atom_category_t *category);
 
 /**
  * @name: ta_atom_feed_del_categories
