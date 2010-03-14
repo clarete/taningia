@@ -5,6 +5,7 @@ AC_PREREQ([2.61])
 AC_INIT([taningia], [0.2], [http://projects.comum.org/taningia])
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIR([m4])
 
 # Checks for programs.
 AC_PROG_CC

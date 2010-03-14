@@ -30,7 +30,7 @@ which autoreconf || {
     exit 1
 }
 
-autoreconf -i
+autoreconf -vi
 
 echo "Running ./configure $@"
 
