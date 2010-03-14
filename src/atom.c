@@ -608,9 +608,9 @@ ta_atom_content_set_content (ta_atom_content_t *content,
           content->src = NULL;
         }
     }
-  content->content = strdup (text);
+  content->content = malloc (len + 1);
+  memcpy (content->content, text, len);
 }
-
 
 /* ta_atom_person_t */
 
