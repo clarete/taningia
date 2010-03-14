@@ -27,9 +27,8 @@ stamp-h1
 /conf.[ch]
 /bindings/defs/taningia.json
 /bindings/python/*module.[ch]
-/examples/log-system
-/examples/using-filters
 /examples/xmpp-client
-/examples/iri-example
-/examples/atom-example
-/examples/list-example
+/examples/log
+/examples/iri
+/examples/atom
+/examples/list
