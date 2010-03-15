@@ -1,8 +1,12 @@
-noinst_PROGRAMS = xmpp-client log iri atom list
+noinst_PROGRAMS = xmpp-client xmpp-client-2 log iri atom list
 
 xmpp_client_SOURCES = xmpp-client.c
 xmpp_client_CFLAGS = -I$(top_srcdir)/include $(IKSEMEL_CFLAGS)
 xmpp_client_LDFLAGS = $(top_builddir)/src/libtaningia.la
+
+xmpp_client_2_SOURCES = xmpp-client-2.c
+xmpp_client_2_CFLAGS = -I$(top_srcdir)/include $(IKSEMEL_CFLAGS)
+xmpp_client_2_LDFLAGS = $(top_builddir)/src/libtaningia.la
 
 log_SOURCES = log.c
 log_CFLAGS = -I$(top_srcdir)/include

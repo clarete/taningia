@@ -58,6 +58,15 @@ struct hook_data {
   ta_free_func_t free_data_func;
 };
 
+struct watch_data {
+  char *stanza_id;
+  iksrule *rule;
+  ta_xmpp_client_t *client;
+  ta_xmpp_client_answer_cb_t callback;
+  void *data;
+  ta_free_func_t free_data_func;
+};
+
 /* Prototypes of some local functions */
 
 static int _ta_xmpp_client_hook   (void *data, int type, iks *node);
@@ -65,6 +74,7 @@ static int _ta_xmpp_client_hook   (void *data, int type, iks *node);
 static int _ta_xmpp_client_do_run (void *user_data);
 
 /* hook_data helpers */
+
 static struct hook_data *
 hdata_new (ta_xmpp_client_hook_t hook, void *data, ta_free_func_t free_data)
 {
@@ -83,6 +93,35 @@ hdata_free (void *val)
   if (hdata->free_data_func)
     hdata->free_data_func (hdata->data);
   free (hdata);
+}
+
+/* watch_data helpers */
+
+static struct watch_data *
+wdata_new (const char *stanza_id, ta_xmpp_client_t *client,
+           ta_xmpp_client_answer_cb_t cb, void *data,
+           ta_free_func_t free_data)
+{
+  struct watch_data *wdata;
+  wdata = malloc (sizeof (struct watch_data));
+  wdata->stanza_id = strdup (stanza_id);
+  wdata->client = client;
+  wdata->callback = cb;
+  wdata->data = data;
+  wdata->free_data_func = free_data;
+  wdata->rule = NULL;           /* Must be filled by hand. */
+  return wdata;
+}
+
+static void
+wdata_free (void *val)
+{
+  struct watch_data *wdata = (struct watch_data *) val;
+  if (wdata->free_data_func && wdata->data)
+    wdata->free_data_func (wdata->data);
+  if (wdata->stanza_id)
+    free (wdata->stanza_id);
+  free (wdata);
 }
 
 /* Look for an entry called `event' in the client event hash table and
@@ -134,6 +173,29 @@ _ta_xmpp_client_ikshook_presence_noticed (void *data, ikspak *pak)
   ta_xmpp_client_t *client;
   client = (ta_xmpp_client_t *) data;
   _ta_xmpp_client_call_event_hooks (client, "presence-noticed", pak);
+  return IKS_FILTER_EAT;
+}
+
+/* This callback is installed by `ta_xmpp_client_send_and_filter()'
+ * function. It is a wrapper to the user defined callback. It is
+ * registered in the `client->filter' property and is called when an
+ * instance with the same id as the sent one is answered.
+ *
+ * After called, it frees callback data, stanza id and removes itself
+ * from `client->filter' property. */
+static int
+_ta_xmpp_client_ikshook_watcher (void *data, ikspak *pak)
+{
+  struct watch_data *wdata = (struct watch_data *) data;
+
+  /* Calling the user defined callback. */
+  wdata->callback (wdata->client, pak->x, wdata->data);
+
+  /* Removing this callback from the client filter and then freeing
+   * allocated data. */
+  if (wdata->client->filter && wdata->rule != NULL)
+    iks_filter_remove_rule (wdata->client->filter, wdata->rule);
+  wdata_free (wdata);
   return IKS_FILTER_EAT;
 }
 
@@ -336,6 +398,60 @@ ta_xmpp_client_send (ta_xmpp_client_t *client, iks *node)
       ta_error_set_name (client->error, "NetworkError");
       ta_error_set_message (client->error, "Failed to send the stanza");
       ta_error_set_code (client->error, XMPP_SEND_ERROR);
+    }
+  return err;
+}
+
+int
+ta_xmpp_client_send_and_filter (ta_xmpp_client_t *client, iks *node,
+                                ta_xmpp_client_answer_cb_t cb, void *data,
+                                ta_free_func_t free_cb)
+{
+  int err;
+  char *id;
+  iksrule *rule;
+  struct watch_data *wdata;
+
+  /* Getting stanza id */
+  id = iks_find_attrib (node, "id");
+
+  /* Now that all search fields were filled, it is time to build the
+   * struct that will hold data received from params and found here
+   * and pass it to `_ta_xmpp_client_ikshook_watcher()' function. */
+  wdata = wdata_new (id, client, cb, data, free_cb);
+
+  /* Registering rule in the client filter. This assignment seems
+   * confusing because `wdata' is in the `iks_filter_add_rule()
+   * parameter list. But the `rule' member of `wdata' will only be
+   * used after the `iks_send()' call. There is *NO* race condition
+   * here.
+   *
+   * This not-actually-pretty code is here because iksemel filter/rule
+   * API sucks. The `iksrule' struct should have constructor,
+   * destructor and methods to manipulate it public, which is not the
+   * case.
+   */
+  rule =
+    iks_filter_add_rule (client->filter,
+                         (iksFilterHook *) _ta_xmpp_client_ikshook_watcher,
+                         wdata, IKS_RULE_ID, id, IKS_RULE_DONE);
+  wdata->rule = rule;
+  wdata->stanza_id = strdup ("Meu pau");
+
+  /* Finnaly, we're trying to send the stanza. With the filter
+   * properly registered. */
+  if ((err = iks_send (client->parser, node)) != IKS_OK)
+    {
+      ta_log_warn (client->log, "Fail to send the stanza");
+      if (client->error)
+        ta_error_free (client->error);
+      client->error = ta_error_new ();
+      ta_error_set_name (client->error, "NetworkError");
+      ta_error_set_message (client->error, "Failed to send the stanza");
+      ta_error_set_code (client->error, XMPP_SEND_ERROR);
+
+      iks_filter_remove_rule (client->filter, wdata->rule);
+      wdata_free (wdata);
     }
   return err;
 }

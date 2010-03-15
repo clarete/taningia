@@ -28,6 +28,7 @@ stamp-h1
 /bindings/defs/taningia.json
 /bindings/python/*module.[ch]
 /examples/xmpp-client
+/examples/xmpp-client-2
 /examples/log
 /examples/iri
 /examples/atom

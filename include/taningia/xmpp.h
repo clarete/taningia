@@ -35,6 +35,8 @@ typedef struct _ta_xmpp_client_t ta_xmpp_client_t;
 
 typedef int (*ta_xmpp_client_hook_t) (ta_xmpp_client_t *, void *, void *);
 
+typedef void (*ta_xmpp_client_answer_cb_t) (ta_xmpp_client_t *, iks *, void *);
+
 /**
  * @name: ta_xmpp_client_new
  * @type: constructor ta_xmpp_client
@@ -150,6 +152,26 @@ void ta_xmpp_client_disconnect (ta_xmpp_client_t *ctx);
  * `ta_xmpp_client_is_running' function.
  */
 int ta_xmpp_client_send (ta_xmpp_client_t *ctx, iks *node);
+
+/**
+ * @name: ta_xmpp_client_send_and_filter
+ * @type: method ta_xmpp_client
+ * @param node: The iks node to be sent to the XMPP server.
+ * @param cb: Callback to be called when the sent message is answered
+ * by the server.
+ * @param data: Extra field for passing context vars to the custom
+ * callback (if none, NULL should be used).
+ * @param free_cb: Function to free data. Pass NULL when `data' is
+ * NULL too.
+ *
+ * Sends iks nodes to the XMPP server. Only call this function after
+ * making sure that client is running properly. To do it, use the
+ * `ta_xmpp_client_is_running' function.
+ */
+int
+ta_xmpp_client_send_and_filter (ta_xmpp_client_t *client, iks *node,
+                                ta_xmpp_client_answer_cb_t cb, void *data,
+                                ta_free_func_t free_cb);
 
 /**
  * @name: ta_xmpp_client_run
