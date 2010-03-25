@@ -870,7 +870,7 @@ ta_atom_entry_set_from_file (ta_atom_entry_t *entry,
                              const char *fname)
 {
   iks *ik;
-  int err;
+  int err, result;
   if ((err = iks_load (fname, &ik)) != IKS_OK)
     {
       if (entry->error)
@@ -890,7 +890,9 @@ ta_atom_entry_set_from_file (ta_atom_entry_t *entry,
         }
       return 0;
     }
-  return ta_atom_entry_set_from_iks (entry, ik);
+  result = ta_atom_entry_set_from_iks (entry, ik);
+  iks_delete (ik);
+  return result;
 }
 
 int
