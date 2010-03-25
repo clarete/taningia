@@ -1269,7 +1269,7 @@ time_to_iso8601 (time_t t)
 static time_t
 iso8601_to_time (const char *dt)
 {
-  struct tm tm;
+  struct tm tm = {};
   strptime (dt, "%Y-%m-%dT%H:%M:%SZ", &tm);
   return mktime (&tm);
 }
