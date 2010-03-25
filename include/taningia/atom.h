@@ -833,6 +833,29 @@ ta_atom_feed_t *ta_atom_feed_new (const char *title);
 void ta_atom_feed_free (ta_atom_feed_t *feed);
 
 /**
+ * @name: ta_atom_feed_set_from_file
+ * @type: method ta_atom_feed
+ * @param fname: Name of the file to be loaded
+ * @raise: TA_ATOM_LOAD_ERROR, TA_ATOM_PARSING_ERROR
+ *
+ * Load a file to an atom feed.
+ */
+int
+ta_atom_feed_set_from_file (ta_atom_feed_t  *feed,
+                            const char *fname);
+
+/**
+ * @name: ta_atom_feed_set_from_iks
+ * @type: method ta_atom_feed
+ * @param iks: iks object to be parsed
+ * @raise: TA_ATOM_PARSING_ERROR
+ *
+ * Load an iks xml structure to an atom feed.
+ */
+int
+ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik);
+
+/**
  * @name: ta_atom_feed_to_iks
  * @type: method ta_atom_feed
  *

@@ -1589,16 +1589,41 @@ ta_atom_feed_new (const char *title)
 }
 
 int
-ta_atom_feed_set_from_file (ta_atom_feed_t  *feed,
-                            const char *fname)
+ta_atom_feed_set_from_file (ta_atom_feed_t *feed, const char *fname)
+{
+  iks *ik;
+  int err, result;
+  if ((err = iks_load (fname, &ik)) != IKS_OK)
+    {
+      if (feed->error)
+        ta_error_free (feed->error);
+      feed->error = ta_error_new ();
+      switch (err)
+        {
+        case IKS_NOMEM:
+          ta_error_set_full (feed->error, TA_ATOM_LOAD_ERROR, "LoadError",
+                             "Not enough memory to load file");
+        case IKS_BADXML:
+          ta_error_set_full (feed->error, TA_ATOM_LOAD_ERROR, "LoadError",
+                             "Unable to parse xml file");
+        default:
+          ta_error_set_full (feed->error, TA_ATOM_LOAD_ERROR, "LoadError",
+                             "Unknown error");
+        }
+      return 0;
+    }
+  result = ta_atom_feed_set_from_iks (feed, ik);
+  iks_delete (ik);
+  return result;
+}
+
+int
+ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik)
 {
   ta_iri_t *eid;
-  iks *ik, *child;
+  iks *child;
   char *id, *title, *updated;
-  int err;
 
-  if ((err = iks_load (fname, &ik)) != IKS_OK)
-    return 0;
   if (strcmp (iks_name (ik), "feed") ||
       !iks_has_children (ik))
     {
@@ -1697,7 +1722,7 @@ ta_atom_feed_set_from_file (ta_atom_feed_t  *feed,
           author = ta_atom_person_new (name, email, iri);
           ta_atom_feed_add_author (feed, author);
         }
-      if (!strcmp (iks_name (child), "category"))
+      else if (!strcmp (iks_name (child), "category"))
         {
           ta_atom_category_t *cat;
           ta_iri_t *iri = NULL;
@@ -1733,6 +1758,20 @@ ta_atom_feed_set_from_file (ta_atom_feed_t  *feed,
             }
           cat = ta_atom_category_new (term, label, iri);
           ta_atom_feed_add_category (feed, cat);
+        }
+      else if (!strcmp (iks_name (child), "entry"))
+        {
+          ta_atom_entry_t *entry;
+          ta_error_t *error;
+
+          entry = ta_atom_entry_new (NULL);
+          ta_atom_entry_set_from_iks (entry, child);
+          if ((error = ta_atom_entry_get_error (entry)) != NULL)
+            {
+              ta_atom_entry_free (entry);
+              continue;
+            }
+          ta_atom_feed_add_entry (feed, entry);
         }
     }
   return 1;
