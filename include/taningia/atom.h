@@ -20,6 +20,10 @@
 #ifndef _TANINGIA_ATOM_H_
 #define _TANINGIA_ATOM_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <time.h>
 #include <iksemel.h>
 #include <taningia/iri.h>
@@ -1030,5 +1034,9 @@ void ta_atom_feed_add_entry (ta_atom_feed_t *feed, ta_atom_entry_t *entry);
  * Remove all entries from the feed. They will be freed too.
  */
 void ta_atom_feed_del_entries (ta_atom_feed_t *feed);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _TANINGIA_ATOM_H_ */

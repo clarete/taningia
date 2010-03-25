@@ -20,6 +20,10 @@
 #ifndef _TANINGIA_LIST_H_
 #define _TANINGIA_LIST_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <taningia/mem.h>
 
 typedef struct _ta_list_t ta_list_t;
@@ -156,5 +160,9 @@ ta_list_t *ta_list_remove (ta_list_t *list, void *data,
 ta_list_t *ta_list_reverse (ta_list_t *list);
 
 /* ta_list_t *ta_list_sort (ta_list_t *list, ta_list_cmp_func_t cmpfunc); */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _TANINGIA_LIST_H_ */

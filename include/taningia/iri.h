@@ -20,6 +20,10 @@
 #ifndef _TANINGIA_IRI_H_
 #define _TANINGIA_IRI_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <taningia/error.h>
 
 #define TA_IRI(o) (o->parent)
@@ -242,5 +246,9 @@ void ta_tag_set_specific (ta_tag_t *tag, const char *specific);
  * Parses a string into a tag iri.
  */
 int ta_tag_set_from_string (ta_tag_t *tag, const char *tagstr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _TANINGIA_IRI_H_ */

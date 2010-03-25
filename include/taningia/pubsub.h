@@ -20,6 +20,10 @@
 #ifndef _TANINGIA_PUBSUB_H
 #define _TANINGIA_PUBSUB_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <iksemel.h>
 
 #define TA_PUBSUB_NS "http://jabber.org/protocol/pubsub"
@@ -230,5 +234,9 @@ iks *ta_pubsub_node_create (ta_pubsub_node_t *node, ...);
  * </pre>
  */
 iks *ta_pubsub_node_createv (ta_pubsub_node_t *node, const char **conf_params);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _TANINGIA_PUBSUB_H */

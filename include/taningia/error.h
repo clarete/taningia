@@ -20,6 +20,10 @@
 #ifndef _TANINGIA_ERROR_H_
 #define _TANINGIA_ERROR_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct _ta_error_t ta_error_t;
 
 /**
@@ -78,5 +82,9 @@ void ta_error_set_message (ta_error_t *error, const char *message, ...);
  */
 void ta_error_set_full (ta_error_t *error, int code, const char *name,
                         const char *message, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _TANINGIA_ERROR_H_ */

@@ -20,6 +20,10 @@
 #ifndef _TANINGIA_XMPP_H_
 #define _TANINGIA_XMPP_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <iksemel.h>
 #include <taningia/taningia.h>
 #include <taningia/log.h>
@@ -246,5 +250,9 @@ int ta_xmpp_client_event_connect (ta_xmpp_client_t *client,
 int ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
                                      const char *event,
                                      ta_xmpp_client_hook_t hook);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _TANINGIA_XMPP_H_ */

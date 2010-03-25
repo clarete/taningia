@@ -20,6 +20,10 @@
 #ifndef _TANINGIA_LOG_H_
 #define _TANINGIA_LOG_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAX_DATE_SIZE 64
 
 typedef struct _ta_log_t ta_log_t;
@@ -122,5 +126,9 @@ void ta_log_error (ta_log_t *log, const char *fmt, ...);
  * Log a critical message.
  */
 void ta_log_critical (ta_log_t *log, const char *fmt, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _TANINGIA_TA_LOG_H_ */

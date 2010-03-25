@@ -20,6 +20,14 @@
 #ifndef _TANINGIA_MEM_H_
 #define _TANINGIA_MEM_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef void (*ta_free_func_t) (void *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _TANINGIA_MEM_H_ */
