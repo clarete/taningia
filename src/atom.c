@@ -596,8 +596,7 @@ ta_atom_content_get_content (ta_atom_content_t *content,
 
 void
 ta_atom_content_set_content (ta_atom_content_t *content,
-                             const char   *text,
-                             int           len)
+                             const char *text, int len)
 {
   if (content->content)
     {
@@ -608,8 +607,11 @@ ta_atom_content_set_content (ta_atom_content_t *content,
           content->src = NULL;
         }
     }
-  content->content = malloc (len + 1);
-  memcpy (content->content, text, len);
+  if (text && len)
+    {
+      content->content = malloc (len + 1);
+      memcpy (content->content, text, len);
+    }
 }
 
 /* ta_atom_person_t */
@@ -982,7 +984,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
       int content_len = 0;
       type = iks_find_attrib (content, "type");
       src = iks_find_attrib (content, "src");
-      scontent = iks_cdata (iks_child (content));
+      scontent = iks_find_cdata (ik, "content");
       if (!type)
         {
           if (entry->error)
@@ -1009,19 +1011,14 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
           return 0;
         }
       if (!src && !scontent)
-        {
-          if (entry->error)
-            ta_error_free (entry->error);
-          entry->error = ta_error_new ();
-          ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
-                             "ParsingError",
-                             "No src attribute or content in content tag");
-          return 0;
-        }
-      if (scontent)
-        content_len = iks_cdata_size (iks_child (content));
+        goto look_for_children;
+
       ct = ta_atom_content_new (type);
-      ta_atom_content_set_content (ct, scontent, content_len);
+      if (scontent)
+        {
+          content_len = iks_cdata_size (iks_child (content));
+          ta_atom_content_set_content (ct, scontent, content_len);
+        }
       if (src)
         {
           ta_iri_t *srci;
@@ -1044,6 +1041,8 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
         ta_atom_content_set_content (ct, scontent, content_len);
       ta_atom_entry_set_content (entry, ct);
     }
+
+ look_for_children:
 
   /* Looking for more structured data */
   for (child = iks_child (ik); child; child = iks_next (child))
