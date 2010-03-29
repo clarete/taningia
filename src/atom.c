@@ -783,6 +783,7 @@ ta_atom_category_to_iks (ta_atom_category_t *category)
       char *iri;
       iri = ta_iri_to_string (category->scheme);
       iks_insert_attrib (ik, "scheme", iri);
+      free (iri);
     }
   return ik;
 }
@@ -1300,6 +1301,7 @@ ta_atom_entry_to_iks (ta_atom_entry_t *entry)
       char *published;
       published = time_to_iso8601 (entry->published);
       iks_insert_cdata (iks_insert (ik, "published"), published, 0);
+      free (published);
     }
 
   if (entry->rights)
