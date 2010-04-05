@@ -42,8 +42,8 @@ typedef int (*ta_xmpp_client_hook_t) (ta_xmpp_client_t *, void *, void *);
 typedef void (*ta_xmpp_client_answer_cb_t) (ta_xmpp_client_t *, iks *, void *);
 
 /**
- * @name: ta_xmpp_client_new
- * @type: constructor ta_xmpp_client
+ * @name: ta_xmpp_client::new
+ * @type: constructor
  * @param jid: XMPP jid to be used in the client connection.
  * @param password: Password of the jid.
  * @param host (optional): Host to connect to.
@@ -57,80 +57,80 @@ ta_xmpp_client_t *ta_xmpp_client_new (const char *jid, const char *password,
                                       const char *host, int port);
 
 /**
- * @name: ta_xmpp_client_free
- * @type: destructor ta_xmpp_client
+ * @name: ta_xmpp_client::free
+ * @type: destructor
  */
 void ta_xmpp_client_free (ta_xmpp_client_t *ctx);
 
 /**
- * @name: ta_xmpp_client_get_jid
- * @type: getter ta_xmpp_client:jid
+ * @name: ta_xmpp_client::get_jid
+ * @type: getter
  */
 const char *ta_xmpp_client_get_jid (ta_xmpp_client_t *ctx);
 
 /**
- * @name: ta_xmpp_client_set_jid
- * @type: setter ta_xmpp_client:jid
+ * @name: ta_xmpp_client::set_jid
+ * @type: setter
  */
 void ta_xmpp_client_set_jid (ta_xmpp_client_t *ctx, const char *jid);
 
 /**
- * @name: ta_xmpp_client_get_password
- * @type: getter ta_xmpp_client:password
+ * @name: ta_xmpp_client::get_password
+ * @type: getter
  */
 const char *ta_xmpp_client_get_password (ta_xmpp_client_t *ctx);
 
 /**
- * @name: ta_xmpp_client_set_password
- * @type: setter ta_xmpp_client:password
+ * @name: ta_xmpp_client::set_password
+ * @type: setter
  */
 void ta_xmpp_client_set_password (ta_xmpp_client_t *ctx, const char *password);
 
 /**
- * @name: ta_xmpp_client_get_host
- * @type: getter ta_xmpp_client:host
+ * @name: ta_xmpp_client::get_host
+ * @type: getter
  */
 const char *ta_xmpp_client_get_host (ta_xmpp_client_t *ctx);
 
 /**
- * @name: ta_xmpp_client_set_host
- * @type: setter ta_xmpp_client:host
+ * @name: ta_xmpp_client::set_host
+ * @type: setter
  */
 void ta_xmpp_client_set_host (ta_xmpp_client_t *ctx, const char *host);
 
 /**
- * @name: ta_xmpp_client_get_port
- * @type: getter ta_xmpp_client:port
+ * @name: ta_xmpp_client::get_port
+ * @type: getter
  */
 int ta_xmpp_client_get_port (ta_xmpp_client_t *ctx);
 
 /**
- * @name: ta_xmpp_client_set_port
- * @type: setter ta_xmpp_client:port
+ * @name: ta_xmpp_client::set_port
+ * @type: setter
  */
 void ta_xmpp_client_set_port (ta_xmpp_client_t *ctx, int port);
 
 /**
- * @name: ta_xmpp_client_get_logger
- * @type: getter ta_xmpp_client:log
+ * @name: ta_xmpp_client::get_logger
+ * @type: getter
  */
 ta_log_t *ta_xmpp_client_get_logger (ta_xmpp_client_t *ctx);
 
 /**
- * @name: ta_xmpp_client_get_error
- * @type: getter ta_xmpp_client:error
+ * @name: ta_xmpp_client::get_error
+ * @type: getter
  */
 ta_error_t *ta_xmpp_client_get_error (ta_xmpp_client_t *ctx);
 
 /**
- * @name: ta_xmpp_client_get_filter
- * @type: getter ta_xmpp_client:filter
+ * @name: ta_xmpp_client::get_filter
+ * @type: getter
  */
 iksfilter *ta_xmpp_client_get_filter (ta_xmpp_client_t *client);
 
 /**
- * @name: ta_xmpp_client_connect
- * @type: method ta_xmpp_client
+ * @name: ta_xmpp_client::connect
+ * @type: method
  * @raise: XMPP_CONNECTION_ERROR
  *
  * Connects the client to the host and port specified in the
@@ -139,16 +139,16 @@ iksfilter *ta_xmpp_client_get_filter (ta_xmpp_client_t *client);
 int ta_xmpp_client_connect (ta_xmpp_client_t *client);
 
 /**
- * @name: ta_xmpp_client_disconnect
- * @type: method ta_xmpp_client
+ * @name: ta_xmpp_client::disconnect
+ * @type: method
  *
  * Disconnects the client from the host.
  */
 void ta_xmpp_client_disconnect (ta_xmpp_client_t *ctx);
 
 /**
- * @name: ta_xmpp_client_send
- * @type: method ta_xmpp_client
+ * @name: ta_xmpp_client::send
+ * @type: method
  * @param node: The iks node to be sent to the XMPP server.
  *
  * Sends iks nodes to the XMPP server. Only call this function after
@@ -158,8 +158,8 @@ void ta_xmpp_client_disconnect (ta_xmpp_client_t *ctx);
 int ta_xmpp_client_send (ta_xmpp_client_t *ctx, iks *node);
 
 /**
- * @name: ta_xmpp_client_send_and_filter
- * @type: method ta_xmpp_client
+ * @name: ta_xmpp_client::send_and_filter
+ * @type: method
  * @param node: The iks node to be sent to the XMPP server.
  * @param cb: Callback to be called when the sent message is answered
  * by the server.
@@ -178,8 +178,8 @@ ta_xmpp_client_send_and_filter (ta_xmpp_client_t *client, iks *node,
                                 ta_free_func_t free_cb);
 
 /**
- * @name: ta_xmpp_client_run
- * @type: method ta_xmpp_client
+ * @name: ta_xmpp_client::run
+ * @type: method
  * @param detach: Define if client's main loop will run in a separated
  * thread.
  *
@@ -189,8 +189,8 @@ ta_xmpp_client_send_and_filter (ta_xmpp_client_t *client, iks *node,
 int ta_xmpp_client_run (ta_xmpp_client_t *ctx, int detach);
 
 /**
- * @name: ta_xmpp_client_is_running
- * @type: method ta_xmpp_client
+ * @name: ta_xmpp_client::is_running
+ * @type: method
  * @return: bool
  *
  * Returns the state of the XMPP client, if it is running or not.
@@ -198,8 +198,8 @@ int ta_xmpp_client_run (ta_xmpp_client_t *ctx, int detach);
 int ta_xmpp_client_is_running (ta_xmpp_client_t *ctx);
 
 /**
- * @name: ta_xmpp_client_event_connect
- * @type: method ta_xmpp_client
+ * @name: ta_xmpp_client::event_connect
+ * @type: method
  * @param event: Name of the event to connected the hook.
  * @param hook (callable): The hook to be
  * connected to the event.
@@ -235,8 +235,8 @@ int ta_xmpp_client_event_connect (ta_xmpp_client_t *client,
                                   void *user_data);
 
 /**
- * @name: ta_xmpp_client_event_disconnect
- * @type: method ta_xmpp_client
+ * @name: ta_xmpp_client::event_disconnect
+ * @type: method
  * @param event: The event name
  * @param hook (callable): Hook to be disconnected from the event. If
  * it is `NULL', all hooks will be deleted.

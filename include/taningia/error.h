@@ -27,56 +27,56 @@ extern "C" {
 typedef struct _ta_error_t ta_error_t;
 
 /**
- * @name: ta_error_new
- * @type: constructor ta_error
+ * @name: ta_error::new
+ * @type: constructor
  */
 ta_error_t *ta_error_new (void);
 
 /**
- * @name: ta_error_free
- * @type: destructor ta_error
+ * @name: ta_error::free
+ * @type: destructor
  */
 void ta_error_free (ta_error_t *error);
 
 /**
- * @name: ta_error_get_code
- * @type: getter ta_error:code
+ * @name: ta_error::get_code
+ * @type: getter
  */
 int ta_error_get_code (ta_error_t *error);
 
 /**
- * @name: ta_error_set_code
- * @type: setter ta_error:code
+ * @name: ta_error::set_code
+ * @type: setter
  */
 void ta_error_set_code (ta_error_t *error, int code);
 
 /**
- * @name: ta_error_get_name
- * @type: getter ta_error:name
+ * @name: ta_error::get_name
+ * @type: getter
  */
 const char *ta_error_get_name (ta_error_t *error);
 
 /**
- * @name: ta_error_set_name
- * @type: setter ta_error:name
+ * @name: ta_error::set_name
+ * @type: setter
  */
 void ta_error_set_name (ta_error_t *error, const char *name);
 
 /**
- * @name: ta_error_get_message
- * @type: getter ta_error:message
+ * @name: ta_error::get_message
+ * @type: getter
  */
 const char *ta_error_get_message (ta_error_t *error);
 
 /**
- * @name: ta_error_set_message
- * @type: setter ta_error:message
+ * @name: ta_error::set_message
+ * @type: setter
  */
 void ta_error_set_message (ta_error_t *error, const char *message, ...);
 
 /**
- * @name: ta_error_set_full
- * @type: method ta_error
+ * @name: ta_error::set_full
+ * @type: method
  *
  * A shortcut to set all error attributes at once.
  */

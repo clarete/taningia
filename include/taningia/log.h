@@ -40,44 +40,44 @@ typedef int *(*ta_log_handler_func_t) (ta_log_t *, ta_log_level_t,
                                        const char *, void *);
 
 /**
- * @name: ta_log_new
- * @type: constructor ta_log
+ * @name: ta_log::new
+ * @type: constructor
  */
 ta_log_t *ta_log_new (const char *domain_name);
 
 /**
- * @name: ta_log_free
- * @type: destructor ta_log
+ * @name: ta_log::free
+ * @type: destructor
  */
 void ta_log_free (ta_log_t *log);
 
 /**
- * @name: ta_log_set_use_colors
- * @type: setter ta_log:use_colors
+ * @name: ta_log::set_use_colors
+ * @type: setter
  */
 void ta_log_set_use_colors (ta_log_t *log, int use_colors);
 
 /**
- * @name: ta_log_get_use_colors
- * @type: getter ta_log:use_colors
+ * @name: ta_log::get_use_colors
+ * @type: getter
  */
 int ta_log_get_use_colors (ta_log_t *log);
 
 /**
- * @name: ta_log_set_level
- * @type: setter ta_log:level
+ * @name: ta_log::set_level
+ * @type: setter
  */
 void ta_log_set_level (ta_log_t *log, ta_log_level_t level);
 
 /**
- * @name: ta_log_get_level
- * @type: getter ta_log:level
+ * @name: ta_log::get_level
+ * @type: getter
  */
 ta_log_level_t ta_log_get_level (ta_log_t *log);
 
 /**
- * @name: ta_log_set_handler
- * @type: method ta_log
+ * @name: ta_log::set_handler
+ * @type: method
  * @param handler: The handler function
  * @param user_data: Parameter to be passed to the handler function
  *
@@ -88,40 +88,40 @@ void ta_log_set_handler (ta_log_t *log, ta_log_handler_func_t handler,
                          void *user_data);
 
 /**
- * @name: ta_log_info
- * @type: method ta_log
+ * @name: ta_log::info
+ * @type: method
  *
  * Log an info message.
  */
 void ta_log_info (ta_log_t *log, const char *fmt, ...);
 
 /**
- * @name: ta_log_warn
- * @type: method ta_log
+ * @name: ta_log::warn
+ * @type: method
  *
  * Log a warning.
  */
 void ta_log_warn (ta_log_t *log, const char *fmt, ...);
 
 /**
- * @name: ta_log_debug
- * @type: method ta_log
+ * @name: ta_log::debug
+ * @type: method
  *
  * Log a debug message.
  */
 void ta_log_debug (ta_log_t *log, const char *fmt, ...);
 
 /**
- * @name: ta_log_error
- * @type: method ta_log
+ * @name: ta_log::error
+ * @type: method
  *
  * Log an error message.
  */
 void ta_log_error (ta_log_t *log, const char *fmt, ...);
 
 /**
- * @name: ta_log_critical
- * @type: method ta_log
+ * @name: ta_log::critical
+ * @type: method
  *
  * Log a critical message.
  */
