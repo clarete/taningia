@@ -69,6 +69,6 @@ main (int argc, char **argv)
   ta_log_critical (log, "hello there, I'm a critical message");
 
   /* Cleaning our log object */
-  ta_log_free (log);
+  ta_object_unref (log);
   return 0;
 }

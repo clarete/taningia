@@ -24,36 +24,33 @@
 #include <taningia/log.h>
 #include <time.h>
 
-struct _ta_log_t
+static void
+ta_log_free (ta_log_t *log)
 {
-  char *name;
-  ta_log_level_t level;
-  ta_log_handler_func_t handler;
-  int use_colors;
-  void *handler_data;
-  char *date_format;
-};
+  free (log->name);
+  free (log->date_format);
+  free (log);
+}
 
-ta_log_t *
-ta_log_new (const char *domain_name)
+void
+ta_log_init (ta_log_t *log, const char *domain_name)
 {
-  ta_log_t *log;
-  log = malloc (sizeof (ta_log_t));
+  ta_object_init (TA_CAST_OBJECT (log), (ta_free_func_t) ta_log_free);
   log->name = strdup (domain_name);
   log->level = TA_LOG_WARN;
   log->handler = NULL;
   log->handler_data = NULL;
   log->use_colors = 0;
   log->date_format = strdup ("%x %X");
-  return log;
 }
 
-void
-ta_log_free (ta_log_t *log)
+ta_log_t *
+ta_log_new (const char *domain_name)
 {
-  free (log->name);
-  free (log->date_format);
-  free (log);
+  ta_log_t *log;
+  log = malloc (sizeof (ta_log_t));
+  ta_log_init (log, domain_name);
+  return log;
 }
 
 void

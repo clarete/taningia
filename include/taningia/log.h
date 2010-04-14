@@ -20,36 +20,51 @@
 #ifndef _TANINGIA_LOG_H_
 #define _TANINGIA_LOG_H_
 
+#include <taningia/object.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define MAX_DATE_SIZE 64
 
-typedef struct _ta_log_t ta_log_t;
+typedef struct _ta_log ta_log_t;
 
-typedef enum {
+typedef enum _ta_log_level ta_log_level_t;
+
+typedef int *(*ta_log_handler_func_t) (ta_log_t *, ta_log_level_t,
+                                       const char *, void *);
+
+enum _ta_log_level {
   TA_LOG_DEBUG,
   TA_LOG_INFO,
   TA_LOG_WARN,
   TA_LOG_ERROR,
   TA_LOG_CRITICAL
-} ta_log_level_t;
+};
 
-typedef int *(*ta_log_handler_func_t) (ta_log_t *, ta_log_level_t,
-                                       const char *, void *);
+struct _ta_log
+{
+  ta_object_t parent;
+  char *name;
+  ta_log_level_t level;
+  ta_log_handler_func_t handler;
+  int use_colors;
+  void *handler_data;
+  char *date_format;
+};
 
 /**
  * @name: ta_log::new
- * @type: constructor
+ * @type: allocator
  */
 ta_log_t *ta_log_new (const char *domain_name);
 
 /**
- * @name: ta_log::free
- * @type: destructor
+ * @name: ta_log::init
+ * @type: constructor
  */
-void ta_log_free (ta_log_t *log);
+void ta_log_init (ta_log_t *log, const char *domain_name);
 
 /**
  * @name: ta_log::set_use_colors

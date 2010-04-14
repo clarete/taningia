@@ -290,7 +290,7 @@ ta_xmpp_client_free (ta_xmpp_client_t *client)
   if (client->filter)
     iks_filter_delete (client->filter);
   if (client->log)
-    ta_log_free (client->log);
+    ta_object_unref (client->log);
   if (client->error)
     ta_error_free (client->error);
 

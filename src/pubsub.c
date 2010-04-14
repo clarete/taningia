@@ -111,7 +111,7 @@ ta_pubsub_free (ta_pubsub_t *ctx)
 {
   free (ctx->from);
   free (ctx->to);
-  ta_log_free (ctx->log);
+  ta_object_unref (ctx->log);
   if (ctx->node_prefix)
     free (ctx->node_prefix);
   free (ctx);
