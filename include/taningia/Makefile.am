@@ -1,1 +1,2 @@
-pkginclude_HEADERS = taningia.h error.h xmpp.h pubsub.h iri.h atom.h log.h list.h mem.h
+pkginclude_HEADERS = taningia.h mem.h object.h log.h error.h list.h \
+	 xmpp.h pubsub.h iri.h atom.h
