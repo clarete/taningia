@@ -24,7 +24,12 @@
 extern "C" {
 #endif
 
-typedef struct _ta_error_t ta_error_t;
+typedef struct
+{
+  char *name;
+  char *message;
+  int code;
+} ta_error_t;
 
 /**
  * @name: ta_error::new
@@ -33,10 +38,10 @@ typedef struct _ta_error_t ta_error_t;
 ta_error_t *ta_error_new (void);
 
 /**
- * @name: ta_error::free
- * @type: destructor
+ * @name: ta_error::init
+ * @type: initializer
  */
-void ta_error_free (ta_error_t *error);
+void ta_error_init (ta_error_t *error);
 
 /**
  * @name: ta_error::get_code

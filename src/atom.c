@@ -24,6 +24,7 @@
 #include <string.h>
 #include <time.h>
 #include <iksemel.h>
+#include <taningia/object.h>
 #include <taningia/atom.h>
 #include <taningia/iri.h>
 #include <taningia/error.h>
@@ -877,7 +878,7 @@ ta_atom_entry_set_from_file (ta_atom_entry_t *entry,
   if ((err = iks_load (fname, &ik)) != IKS_OK)
     {
       if (entry->error)
-        ta_error_free (entry->error);
+        ta_object_unref (entry->error);
       entry->error = ta_error_new ();
       switch (err)
         {
@@ -911,7 +912,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
     {
       iks_delete (ik);
       if (entry->error)
-        ta_error_free (entry->error);
+        ta_object_unref (entry->error);
       entry->error = ta_error_new ();
       ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
                          "Wrong root entry element");
@@ -921,7 +922,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
   if (!id)
     {
       if (entry->error)
-        ta_error_free (entry->error);
+        ta_object_unref (entry->error);
       entry->error = ta_error_new ();
       ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
                          "No <id> element found");
@@ -931,7 +932,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
   if (!ta_iri_set_from_string (eid, id))
     {
       if (entry->error)
-        ta_error_free (entry->error);
+        ta_object_unref (entry->error);
       entry->error = ta_error_new ();
       ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
                          "Invalid <id> iri");
@@ -942,7 +943,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
   if (!title)
     {
       if (entry->error)
-        ta_error_free (entry->error);
+        ta_object_unref (entry->error);
       entry->error = ta_error_new ();
       ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
                          "No <title> element found");
@@ -989,7 +990,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
       if (!type)
         {
           if (entry->error)
-            ta_error_free (entry->error);
+            ta_object_unref (entry->error);
           entry->error = ta_error_new ();
           ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
                              "ParsingError",
@@ -1003,7 +1004,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
       if (src && scontent)
         {
           if (entry->error)
-            ta_error_free (entry->error);
+            ta_object_unref (entry->error);
           entry->error = ta_error_new ();
           ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
                              "ParsingError",
@@ -1027,7 +1028,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
           if (!ta_iri_set_from_string (srci, src))
             {
               if (entry->error)
-                ta_error_free (entry->error);
+                ta_object_unref (entry->error);
               entry->error = ta_error_new ();
               ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
                                  "ParsingError",
@@ -1060,7 +1061,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
           if (!name)
             {
               if (entry->error)
-                ta_error_free (entry->error);
+                ta_object_unref (entry->error);
               entry->error = ta_error_new ();
               ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
                                  "ParsingError", "Author with no name");
@@ -1075,7 +1076,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
           if (uri && !ta_iri_set_from_string (iri, uri))
             {
               if (entry->error)
-                ta_error_free (entry->error);
+                ta_object_unref (entry->error);
               entry->error = ta_error_new ();
               ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
                                  "ParsingError",
@@ -1097,7 +1098,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
           if (!term)
             {
               if (entry->error)
-                ta_error_free (entry->error);
+                ta_object_unref (entry->error);
               entry->error = ta_error_new ();
               ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
                                  "ParsingError",
@@ -1110,7 +1111,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
               if (!ta_iri_set_from_string (iri, scheme))
                 {
                   if (entry->error)
-                    ta_error_free (entry->error);
+                    ta_object_unref (entry->error);
                   entry->error = ta_error_new ();
                   ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
                                      "ParsingError",
@@ -1135,7 +1136,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
           if (!ref)
             {
               if (entry->error)
-                ta_error_free (entry->error);
+                ta_object_unref (entry->error);
               entry->error = ta_error_new ();
               ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
                                  "ParsingError",
@@ -1148,7 +1149,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
             {
               const char *error_message;
               if (entry->error)
-                ta_error_free (entry->error);
+                ta_object_unref (entry->error);
               entry->error = ta_error_new ();
               error_message =
                 ta_error_get_message (ta_iri_get_error (iri_ref));
@@ -1170,7 +1171,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
                 {
                   const char *error_message;
                   if (entry->error)
-                    ta_error_free (entry->error);
+                    ta_object_unref (entry->error);
                   entry->error = ta_error_new ();
                   error_message =
                     ta_error_get_message (ta_iri_get_error (iri_href));
@@ -1193,7 +1194,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
                 {
                   const char *error_message;
                   if (entry->error)
-                    ta_error_free (entry->error);
+                    ta_object_unref (entry->error);
                   entry->error = ta_error_new ();
                   error_message =
                     ta_error_get_message (ta_iri_get_error (iri_source));
@@ -1235,7 +1236,7 @@ ta_atom_entry_free (ta_atom_entry_t *entry)
   if (entry->content)
     ta_atom_content_free (entry->content);
   if (entry->error)
-    ta_error_free (entry->error);
+    ta_object_unref (entry->error);
   free (entry);
 }
 
@@ -1598,7 +1599,7 @@ ta_atom_feed_set_from_file (ta_atom_feed_t *feed, const char *fname)
   if ((err = iks_load (fname, &ik)) != IKS_OK)
     {
       if (feed->error)
-        ta_error_free (feed->error);
+        ta_object_unref (feed->error);
       feed->error = ta_error_new ();
       switch (err)
         {
@@ -1631,7 +1632,7 @@ ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik)
     {
       iks_delete (ik);
       if (feed->error)
-        ta_error_free (feed->error);
+        ta_object_unref (feed->error);
       feed->error = ta_error_new ();
       ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
                          "Wrong root feed element");
@@ -1641,7 +1642,7 @@ ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik)
   if (!id)
     {
       if (feed->error)
-        ta_error_free (feed->error);
+        ta_object_unref (feed->error);
       feed->error = ta_error_new ();
       ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
                          "No <id> element found");
@@ -1651,7 +1652,7 @@ ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik)
   if (!ta_iri_set_from_string (eid, id))
     {
       if (feed->error)
-        ta_error_free (feed->error);
+        ta_object_unref (feed->error);
       feed->error = ta_error_new ();
       ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
                          "Invalid <id> iri");
@@ -1662,7 +1663,7 @@ ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik)
   if (!title)
     {
       if (feed->error)
-        ta_error_free (feed->error);
+        ta_object_unref (feed->error);
       feed->error = ta_error_new ();
       ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
                          "No <title> element found");
@@ -1696,7 +1697,7 @@ ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik)
           if (!name)
             {
               if (feed->error)
-                ta_error_free (feed->error);
+                ta_object_unref (feed->error);
               feed->error = ta_error_new ();
               ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR,
                                  "ParsingError", "Author with no name");
@@ -1713,7 +1714,7 @@ ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik)
           if (uri && !ta_iri_set_from_string (iri, uri))
             {
               if (feed->error)
-                ta_error_free (feed->error);
+                ta_object_unref (feed->error);
               feed->error = ta_error_new ();
               ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR,
                                  "ParsingError",
@@ -1735,7 +1736,7 @@ ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik)
           if (!term)
             {
               if (feed->error)
-                ta_error_free (feed->error);
+                ta_object_unref (feed->error);
               feed->error = ta_error_new ();
               ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR,
                                  "ParsingError",
@@ -1748,7 +1749,7 @@ ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik)
               if (!ta_iri_set_from_string (iri, scheme))
                 {
                   if (feed->error)
-                    ta_error_free (feed->error);
+                    ta_object_unref (feed->error);
                   feed->error = ta_error_new ();
                   ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR,
                                      "ParsingError",
@@ -1793,7 +1794,7 @@ ta_atom_feed_free (ta_atom_feed_t *feed)
   if (feed->entries)
     ta_atom_feed_del_entries (feed);
   if (feed->error)
-    ta_error_free (feed->error);
+    ta_object_unref (feed->error);
   free (feed);
 }
 

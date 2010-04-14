@@ -21,27 +21,10 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <taningia/object.h>
 #include <taningia/error.h>
 
-struct _ta_error_t
-{
-  char *name;
-  char *message;
-  int code;
-};
-
-ta_error_t *
-ta_error_new (void)
-{
-  ta_error_t *error;
-  error = malloc (sizeof (ta_error_t));
-  error->name = NULL;
-  error->message = NULL;
-  error->code = 0;
-  return error;
-}
-
-void
+static void
 ta_error_free (ta_error_t *error)
 {
   if (error->name)
@@ -49,6 +32,24 @@ ta_error_free (ta_error_t *error)
   if (error->message)
     free (error->message);
   free (error);
+}
+
+void
+ta_error_init (ta_error_t *error)
+{
+  ta_object_init (TA_CAST_OBJECT (error), (ta_free_func_t) ta_error_free);
+  error->name = NULL;
+  error->message = NULL;
+  error->code = 0;
+}
+
+ta_error_t *
+ta_error_new (void)
+{
+  ta_error_t *error;
+  error = malloc (sizeof (ta_error_t));
+  ta_error_init (error);
+  return error;
 }
 
 int

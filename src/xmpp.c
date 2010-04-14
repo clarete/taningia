@@ -292,7 +292,7 @@ ta_xmpp_client_free (ta_xmpp_client_t *client)
   if (client->log)
     ta_object_unref (client->log);
   if (client->error)
-    ta_error_free (client->error);
+    ta_object_unref (client->error);
 
   /* Freeing all hooks for all events. Maybe it is better to be done
    * automatically. */
@@ -393,7 +393,7 @@ ta_xmpp_client_send (ta_xmpp_client_t *client, iks *node)
     {
       ta_log_warn (client->log, "Fail to send the stanza");
       if (client->error)
-        ta_error_free (client->error);
+        ta_object_unref (client->error);
       client->error = ta_error_new ();
       ta_error_set_name (client->error, "NetworkError");
       ta_error_set_message (client->error, "Failed to send the stanza");
@@ -444,7 +444,7 @@ ta_xmpp_client_send_and_filter (ta_xmpp_client_t *client, iks *node,
     {
       ta_log_warn (client->log, "Fail to send the stanza");
       if (client->error)
-        ta_error_free (client->error);
+        ta_object_unref (client->error);
       client->error = ta_error_new ();
       ta_error_set_name (client->error, "NetworkError");
       ta_error_set_message (client->error, "Failed to send the stanza");
@@ -481,7 +481,7 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
        * the error and send some useful result to the user. */
       if (client->error)
         {
-          ta_error_free (client->error);
+          ta_object_unref (client->error);
           client->error = NULL;
         }
       client->error = ta_error_new ();
@@ -598,7 +598,7 @@ ta_xmpp_client_event_connect (ta_xmpp_client_t *client,
   if (!hashtable_get_test (client->events, event, (void **) &hooks))
     {
       if (client->error)
-        ta_error_free (client->error);
+        ta_object_unref (client->error);
       client->error = ta_error_new ();
       ta_error_set_name (client->error, "NoSuchEvent");
       ta_error_set_message (client->error,
@@ -631,7 +631,7 @@ ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
   if (!hashtable_get_test (client->events, event, (void **) &hooks))
     {
       if (client->error)
-        ta_error_free (client->error);
+        ta_object_unref (client->error);
       client->error = ta_error_new ();
       ta_error_set_name (client->error, "NoSuchEvent");
       ta_error_set_message (client->error,

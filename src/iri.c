@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <taningia/object.h>
 #include <taningia/iri.h>
 #include <taningia/error.h>
 
@@ -57,7 +58,7 @@ ta_iri_free (ta_iri_t *iri)
   if (iri->fragment)
     free (iri->fragment);
   if (iri->error)
-    ta_error_free (iri->error);
+    ta_object_unref (iri->error);
   free (iri);
 }
 
@@ -305,7 +306,7 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
   if (!isalpha(p[0]))
     {
       if (iri->error)
-        ta_error_free (iri->error);
+        ta_object_unref (iri->error);
       iri->error = ta_error_new ();
       ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR, "ParsingError",
                          "Schema should start with an alpha char");
@@ -324,7 +325,7 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
           !(c == '-' || c == '+' || c == '.'))
         {
           if (iri->error)
-            ta_error_free (iri->error);
+            ta_object_unref (iri->error);
           iri->error = ta_error_new ();
           ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR, "ParsingError",
                              "Schema should only have the following chars: "
@@ -417,7 +418,7 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
           if (port_len == 0)
             {
               if (iri->error)
-                ta_error_free (iri->error);
+                ta_object_unref (iri->error);
               iri->error = ta_error_new ();
               ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR,
                                  "ParsingError", "Invalid port number");
@@ -443,7 +444,7 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
       if (path && path[0] != '/')
         {
           if (iri->error)
-            ta_error_free (iri->error);
+            ta_object_unref (iri->error);
           iri->error = ta_error_new ();
           ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR, "ParsingError",
                              "Path should start with a '/' since authority "
@@ -605,7 +606,7 @@ ta_tag_set_from_string (ta_tag_t *tag, const char *tagstr)
           ta_iri_t *parent;
           parent = TA_IRI (tag);
           if (parent->error)
-            ta_error_free (parent->error);
+            ta_object_unref (parent->error);
           parent->error = ta_error_new ();
           ta_error_set_full (parent->error, TA_TAG_PARSING_ERROR,
                              "ParsingError", "Date field missing in tag");
@@ -620,7 +621,7 @@ ta_tag_set_from_string (ta_tag_t *tag, const char *tagstr)
           ta_iri_t *parent;
           parent = TA_IRI (tag);
           if (parent->error)
-            ta_error_free (parent->error);
+            ta_object_unref (parent->error);
           parent->error = ta_error_new ();
           ta_error_set_full (parent->error, TA_TAG_PARSING_ERROR,
                              "ParsingError", "Domain specific not provided");
