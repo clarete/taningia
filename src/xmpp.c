@@ -32,6 +32,7 @@
 #include "hashtable-utils.h"
 
 struct _ta_xmpp_client_t {
+  ta_object_t parent;
   char *jid;
   char *password;
   char *host;
@@ -218,18 +219,48 @@ _xmpp_clienta_log_hook (ta_xmpp_client_t *client, const char *data,
 
 #endif
 
-/* Allocate memory and initialize stuff necessary to create a new xmpp
- * Client.
- */
-ta_xmpp_client_t *
-ta_xmpp_client_new (const char *jid,
-                    const char *password,
-                    const char *host,
-                    int         port)
+static void
+ta_xmpp_client_free (ta_xmpp_client_t *client)
 {
-  ta_xmpp_client_t *client;
+  if (client->jid)
+    free (client->jid);
+  if (client->password)
+    free (client->password);
+  if (client->host)
+    free (client->host);
+  if (client->idstack)
+    iks_stack_delete (client->idstack);
+  if (client->parser)
+    iks_parser_delete (client->parser);
+  if (client->filter)
+    iks_filter_delete (client->filter);
+  if (client->log)
+    ta_object_unref (client->log);
+  if (client->error)
+    ta_object_unref (client->error);
+
+  /* Freeing all hooks for all events. Maybe it is better to be done
+   * automatically. */
+  ta_xmpp_client_event_disconnect (client, "connected", NULL);
+  ta_xmpp_client_event_disconnect (client, "authenticated", NULL);
+  ta_xmpp_client_event_disconnect (client, "authentication-failed", NULL);
+  ta_xmpp_client_event_disconnect (client, "message-received", NULL);
+  ta_xmpp_client_event_disconnect (client, "presence-noticed", NULL);
+  if (client->events)
+    hashtable_destroy (client->events);
+  free (client);
+}
+
+void
+ta_xmpp_client_init (ta_xmpp_client_t *client,
+                     const char *jid,
+                     const char *password,
+                     const char *host,
+                     int port)
+{
   int jid_len;
-  client = malloc (sizeof (ta_xmpp_client_t));
+  ta_object_init (TA_CAST_OBJECT (client),
+                  (ta_free_func_t) ta_xmpp_client_free);
   client->jid = strdup (jid);
   client->password = strdup (password);
   jid_len = strlen (jid);
@@ -269,41 +300,18 @@ ta_xmpp_client_new (const char *jid,
   hashtable_set (client->events, "authentication-failed", NULL);
   hashtable_set (client->events, "message-received", NULL);
   hashtable_set (client->events, "presence-noticed", NULL);
-  return client;
 }
 
-/* Free the memory used by a XmppContext struct.
- */
-void
-ta_xmpp_client_free (ta_xmpp_client_t *client)
+ta_xmpp_client_t *
+ta_xmpp_client_new (const char *jid,
+                    const char *password,
+                    const char *host,
+                    int         port)
 {
-  if (client->jid)
-    free (client->jid);
-  if (client->password)
-    free (client->password);
-  if (client->host)
-    free (client->host);
-  if (client->idstack)
-    iks_stack_delete (client->idstack);
-  if (client->parser)
-    iks_parser_delete (client->parser);
-  if (client->filter)
-    iks_filter_delete (client->filter);
-  if (client->log)
-    ta_object_unref (client->log);
-  if (client->error)
-    ta_object_unref (client->error);
-
-  /* Freeing all hooks for all events. Maybe it is better to be done
-   * automatically. */
-  ta_xmpp_client_event_disconnect (client, "connected", NULL);
-  ta_xmpp_client_event_disconnect (client, "authenticated", NULL);
-  ta_xmpp_client_event_disconnect (client, "authentication-failed", NULL);
-  ta_xmpp_client_event_disconnect (client, "message-received", NULL);
-  ta_xmpp_client_event_disconnect (client, "presence-noticed", NULL);
-  if (client->events)
-    hashtable_destroy (client->events);
-  free (client);
+  ta_xmpp_client_t *client;
+  client = malloc (sizeof (ta_xmpp_client_t));
+  ta_xmpp_client_init (client, jid, password, host, port);
+  return client;
 }
 
 const char *

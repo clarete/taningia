@@ -113,7 +113,7 @@ main (int argc, char **argv)
       error = ta_xmpp_client_get_error (xmpp);
       fprintf (stderr, "%s: %s\n", ta_error_get_name (error),
                ta_error_get_message (error));
-      ta_xmpp_client_free (xmpp);
+      ta_object_unref (xmpp);
       return 1;
     }
 
@@ -125,11 +125,11 @@ main (int argc, char **argv)
       error = ta_xmpp_client_get_error (xmpp);
       fprintf (stderr, "%s: %s\n", ta_error_get_name (error),
                ta_error_get_message (error));
-      ta_xmpp_client_free (xmpp);
+      ta_object_unref (xmpp);
       return 1;
     }
 
   /* Cleaning up things */
-  ta_xmpp_client_free (xmpp);
+  ta_object_unref (xmpp);
   return 0;
 }

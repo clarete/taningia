@@ -26,8 +26,6 @@ extern "C" {
 
 #include <iksemel.h>
 #include <taningia/taningia.h>
-#include <taningia/log.h>
-#include <taningia/error.h>
 
 typedef enum {
   XMPP_CONNECTION_ERROR,
@@ -57,10 +55,14 @@ ta_xmpp_client_t *ta_xmpp_client_new (const char *jid, const char *password,
                                       const char *host, int port);
 
 /**
- * @name: ta_xmpp_client::free
- * @type: destructor
+ * @name: ta_xmpp_client::init
+ * @type: initializer
  */
-void ta_xmpp_client_free (ta_xmpp_client_t *ctx);
+void ta_xmpp_client_init (ta_xmpp_client_t *client,
+                          const char *jid,
+                          const char *password,
+                          const char *host,
+                          int port);
 
 /**
  * @name: ta_xmpp_client::get_jid
