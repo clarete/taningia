@@ -124,7 +124,7 @@ gen_feed (void)
       /* We had no time to set the iri in the feed object, so, we
        * should free it manually. But only do it when done with the
        * error object it will be freed here too. */
-      ta_iri_free (feed_id);
+      ta_object_unref (feed_id);
       return 1;
     }
   ta_atom_feed_set_id (feed, feed_id);

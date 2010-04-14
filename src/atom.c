@@ -182,11 +182,11 @@ void
 ta_atom_in_reply_to_free (ta_atom_in_reply_to_t *irt)
 {
   if (irt->ref)
-    ta_iri_free (irt->ref);
+    ta_object_unref (irt->ref);
   if (irt->href)
-    ta_iri_free (irt->href);
+    ta_object_unref (irt->href);
   if (irt->source)
-    ta_iri_free (irt->source);
+    ta_object_unref (irt->source);
   if (irt->type)
     free (irt->type);
   free (irt);
@@ -238,7 +238,7 @@ void
 ta_atom_in_reply_to_set_ref (ta_atom_in_reply_to_t *irt, ta_iri_t *ref)
 {
   if (irt->ref)
-    ta_iri_free (irt->ref);
+    ta_object_unref (irt->ref);
   irt->ref = ref;
 }
 
@@ -252,7 +252,7 @@ void
 ta_atom_in_reply_to_set_href (ta_atom_in_reply_to_t *irt, ta_iri_t *href)
 {
   if (irt->href)
-    ta_iri_free (irt->href);
+    ta_object_unref (irt->href);
   irt->href = href;
 }
 
@@ -266,7 +266,7 @@ void
 ta_atom_in_reply_to_set_source (ta_atom_in_reply_to_t *irt, ta_iri_t *source)
 {
   if (irt->source)
-    ta_iri_free (irt->source);
+    ta_object_unref (irt->source);
   irt->source = source;
 }
 
@@ -371,7 +371,7 @@ void
 ta_atom_link_free (ta_atom_link_t *link)
 {
   if (link->href)
-    ta_iri_free (link->href);
+    ta_object_unref (link->href);
   if (link->title)
     free (link->title);
   if (link->rel)
@@ -421,7 +421,7 @@ ta_atom_link_set_href (ta_atom_link_t *link,
                        ta_iri_t      *href)
 {
   if (link->href)
-    ta_iri_free (link->href);
+    ta_object_unref (link->href);
   link->href = href;
 }
 
@@ -507,7 +507,7 @@ ta_atom_content_free (ta_atom_content_t *content)
   if (content->content)
     free (content->content);
   if (content->src)
-    ta_iri_free (content->src);
+    ta_object_unref (content->src);
   free (content);
 }
 
@@ -576,7 +576,7 @@ ta_atom_content_set_src (ta_atom_content_t *content,
 {
   if (content->src)
     {
-      ta_iri_free (content->src);
+      ta_object_unref (content->src);
       if (src != NULL && content->content)
         {
           free (content->content);
@@ -604,7 +604,7 @@ ta_atom_content_set_content (ta_atom_content_t *content,
       free (content->content);
       if (text != NULL && content->src)
         {
-          ta_iri_free (content->src);
+          ta_object_unref (content->src);
           content->src = NULL;
         }
     }
@@ -639,7 +639,7 @@ ta_atom_person_free (ta_atom_person_t *person)
   if (person->email)
     free (person->email);
   if (person->iri)
-    ta_iri_free (person->iri);
+    ta_object_unref (person->iri);
   if (person->ext_elements)
     _ta_atom_free_ext_elements (person->ext_elements);
   free (person);
@@ -721,7 +721,7 @@ ta_atom_person_set_iri (ta_atom_person_t *person,
                         ta_iri_t        *iri)
 {
   if (person->iri)
-    ta_iri_free (person->iri);
+    ta_object_unref (person->iri);
   person->iri = iri;
 }
 
@@ -767,7 +767,7 @@ ta_atom_category_free (ta_atom_category_t  *category)
   if (category->label)
     free (category->label);
   if (category->scheme)
-    ta_iri_free (category->scheme);
+    ta_object_unref (category->scheme);
   free (category);
 }
 
@@ -840,7 +840,7 @@ ta_atom_category_set_scheme (ta_atom_category_t *category,
                              ta_iri_t          *scheme)
 {
   if (category->scheme)
-    ta_iri_free (category->scheme);
+    ta_object_unref (category->scheme);
   if (scheme)
     category->scheme = scheme;
   else
@@ -936,7 +936,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
       entry->error = ta_error_new ();
       ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR, "ParsingError",
                          "Invalid <id> iri");
-      ta_iri_free (eid);
+      ta_object_unref (eid);
       return 0;
     }
   title = iks_find_cdata (ik, "title");
@@ -1033,7 +1033,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
               ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
                                  "ParsingError",
                                  "Invalid iri in content src attribute");
-              ta_iri_free (srci);
+              ta_object_unref (srci);
               ta_atom_content_free (ct);
               return 0;
             }
@@ -1081,7 +1081,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
               ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
                                  "ParsingError",
                                  "Author with an invalid iri in uri field");
-              ta_iri_free (iri);
+              ta_object_unref (iri);
               return 0;
             }
           author = ta_atom_person_new (name, email, iri);
@@ -1117,7 +1117,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
                                      "ParsingError",
                                      "Category scheme attribute is not a "
                                      "valid iri");
-                  ta_iri_free (iri);
+                  ta_object_unref (iri);
                   return 0;
                 }
             }
@@ -1222,7 +1222,7 @@ ta_atom_entry_free (ta_atom_entry_t *entry)
   if (entry->title)
     free (entry->title);
   if (entry->id)
-    ta_iri_free (entry->id);
+    ta_object_unref (entry->id);
   if (entry->rights)
     free (entry->rights);
   if (entry->authors)
@@ -1381,7 +1381,7 @@ void
 ta_atom_entry_set_id (ta_atom_entry_t *entry, ta_iri_t *id)
 {
   if (entry->id)
-    ta_iri_free (entry->id);
+    ta_object_unref (entry->id);
   entry->id = id;
 }
 
@@ -1656,7 +1656,7 @@ ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik)
       feed->error = ta_error_new ();
       ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR, "ParsingError",
                          "Invalid <id> iri");
-      ta_iri_free (eid);
+      ta_object_unref (eid);
       return 0;
     }
   title = iks_find_cdata (ik, "title");
@@ -1719,7 +1719,7 @@ ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik)
               ta_error_set_full (feed->error, TA_ATOM_PARSING_ERROR,
                                  "ParsingError",
                                  "Author with an invalid iri in uri field");
-              ta_iri_free (iri);
+              ta_object_unref (iri);
               return 0;
             }
           author = ta_atom_person_new (name, email, iri);
@@ -1755,7 +1755,7 @@ ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik)
                                      "ParsingError",
                                      "Category scheme attribute is not a "
                                      "valid iri");
-                  ta_iri_free (iri);
+                  ta_object_unref (iri);
                   return 0;
                 }
             }
@@ -1784,7 +1784,7 @@ void
 ta_atom_feed_free (ta_atom_feed_t *feed)
 {
   if (feed->id)
-    ta_iri_free (feed->id);
+    ta_object_unref (feed->id);
   if (feed->title)
     free (feed->title);
   if (feed->authors)
@@ -1887,7 +1887,7 @@ void
 ta_atom_feed_set_id (ta_atom_feed_t *feed, ta_iri_t *id)
 {
   if (feed->id)
-    ta_iri_free (feed->id);
+    ta_object_unref (feed->id);
   feed->id = id;
 }
 

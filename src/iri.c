@@ -26,23 +26,7 @@
 #include <taningia/iri.h>
 #include <taningia/error.h>
 
-ta_iri_t *
-ta_iri_new (void)
-{
-  ta_iri_t *iri;
-  iri = malloc (sizeof (ta_iri_t));
-  iri->scheme = NULL;
-  iri->user = NULL;
-  iri->host = NULL;
-  iri->port = 0;
-  iri->path = NULL;
-  iri->query = NULL;
-  iri->fragment = NULL;
-  iri->error = NULL;
-  return iri;
-}
-
-void
+static void
 ta_iri_free (ta_iri_t *iri)
 {
   if (iri->scheme)
@@ -60,6 +44,29 @@ ta_iri_free (ta_iri_t *iri)
   if (iri->error)
     ta_object_unref (iri->error);
   free (iri);
+}
+
+void
+ta_iri_init (ta_iri_t *iri)
+{
+  ta_object_init (TA_CAST_OBJECT (iri), (ta_free_func_t) ta_iri_free);
+  iri->scheme = NULL;
+  iri->user = NULL;
+  iri->host = NULL;
+  iri->port = 0;
+  iri->path = NULL;
+  iri->query = NULL;
+  iri->fragment = NULL;
+  iri->error = NULL;
+}
+
+ta_iri_t *
+ta_iri_new (void)
+{
+  ta_iri_t *iri;
+  iri = malloc (sizeof (ta_iri_t));
+  ta_iri_init (iri);
+  return iri;
 }
 
 ta_error_t *
@@ -494,22 +501,9 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
   return 1;
 }
 
-ta_tag_t *
-ta_tag_new (void)
-{
-  ta_tag_t *tag;
-  tag = malloc (sizeof (ta_tag_t));
-  tag->parent = ta_iri_new ();
-  tag->authority = NULL;
-  tag->date = NULL;
-  tag->specific = NULL;
-  return tag;
-}
-
-void
+static void
 ta_tag_free (ta_tag_t *tag)
 {
-  ta_iri_free (TA_IRI (tag));
   if (tag->authority)
     free (tag->authority);
   if (tag->date)
@@ -519,6 +513,25 @@ ta_tag_free (ta_tag_t *tag)
   free (tag);
 }
 
+void
+ta_tag_init (ta_tag_t *tag)
+{
+  ta_object_init (TA_CAST_OBJECT (tag), (ta_free_func_t) ta_tag_free);
+  ta_iri_init (TA_CAST_IRI (tag));
+  tag->authority = NULL;
+  tag->date = NULL;
+  tag->specific = NULL;
+}
+
+ta_tag_t *
+ta_tag_new (void)
+{
+  ta_tag_t *tag;
+  tag = malloc (sizeof (ta_tag_t));
+  ta_tag_init (tag);
+  return tag;
+}
+
 /* This helper function will be called at the end of all setters that
  * change the iri path in some way to update it in the base class and
  * make it possible to use ta_iri_to_string to our tag type.
@@ -526,7 +539,7 @@ ta_tag_free (ta_tag_t *tag)
 static void
 _ta_tag_update_path (ta_tag_t *tag)
 {
-  ta_iri_t *parent = TA_IRI (tag);
+  ta_iri_t *parent = TA_CAST_IRI (tag);
   if (parent->path)
     free (parent->path);
   parent->path = malloc (strlen (tag->authority) +
@@ -588,12 +601,12 @@ ta_tag_set_from_string (ta_tag_t *tag, const char *tagstr)
   /* The rest of our function will use parameters set by the next
    * line. If something wrong happens, user will need to handle this
    * error like any other error caused by the tag parsing*/
-  if (!ta_iri_set_from_string (TA_IRI (tag), tagstr))
+  if (!ta_iri_set_from_string (TA_CAST_IRI (tag), tagstr))
     return 0;
   else
     {
       const char *path, *date, *specific;
-      path = ta_iri_get_path (TA_IRI (tag));
+      path = ta_iri_get_path (TA_CAST_IRI (tag));
 
       /* Looking for the first separator.
        *
@@ -604,7 +617,7 @@ ta_tag_set_from_string (ta_tag_t *tag, const char *tagstr)
       if (!date)
         {
           ta_iri_t *parent;
-          parent = TA_IRI (tag);
+          parent = TA_CAST_IRI (tag);
           if (parent->error)
             ta_object_unref (parent->error);
           parent->error = ta_error_new ();
@@ -619,7 +632,7 @@ ta_tag_set_from_string (ta_tag_t *tag, const char *tagstr)
       if (!specific)
         {
           ta_iri_t *parent;
-          parent = TA_IRI (tag);
+          parent = TA_CAST_IRI (tag);
           if (parent->error)
             ta_object_unref (parent->error);
           parent->error = ta_error_new ();

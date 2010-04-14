@@ -47,7 +47,7 @@ test_iri (void)
   assert (!strcmp (ta_iri_string,
                    "http://lincoln@localhost:80/hello/there"));
   free (ta_iri_string);
-  ta_iri_free (iri);
+  ta_object_unref (iri);
 }
 
 void
@@ -72,7 +72,7 @@ build_iri (const char *iristr)
           printf ("built IRI:  %s\n", mystr);
           free (mystr);
         }
-      ta_iri_free (myiri);
+      ta_object_unref (myiri);
     }
   else
     {
@@ -98,16 +98,16 @@ test_tag (void)
   if (ta_tag_set_from_string (tag, "tag:minaslivre.org,2009-10:/web/blah?a=1#blah=2"))
     {
       char *res = NULL;
-      printf ("scheme:     %s\n", ta_iri_get_scheme (TA_IRI (tag)));
-      printf ("path:       %s\n", ta_iri_get_path (TA_IRI (tag)));
-      printf ("query:      %s\n", ta_iri_get_query (TA_IRI (tag)));
-      printf ("fragment:   %s\n", ta_iri_get_fragment (TA_IRI (tag)));
+      printf ("scheme:     %s\n", ta_iri_get_scheme (TA_CAST_IRI (tag)));
+      printf ("path:       %s\n", ta_iri_get_path (TA_CAST_IRI (tag)));
+      printf ("query:      %s\n", ta_iri_get_query (TA_CAST_IRI (tag)));
+      printf ("fragment:   %s\n", ta_iri_get_fragment (TA_CAST_IRI (tag)));
       printf ("authority:  %s\n", ta_tag_get_authority (tag));
       printf ("date:       %s\n", ta_tag_get_date (tag));
       printf ("specific:   %s\n", ta_tag_get_specific (tag));
 
       /* Result */
-      res = ta_iri_to_string (TA_IRI (tag));
+      res = ta_iri_to_string (TA_CAST_IRI (tag));
       if (res)
         {
           printf ("regenerated uri: %s\n\n", res);
@@ -117,12 +117,12 @@ test_tag (void)
   else
     {
       ta_error_t *error;
-      error = ta_iri_get_error (TA_IRI (tag));
+      error = ta_iri_get_error (TA_CAST_IRI (tag));
       fprintf (stderr, "%s: %s\n",
                ta_error_get_name (error),
                ta_error_get_message (error));
     }
-  ta_tag_free (tag);
+  ta_object_unref (tag);
 }
 
 int

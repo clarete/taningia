@@ -24,9 +24,10 @@
 extern "C" {
 #endif
 
+#include <taningia/object.h>
 #include <taningia/error.h>
 
-#define TA_IRI(o) (o->parent)
+#define TA_CAST_IRI(o) ((ta_iri_t *) (o))
 
 /**
  * @name: ta_iri
@@ -39,6 +40,7 @@ extern "C" {
  */
 typedef struct
 {
+  ta_object_t parent;
   char *scheme;
   char *user;
   char *host;
@@ -60,7 +62,7 @@ typedef struct
  */
 typedef struct
 {
-  ta_iri_t *parent;
+  ta_iri_t parent;
   char *authority;
   char *date;
   char *specific;
@@ -78,10 +80,10 @@ typedef enum {
 ta_iri_t *ta_iri_new (void);
 
 /**
- * @name: ta_iri::free
- * @type: destructor
+ * @name: ta_iri::init
+ * @type: initializer
  */
-void ta_iri_free (ta_iri_t *iri);
+void ta_iri_init (ta_iri_t *iri);
 
 /**
  * @name: ta_iri::get_scheme
@@ -197,10 +199,10 @@ int ta_iri_set_from_string (ta_iri_t *iri, const char *iristr);
 ta_tag_t *ta_tag_new (void);
 
 /**
- * @name: ta_tag::free
- * @type: destructor
+ * @name: ta_tag::init
+ * @type: initializer
  */
-void ta_tag_free (ta_tag_t *tag);
+void ta_tag_init (ta_tag_t *tag);
 
 /**
  * @name: ta_tag::get_authority
