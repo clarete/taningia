@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+#define TA_CAST_LOG(o) ((ta_log_t *) (o))
+
 #define MAX_DATE_SIZE 64
 
 typedef struct _ta_log ta_log_t;
@@ -56,13 +58,13 @@ struct _ta_log
 
 /**
  * @name: ta_log::new
- * @type: allocator
+ * @type: constructor
  */
 ta_log_t *ta_log_new (const char *domain_name);
 
 /**
  * @name: ta_log::init
- * @type: constructor
+ * @type: initializer
  */
 void ta_log_init (ta_log_t *log, const char *domain_name);
 
