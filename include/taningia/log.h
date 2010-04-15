@@ -32,19 +32,16 @@ extern "C" {
 
 typedef struct _ta_log ta_log_t;
 
-typedef enum _ta_log_level ta_log_level_t;
-
-typedef int *(*ta_log_handler_func_t) (ta_log_t *, ta_log_level_t,
-                                       const char *, void *);
-
-enum _ta_log_level {
+typedef enum {
   TA_LOG_DEBUG,
   TA_LOG_INFO,
   TA_LOG_WARN,
   TA_LOG_ERROR,
   TA_LOG_CRITICAL
-};
+} ta_log_level_t;
 
+typedef int *(*ta_log_handler_func_t) (ta_log_t *, ta_log_level_t,
+                                       const char *, void *);
 struct _ta_log
 {
   ta_object_t parent;
