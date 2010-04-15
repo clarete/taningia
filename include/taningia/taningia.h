@@ -20,6 +20,7 @@
 #ifndef _TANINGIA_H_
 #define _TANINGIA_H_
 
+#include "object.h"
 #include "atom.h"
 #include "error.h"
 #include "iri.h"
