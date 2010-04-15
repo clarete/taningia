@@ -26,6 +26,7 @@ extern "C" {
 
 #include <time.h>
 #include <iksemel.h>
+#include <taningia/object.h>
 #include <taningia/iri.h>
 #include <taningia/error.h>
 #include <taningia/list.h>
@@ -39,8 +40,22 @@ typedef struct _ta_atom_category_t     ta_atom_category_t;
 typedef struct _ta_atom_person_t       ta_atom_person_t;
 typedef struct _ta_atom_content_t      ta_atom_content_t;
 typedef struct _ta_atom_link_t         ta_atom_link_t;
-typedef struct _ta_atom_simple_element_t  ta_atom_simple_element_t;
-typedef struct _ta_atom_in_reply_to_t  ta_atom_in_reply_to_t;
+
+typedef struct
+{
+  ta_object_t parent;
+  char *name;
+  char *value;
+} ta_atom_simple_element_t;
+
+typedef struct
+{
+  ta_object_t parent;
+  ta_iri_t *ref;
+  ta_iri_t *href;
+  ta_iri_t *source;
+  char *type;
+} ta_atom_in_reply_to_t;
 
 typedef enum {
   TA_ATOM_LOAD_ERROR,
@@ -57,10 +72,11 @@ ta_atom_simple_element_t *ta_atom_simple_element_new (const char *name,
                                                       const char *value);
 
 /**
- * @name: ta_atom_simple_element::free
- * @type: destructor
+ * @name: ta_atom_simple_element::init
+ * @type: initializer
  */
-void ta_atom_simple_element_free (ta_atom_simple_element_t *see);
+void ta_atom_simple_element_init (ta_atom_simple_element_t *see,
+                                  const char *name, const char *value);
 
 /**
  * @name: ta_atom_simple_element::to_iks
@@ -456,10 +472,11 @@ void ta_atom_category_set_scheme (ta_atom_category_t *category,
 ta_atom_in_reply_to_t *ta_atom_in_reply_to_new (ta_iri_t *ref);
 
 /**
- * @name: ta_atom_in_reply_to::free
- * @type: destructor
+ * @name: ta_atom_in_reply_to::init
+ * @type: initializer
  */
-void ta_atom_in_reply_to_free (ta_atom_in_reply_to_t *irt);
+void ta_atom_in_reply_to_init (ta_atom_in_reply_to_t *irt,
+                               ta_iri_t *ref);
 
 /**
  * @name: ta_atom_in_reply_to::to_iks

@@ -30,20 +30,6 @@
 #include <taningia/error.h>
 #include <taningia/list.h>
 
-struct _ta_atom_in_reply_to_t
-{
-  ta_iri_t *ref;
-  ta_iri_t *href;
-  ta_iri_t *source;
-  char *type;
-};
-
-struct _ta_atom_simple_element_t
-{
-  char *name;
-  char *value;
-};
-
 struct _ta_atom_link_t
 {
   ta_iri_t *href;
@@ -159,26 +145,14 @@ _ta_atom_free_ext_elements (ta_list_t *list)
     {
       tmp = node;
       node = node->next;
-      ta_atom_simple_element_free (tmp->data);
+      ta_object_unref (tmp->data);
       free (tmp);
     }
 }
 
 /* ta_atom_in_reply_to_t */
 
-ta_atom_in_reply_to_t *
-ta_atom_in_reply_to_new (ta_iri_t *ref)
-{
-  ta_atom_in_reply_to_t *irt;
-  irt = malloc (sizeof (ta_atom_in_reply_to_t));
-  irt->ref = ref;
-  irt->href = NULL;
-  irt->source = NULL;
-  irt->type = NULL;
-  return irt;
-}
-
-void
+static void
 ta_atom_in_reply_to_free (ta_atom_in_reply_to_t *irt)
 {
   if (irt->ref)
@@ -190,6 +164,26 @@ ta_atom_in_reply_to_free (ta_atom_in_reply_to_t *irt)
   if (irt->type)
     free (irt->type);
   free (irt);
+}
+
+void
+ta_atom_in_reply_to_init (ta_atom_in_reply_to_t *irt, ta_iri_t *ref)
+{
+  ta_object_init (TA_CAST_OBJECT (irt),
+                  (ta_free_func_t) ta_atom_in_reply_to_free);
+  irt->ref = ref;
+  irt->href = NULL;
+  irt->source = NULL;
+  irt->type = NULL;
+}
+
+ta_atom_in_reply_to_t *
+ta_atom_in_reply_to_new (ta_iri_t *ref)
+{
+  ta_atom_in_reply_to_t *irt;
+  irt = malloc (sizeof (ta_atom_in_reply_to_t));
+  ta_atom_in_reply_to_init (irt, ref);
+  return irt;
 }
 
 iks *
@@ -286,17 +280,7 @@ ta_atom_in_reply_to_set_type (ta_atom_in_reply_to_t *irt, const char *type)
 
 /* ta_atom_simple_element_t */
 
-ta_atom_simple_element_t *
-ta_atom_simple_element_new (const char *name, const char *value)
-{
-  ta_atom_simple_element_t *see;
-  see = malloc (sizeof (ta_atom_simple_element_t));
-  see->name = strdup (name);
-  see->value = strdup (value);
-  return see;
-}
-
-void
+static void
 ta_atom_simple_element_free (ta_atom_simple_element_t *see)
 {
   if (see->name)
@@ -304,6 +288,26 @@ ta_atom_simple_element_free (ta_atom_simple_element_t *see)
   if (see->value)
     free (see->value);
   free (see);
+}
+
+void
+ta_atom_simple_element_init (ta_atom_simple_element_t *see,
+                             const char *name,
+                             const char *value)
+{
+  ta_object_init (TA_CAST_OBJECT (see),
+                  (ta_free_func_t) ta_atom_simple_element_free);
+  see->name = strdup (name);
+  see->value = strdup (value);
+}
+
+ta_atom_simple_element_t *
+ta_atom_simple_element_new (const char *name, const char *value)
+{
+  ta_atom_simple_element_t *see;
+  see = malloc (sizeof (ta_atom_simple_element_t));
+  ta_atom_simple_element_init (see, name, value);
+  return see;
 }
 
 iks *
@@ -1180,7 +1184,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
                                      "InReplyTo element with an invalid href "
                                      "attribute: %s",
                                      error_message);
-                  ta_atom_in_reply_to_free (irt);
+                  ta_object_unref (irt);
                 }
               else
                 ta_atom_in_reply_to_set_href (irt, iri_href);
@@ -1203,7 +1207,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
                                      "InReplyTo element with an invalid "
                                      "source attribute: %s",
                                      error_message);
-                  ta_atom_in_reply_to_free (irt);
+                  ta_object_unref (irt);
                 }
               else
                 ta_atom_in_reply_to_set_source (irt, iri_source);
@@ -1563,7 +1567,7 @@ ta_atom_entry_del_inreplyto (ta_atom_entry_t *entry)
 {
   ta_list_t *tmp;
   for (tmp = entry->in_reply_to; tmp; tmp = tmp->next)
-    ta_atom_in_reply_to_free (tmp->data);
+    ta_object_unref (tmp->data);
   ta_list_free (entry->in_reply_to);
   entry->ext_elements = NULL;
 }
