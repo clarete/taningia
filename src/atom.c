@@ -30,38 +30,6 @@
 #include <taningia/error.h>
 #include <taningia/list.h>
 
-struct _ta_atom_link_t
-{
-  ta_iri_t *href;
-  char *title;
-  char *rel;
-  char *type;
-  char *length;
-};
-
-struct _ta_atom_content_t
-{
-  char *type;
-  char *content;
-  int   len;
-  ta_iri_t *src;
-};
-
-struct _ta_atom_person_t
-{
-  char *name;
-  char *email;
-  ta_iri_t *iri;
-  ta_list_t *ext_elements;
-};
-
-struct _ta_atom_category_t
-{
-  char *label;
-  char *term;
-  ta_iri_t *scheme;
-};
-
 struct _ta_atom_entry_t
 {
   ta_iri_t         *id;
@@ -358,20 +326,7 @@ ta_atom_simple_element_set_value (ta_atom_simple_element_t *see,
 
 /* ta_atom_link_t */
 
-ta_atom_link_t *
-ta_atom_link_new (ta_iri_t *href)
-{
-  ta_atom_link_t *lnk;
-  lnk = malloc (sizeof (ta_atom_link_t));
-  lnk->href = href;
-  lnk->title = NULL;
-  lnk->rel = NULL;
-  lnk->type = NULL;
-  lnk->length = NULL;
-  return lnk;
-}
-
-void
+static void
 ta_atom_link_free (ta_atom_link_t *link)
 {
   if (link->href)
@@ -385,6 +340,26 @@ ta_atom_link_free (ta_atom_link_t *link)
   if (link->length)
     free (link->length);
   free (link);
+}
+
+void
+ta_atom_link_init (ta_atom_link_t *lnk, ta_iri_t *href)
+{
+  ta_object_init (TA_CAST_OBJECT (lnk), (ta_free_func_t) ta_atom_link_free);
+  lnk->href = href;
+  lnk->title = NULL;
+  lnk->rel = NULL;
+  lnk->type = NULL;
+  lnk->length = NULL;
+}
+
+ta_atom_link_t *
+ta_atom_link_new (ta_iri_t *href)
+{
+  ta_atom_link_t *lnk;
+  lnk = malloc (sizeof (ta_atom_link_t));
+  ta_atom_link_init (lnk, href);
+  return lnk;
 }
 
 iks *
@@ -491,19 +466,7 @@ ta_atom_link_set_length (ta_atom_link_t  *link,
 
 /* ta_atom_content_t */
 
-ta_atom_content_t *
-ta_atom_content_new (const char *type)
-{
-  ta_atom_content_t *ct;
-  ct = malloc (sizeof (ta_atom_content_t));
-  ct->type = strdup (type ? type : "text");
-  ct->content = NULL;
-  ct->src = NULL;
-  ct->len = 0;
-  return ct;
-}
-
-void
+static void
 ta_atom_content_free (ta_atom_content_t *content)
 {
   if (content->type)
@@ -513,6 +476,25 @@ ta_atom_content_free (ta_atom_content_t *content)
   if (content->src)
     ta_object_unref (content->src);
   free (content);
+}
+
+void
+ta_atom_content_init (ta_atom_content_t *ct, const char *type)
+{
+  ta_object_init (TA_CAST_OBJECT (ct), (ta_free_func_t) ta_atom_content_free);
+  ct->type = strdup (type ? type : "text");
+  ct->content = NULL;
+  ct->src = NULL;
+  ct->len = 0;
+}
+
+ta_atom_content_t *
+ta_atom_content_new (const char *type)
+{
+  ta_atom_content_t *ct;
+  ct = malloc (sizeof (ta_atom_content_t));
+  ta_atom_content_init (ct, type);
+  return ct;
 }
 
 iks *
@@ -621,21 +603,7 @@ ta_atom_content_set_content (ta_atom_content_t *content,
 
 /* ta_atom_person_t */
 
-ta_atom_person_t *
-ta_atom_person_new (const char *name,
-                    const char *email,
-                    ta_iri_t       *iri)
-{
-  ta_atom_person_t *person;
-  person = malloc (sizeof (ta_atom_person_t));
-  person->name = strdup (name);
-  person->email = email ? strdup (email) : NULL;
-  person->iri = iri;
-  person->ext_elements = NULL;
-  return person;
-}
-
-void
+static void
 ta_atom_person_free (ta_atom_person_t *person)
 {
   if (person->name)
@@ -647,6 +615,31 @@ ta_atom_person_free (ta_atom_person_t *person)
   if (person->ext_elements)
     _ta_atom_free_ext_elements (person->ext_elements);
   free (person);
+}
+
+void
+ta_atom_person_init (ta_atom_person_t *person,
+                     const char *name,
+                     const char *email,
+                     ta_iri_t *iri)
+{
+  ta_object_init (TA_CAST_OBJECT (person),
+                  (ta_free_func_t) ta_atom_person_free);
+  person->name = strdup (name);
+  person->email = email ? strdup (email) : NULL;
+  person->iri = iri;
+  person->ext_elements = NULL;
+}
+
+ta_atom_person_t *
+ta_atom_person_new (const char *name,
+                    const char *email,
+                    ta_iri_t *iri)
+{
+  ta_atom_person_t *person;
+  person = malloc (sizeof (ta_atom_person_t));
+  ta_atom_person_init (person, name, email, iri);
+  return person;
 }
 
 iks *
@@ -752,19 +745,8 @@ ta_atom_person_get_see (ta_atom_person_t *person)
 
 /* ta_atom_category_t */
 
-ta_atom_category_t *
-ta_atom_category_new (const char *term, const char *label, ta_iri_t *scheme)
-{
-  ta_atom_category_t *cat;
-  cat = malloc (sizeof (ta_atom_category_t));
-  cat->term = strdup (term);
-  cat->label = label ? strdup (label) : NULL;
-  cat->scheme = scheme ? scheme : NULL;
-  return cat;
-}
-
-void
-ta_atom_category_free (ta_atom_category_t  *category)
+static void
+ta_atom_category_free (ta_atom_category_t *category)
 {
   if (category->term)
     free (category->term);
@@ -773,6 +755,28 @@ ta_atom_category_free (ta_atom_category_t  *category)
   if (category->scheme)
     ta_object_unref (category->scheme);
   free (category);
+}
+
+void
+ta_atom_category_init (ta_atom_category_t *cat,
+                       const char *term,
+                       const char *label,
+                       ta_iri_t *scheme)
+{
+  ta_object_init (TA_CAST_OBJECT (cat),
+                  (ta_free_func_t) ta_atom_category_free);
+  cat->term = strdup (term);
+  cat->label = label ? strdup (label) : NULL;
+  cat->scheme = scheme ? scheme : NULL;
+}
+
+ta_atom_category_t *
+ta_atom_category_new (const char *term, const char *label, ta_iri_t *scheme)
+{
+  ta_atom_category_t *cat;
+  cat = malloc (sizeof (ta_atom_category_t));
+  ta_atom_category_init (cat, term, label, scheme);
+  return cat;
 }
 
 iks *
@@ -1038,7 +1042,7 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
                                  "ParsingError",
                                  "Invalid iri in content src attribute");
               ta_object_unref (srci);
-              ta_atom_content_free (ct);
+              ta_object_unref (ct);
               return 0;
             }
           ta_atom_content_set_src (ct, srci);
@@ -1238,7 +1242,7 @@ ta_atom_entry_free (ta_atom_entry_t *entry)
   if (entry->summary)
     free (entry->summary);
   if (entry->content)
-    ta_atom_content_free (entry->content);
+    ta_object_unref (entry->content);
   if (entry->error)
     ta_object_unref (entry->error);
   free (entry);
@@ -1448,7 +1452,7 @@ ta_atom_entry_del_authors (ta_atom_entry_t *entry)
 {
   ta_list_t *tmp;
   for (tmp = entry->authors; tmp; tmp = tmp->next)
-    ta_atom_person_free (tmp->data);
+    ta_object_unref (tmp->data);
   ta_list_free (entry->authors);
   entry->authors = NULL;
 }
@@ -1471,7 +1475,7 @@ ta_atom_entry_del_categories (ta_atom_entry_t *entry)
 {
   ta_list_t *tmp;
   for (tmp = entry->categories; tmp; tmp = tmp->next)
-    ta_atom_category_free (tmp->data);
+    ta_object_unref (tmp->data);
   ta_list_free (entry->categories);
   entry->categories = NULL;
 }
@@ -1494,7 +1498,7 @@ ta_atom_entry_del_links (ta_atom_entry_t *entry)
 {
   ta_list_t *tmp;
   for (tmp = entry->links; tmp; tmp = tmp->next)
-    ta_atom_link_free (tmp->data);
+    ta_object_unref (tmp->data);
   ta_list_free (entry->links);
   entry->links = NULL;
 }
@@ -1528,7 +1532,7 @@ ta_atom_entry_set_content (ta_atom_entry_t   *entry,
                            ta_atom_content_t *content)
 {
   if (entry->content)
-    ta_atom_content_free (entry->content);
+    ta_object_unref (entry->content);
   entry->content = content;
 }
 
@@ -1929,7 +1933,7 @@ ta_atom_feed_del_authors (ta_atom_feed_t *feed)
     {
       tmp = node;
       node = node->next;
-      ta_atom_person_free (tmp->data);
+      ta_object_unref (tmp->data);
       free (tmp);
     }
   feed->authors = NULL;
@@ -1953,7 +1957,7 @@ ta_atom_feed_del_categories (ta_atom_feed_t *feed)
 {
   ta_list_t *tmp;
   for (tmp = feed->categories; tmp; tmp = tmp->next)
-    ta_atom_category_free (tmp->data);
+    ta_object_unref (tmp->data);
   ta_list_free (feed->categories);
   feed->categories = NULL;
 }
@@ -1975,7 +1979,7 @@ ta_atom_feed_del_links (ta_atom_feed_t *feed)
 {
   ta_list_t *tmp;
   for (tmp = feed->links; tmp; tmp = tmp->next)
-    ta_atom_link_free (tmp->data);
+    ta_object_unref (tmp->data);
   ta_list_free (feed->links);
   feed->links = NULL;
 }

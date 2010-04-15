@@ -49,7 +49,7 @@
  * destructor. That is a function named with the class full name,
  * separated by underscores and with the `_free' sufix.
  *
- *   >>> ta_atom_person_free (person);
+ *   >>> ta_object_unref (person);
  *
  * So, that's easy, all the rest of the API follows these
  * standards. All of the available objects has a constructor with the
@@ -223,7 +223,7 @@ simple_extension_example (void)
   /* like in other places, freeing an instance that holds references
    * for other objects is enough. You should not try to free state,
    * city or uri vars */
-  ta_atom_person_free (person);
+  ta_object_unref (person);
 }
 
 int

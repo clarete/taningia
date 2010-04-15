@@ -36,10 +36,6 @@ extern "C" {
 
 typedef struct _ta_atom_feed_t         ta_atom_feed_t;
 typedef struct _ta_atom_entry_t        ta_atom_entry_t;
-typedef struct _ta_atom_category_t     ta_atom_category_t;
-typedef struct _ta_atom_person_t       ta_atom_person_t;
-typedef struct _ta_atom_content_t      ta_atom_content_t;
-typedef struct _ta_atom_link_t         ta_atom_link_t;
 
 typedef struct
 {
@@ -56,6 +52,42 @@ typedef struct
   ta_iri_t *source;
   char *type;
 } ta_atom_in_reply_to_t;
+
+typedef struct
+{
+  ta_object_t parent;
+  ta_iri_t *href;
+  char *title;
+  char *rel;
+  char *type;
+  char *length;
+} ta_atom_link_t;
+
+typedef struct
+{
+  ta_object_t parent;
+  char *type;
+  char *content;
+  int len;
+  ta_iri_t *src;
+} ta_atom_content_t;
+
+typedef struct
+{
+  ta_object_t parent;
+  char *name;
+  char *email;
+  ta_iri_t *iri;
+  ta_list_t *ext_elements;
+} ta_atom_person_t;
+
+typedef struct
+{
+  ta_object_t parent;
+  char *label;
+  char *term;
+  ta_iri_t *scheme;
+} ta_atom_category_t;
 
 typedef enum {
   TA_ATOM_LOAD_ERROR,
@@ -130,10 +162,10 @@ void ta_atom_simple_element_set_value (ta_atom_simple_element_t *sse,
 ta_atom_link_t *ta_atom_link_new (ta_iri_t *href);
 
 /**
- * @name: ta_atom_link::free
- * @type: destructor
+ * @name: ta_atom_link::init
+ * @type: initializer
  */
-void ta_atom_link_free (ta_atom_link_t *link);
+void ta_atom_link_init (ta_atom_link_t *link, ta_iri_t *href);
 
 /**
  * @name: ta_atom_link::to_iks
@@ -221,10 +253,10 @@ void ta_atom_link_set_length (ta_atom_link_t *link, const char *length);
 ta_atom_content_t *ta_atom_content_new (const char *type);
 
 /**
- * @name: ta_atom_content::free
- * @type: destructor
+ * @name: ta_atom_content::init
+ * @type: initializer
  */
-void ta_atom_content_free (ta_atom_content_t *content);
+void ta_atom_content_init (ta_atom_content_t *content, const char *type);
 
 /**
  * @name: ta_atom_content::to_iks
@@ -290,14 +322,18 @@ void ta_atom_content_set_content (ta_atom_content_t *content, const char *text,
  * @param email (optional): Person's email address.
  * @param iri (optional): The iri of the person's website.
  */
-ta_atom_person_t *ta_atom_person_new (const char *name, const char *email,
+ta_atom_person_t *ta_atom_person_new (const char *name,
+                                      const char *email,
                                       ta_iri_t *iri);
 
 /**
- * @name: ta_atom_person::free
- * @type: destructor
+ * @name: ta_atom_person::init
+ * @type: initializer
  */
-void ta_atom_person_free (ta_atom_person_t *person);
+void ta_atom_person_init (ta_atom_person_t *person,
+                          const char *name,
+                          const char *email,
+                          ta_iri_t *iri);
 
 /**
  * @name: ta_atom_person::to_iks
@@ -400,10 +436,13 @@ ta_atom_category_t *ta_atom_category_new (const char *term, const char *label,
                                           ta_iri_t *scheme);
 
 /**
- * @name: ta_atom_category::free
- * @type: destructor
+ * @name: ta_atom_category::init
+ * @type: initializer
  */
-void ta_atom_category_free (ta_atom_category_t  *category);
+void ta_atom_category_init (ta_atom_category_t *category,
+                            const char *term,
+                            const char *label,
+                            ta_iri_t *scheme);
 
 /**
  * @name: ta_atom_category::to_iks
