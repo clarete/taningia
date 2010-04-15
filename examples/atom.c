@@ -115,7 +115,7 @@ gen_feed (void)
     {
       /* This frees the already set attributes and the feed object
        * itself. */
-      ta_atom_feed_free (feed);
+      ta_object_unref (feed);
 
       /* Giving some feedback to the user. */
       fprintf (stderr, "Invalid uri: %s: %s\n", ta_error_get_name (error),
@@ -160,7 +160,7 @@ gen_feed (void)
 
   /* The only object that should be freed is the toplevel one. Don't
    * worry about freeing iri's entries or content. */
-  ta_atom_feed_free (feed);
+  ta_object_unref (feed);
   free (feed_string);
   return 0;
 }

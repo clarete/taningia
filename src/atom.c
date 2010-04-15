@@ -30,36 +30,6 @@
 #include <taningia/error.h>
 #include <taningia/list.h>
 
-struct _ta_atom_entry_t
-{
-  ta_iri_t         *id;
-  char         *title;
-  time_t        updated;
-  time_t        published;
-  char         *rights;
-  ta_list_t        *authors;
-  ta_list_t        *categories;
-  ta_list_t        *links;
-  char         *summary;
-  ta_atom_content_t *content;
-  ta_error_t       *error;
-  ta_list_t        *ext_elements;
-  ta_list_t *in_reply_to;
-};
-
-struct _ta_atom_feed_t
-{
-  ta_iri_t   *id;
-  char   *title;
-  time_t  updated;
-  ta_list_t  *authors;
-  ta_list_t  *categories;
-  ta_list_t  *entries;
-  ta_list_t  *links;
-  ta_error_t *error;
-  ta_list_t  *ext_elements;
-};
-
 /* Forward prototypes */
 
 static char   *time_to_iso8601   (time_t t);
@@ -857,11 +827,34 @@ ta_atom_category_set_scheme (ta_atom_category_t *category,
 
 /* ta_atom_entry_t */
 
-ta_atom_entry_t *
-ta_atom_entry_new (const char *title)
+static void
+ta_atom_entry_free (ta_atom_entry_t *entry)
 {
-  ta_atom_entry_t *entry;
-  entry = malloc (sizeof (ta_atom_entry_t));
+  if (entry->title)
+    free (entry->title);
+  if (entry->id)
+    ta_object_unref (entry->id);
+  if (entry->rights)
+    free (entry->rights);
+  if (entry->authors)
+    ta_atom_entry_del_authors (entry);
+  if (entry->categories)
+    ta_atom_entry_del_categories (entry);
+  if (entry->in_reply_to)
+    ta_atom_entry_del_inreplyto (entry);
+  if (entry->summary)
+    free (entry->summary);
+  if (entry->content)
+    ta_object_unref (entry->content);
+  if (entry->error)
+    ta_object_unref (entry->error);
+  free (entry);
+}
+
+void
+ta_atom_entry_init (ta_atom_entry_t *entry, const char *title)
+{
+  ta_object_init (TA_CAST_OBJECT (entry), (ta_free_func_t) ta_atom_entry_free);
   entry->title = title ? strdup (title) : NULL;
   entry->id = NULL;
   entry->updated = time (0);
@@ -874,6 +867,14 @@ ta_atom_entry_new (const char *title)
   entry->summary = NULL;
   entry->content = NULL;
   entry->error = NULL;
+}
+
+ta_atom_entry_t *
+ta_atom_entry_new (const char *title)
+{
+  ta_atom_entry_t *entry;
+  entry = malloc (sizeof (ta_atom_entry_t));
+  ta_atom_entry_init (entry, title);
   return entry;
 }
 
@@ -1224,30 +1225,6 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
   return 1;
 }
 
-void
-ta_atom_entry_free (ta_atom_entry_t *entry)
-{
-  if (entry->title)
-    free (entry->title);
-  if (entry->id)
-    ta_object_unref (entry->id);
-  if (entry->rights)
-    free (entry->rights);
-  if (entry->authors)
-    ta_atom_entry_del_authors (entry);
-  if (entry->categories)
-    ta_atom_entry_del_categories (entry);
-  if (entry->in_reply_to)
-    ta_atom_entry_del_inreplyto (entry);
-  if (entry->summary)
-    free (entry->summary);
-  if (entry->content)
-    ta_object_unref (entry->content);
-  if (entry->error)
-    ta_object_unref (entry->error);
-  free (entry);
-}
-
 ta_error_t *
 ta_atom_entry_get_error (ta_atom_entry_t *entry)
 {
@@ -1584,11 +1561,28 @@ ta_atom_entry_get_inreplyto (ta_atom_entry_t *entry)
 
 /* ta_atom_feed_t */
 
-ta_atom_feed_t *
-ta_atom_feed_new (const char *title)
+static void
+ta_atom_feed_free (ta_atom_feed_t *feed)
 {
-  ta_atom_feed_t *feed;
-  feed = malloc (sizeof (ta_atom_feed_t));
+  if (feed->id)
+    ta_object_unref (feed->id);
+  if (feed->title)
+    free (feed->title);
+  if (feed->authors)
+    ta_atom_feed_del_authors (feed);
+  if (feed->categories)
+    ta_atom_feed_del_categories (feed);
+  if (feed->entries)
+    ta_atom_feed_del_entries (feed);
+  if (feed->error)
+    ta_object_unref (feed->error);
+  free (feed);
+}
+
+void
+ta_atom_feed_init (ta_atom_feed_t *feed, const char *title)
+{
+  ta_object_init (TA_CAST_OBJECT (feed), (ta_free_func_t) ta_atom_feed_free);
   feed->title = title ? strdup (title) : NULL;
   feed->id = NULL;
   feed->updated = time (0);
@@ -1596,6 +1590,14 @@ ta_atom_feed_new (const char *title)
   feed->categories = NULL;
   feed->entries = NULL;
   feed->error = NULL;
+}
+
+ta_atom_feed_t *
+ta_atom_feed_new (const char *title)
+{
+  ta_atom_feed_t *feed;
+  feed = malloc (sizeof (ta_atom_feed_t));
+  ta_atom_feed_init (feed, title);
   return feed;
 }
 
@@ -1779,31 +1781,13 @@ ta_atom_feed_set_from_iks (ta_atom_feed_t *feed, iks *ik)
           ta_atom_entry_set_from_iks (entry, child);
           if ((error = ta_atom_entry_get_error (entry)) != NULL)
             {
-              ta_atom_entry_free (entry);
+              ta_object_unref (entry);
               continue;
             }
           ta_atom_feed_add_entry (feed, entry);
         }
     }
   return 1;
-}
-
-void
-ta_atom_feed_free (ta_atom_feed_t *feed)
-{
-  if (feed->id)
-    ta_object_unref (feed->id);
-  if (feed->title)
-    free (feed->title);
-  if (feed->authors)
-    ta_atom_feed_del_authors (feed);
-  if (feed->categories)
-    ta_atom_feed_del_categories (feed);
-  if (feed->entries)
-    ta_atom_feed_del_entries (feed);
-  if (feed->error)
-    ta_object_unref (feed->error);
-  free (feed);
 }
 
 ta_error_t *
@@ -2005,7 +1989,7 @@ ta_atom_feed_del_entries (ta_atom_feed_t *feed)
     {
       tmp = node;
       node = node->next;
-      ta_atom_entry_free (tmp->data);
+      ta_object_unref (tmp->data);
       free (tmp);
     }
   feed->entries = NULL;

@@ -34,9 +34,6 @@ extern "C" {
 #define TA_ATOM_NS "http://www.w3.org/2005/Atom"
 #define TA_ATOM_THREADING_NS "http://purl.org/syndication/thread/1.0"
 
-typedef struct _ta_atom_feed_t         ta_atom_feed_t;
-typedef struct _ta_atom_entry_t        ta_atom_entry_t;
-
 typedef struct
 {
   ta_object_t parent;
@@ -88,6 +85,38 @@ typedef struct
   char *term;
   ta_iri_t *scheme;
 } ta_atom_category_t;
+
+typedef struct
+{
+  ta_object_t parent;
+  ta_iri_t *id;
+  char *title;
+  time_t updated;
+  time_t published;
+  char *rights;
+  ta_list_t *authors;
+  ta_list_t *categories;
+  ta_list_t *links;
+  char *summary;
+  ta_atom_content_t *content;
+  ta_error_t *error;
+  ta_list_t *ext_elements;
+  ta_list_t *in_reply_to;
+} ta_atom_entry_t;
+
+typedef struct
+{
+  ta_object_t parent;
+  ta_iri_t *id;
+  char *title;
+  time_t updated;
+  ta_list_t *authors;
+  ta_list_t *categories;
+  ta_list_t *entries;
+  ta_list_t *links;
+  ta_error_t *error;
+  ta_list_t *ext_elements;
+} ta_atom_feed_t;
 
 typedef enum {
   TA_ATOM_LOAD_ERROR,
@@ -274,7 +303,7 @@ iks *ta_atom_content_to_iks (ta_atom_content_t *content);
  * This method returns an xml representation of the content
  * instance.
  */
-char *ta_atom_content_to_string (ta_atom_content_t *entry);
+char *ta_atom_content_to_string (ta_atom_content_t *content);
 
 /**
  * @name: ta_atom_content::get_type
@@ -593,10 +622,10 @@ void ta_atom_in_reply_to_set_type (ta_atom_in_reply_to_t *irt,
 ta_atom_entry_t *ta_atom_entry_new (const char *title);
 
 /**
- * @name: ta_atom_entry::free
- * @type: destructor
+ * @name: ta_atom_entry::init
+ * @type: initializer
  */
-void ta_atom_entry_free (ta_atom_entry_t *entry);
+void ta_atom_entry_init (ta_atom_entry_t *entry, const char *title);
 
 /**
  * @name: ta_atom_entry::set_from_file
@@ -887,10 +916,10 @@ void ta_atom_entry_del_inreplyto (ta_atom_entry_t *entry);
 ta_atom_feed_t *ta_atom_feed_new (const char *title);
 
 /**
- * @name: ta_atom_feed::free
- * @type: destructor
+ * @name: ta_atom_feed::init
+ * @type: initializer
  */
-void ta_atom_feed_free (ta_atom_feed_t *feed);
+void ta_atom_feed_init (ta_atom_feed_t *feed, const char *title);
 
 /**
  * @name: ta_atom_feed::set_from_file
