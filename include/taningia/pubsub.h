@@ -28,185 +28,161 @@ extern "C" {
 
 #define TA_PUBSUB_NS "http://jabber.org/protocol/pubsub"
 
-typedef struct _ta_pubsub_t ta_pubsub_t;
-typedef struct _ta_pubsub_node_t ta_pubsub_node_t;
-
 /* -- Pubsub -- */
 
 /**
- * @name: ta_pubsub_new
- * @type: constructor ta_pubsub
- */
-ta_pubsub_t *ta_pubsub_new (const char *from, const char *to);
-
-/**
- * @name: ta_pubsub_free
- * @type: destructor ta_pubsub
- */
-void ta_pubsub_free (ta_pubsub_t *ctx);
-
-/**
- * @name: ta_pubsub_get_node_prefix
- * @type: getter ta_pubusb:node_prefix
- */
-const char *ta_pubsub_get_node_prefix (ta_pubsub_t *ctx);
-
-/**
- * @name: ta_pubsub_set_node_prefix
- * @type: setter ta_pubusb:node_prefix
- */
-void ta_pubsub_set_node_prefix (ta_pubsub_t *ctx, const char *prefix);
-
-/**
  * @name: ta_pubsub_query_features
- * @type: method ta_pubsub
+ * @type: function
  *
  * Build a stanza to be sent to an xmpp server that query for all
  * available pubsub features.
  */
-iks *ta_pubsub_query_features (ta_pubsub_t *ctx);
+iks *ta_pubsub_query_features (const char *from, const char *to);
 
 /**
  * @name: ta_pubsub_query_affiliations
- * @type: method ta_pubsub
+ * @type: function
  *
  * Build a stanza that queries all affiliations in a pubsub service.
  */
-iks *ta_pubsub_query_affiliations (ta_pubsub_t *ctx);
+iks *ta_pubsub_query_affiliations (const char *from, const char *to);
 
 /* -- Pubsub Node -- */
 
 /**
- * @name: ta_pubsub_node_new
- * @type: constructor ta_pubsub_node
- * @param name (optional): Node name
- */
-ta_pubsub_node_t *ta_pubsub_node_new (ta_pubsub_t *ctx, const char *name);
-
-/**
- * @name: ta_pubsub_node_free
- * @type: destructor ta_pubsub_node
- */
-void ta_pubsub_node_free (ta_pubsub_node_t *node);
-
-/**
- * @name: ta_pubsub_node_get_name
- * @type: getter ta_pubsub_node:name
- */
-const char *ta_pubsub_node_get_name (ta_pubsub_node_t *node);
-
-/**
- * @name: ta_pubsub_node_set_name
- * @type: setter ta_pubsub_node:name
- */
-void ta_pubsub_node_set_name (ta_pubsub_node_t *node, const char *name);
-
-/**
  * @name: ta_pubsub_node_query_info
- * @type: method ta_pubsub_node
+ * @type: function
  *
  * Build a stanza to query node info.
  */
-iks *ta_pubsub_node_query_info (ta_pubsub_node_t *node);
+iks *ta_pubsub_node_query_info (const char *from,
+                                const char *to,
+                                const char *node);
 
 /**
  * @name: ta_pubsub_node_subscriptions
- * @type: method ta_pubsub_node
+ * @type: function
  *
  * Build a stanza to request all node subscriptions.
  */
-iks *ta_pubsub_node_subscriptions (ta_pubsub_node_t *node);
+iks *ta_pubsub_node_query_subscriptions (const char *from,
+                                         const char *to,
+                                         const char *node);
 
 /**
  * @name: ta_pubsub_node_affiliations
- * @type: method ta_pubsub_node
+ * @type: function
  *
  * Build a stanza to request all node affiliations.
  */
-iks *ta_pubsub_node_affiliations (ta_pubsub_node_t *node);
+iks *ta_pubsub_node_query_affiliations (const char *from,
+                                        const char *to,
+                                        const char *node);
 
 /**
  * @name: ta_pubsub_node_subscribe
- * @type: method ta_pubsub_node
+ * @type: function
  * @param jid (optional): The jid to be subscribed.
  *
  * Build a stanza to subscribe to a node. If no `jid' is passed, the
  * jid set in context will be used.
  */
-iks *ta_pubsub_node_subscribe (ta_pubsub_node_t *node, const char *jid);
+iks *ta_pubsub_node_subscribe (const char *from,
+                               const char *to,
+                               const char *node,
+                               const char *jid);
 
 /**
  * @name: ta_pubsub_node_unsubscribe
- * @type: method ta_pubsub_node
+ * @type: function
  * @param jid (optional): The jid to be unsubscribed.
  *
  * Build a stanza to unsubscribe from a node. If no `jid' is passed,
  * the jid set in context will be used.
- *
  */
-iks *ta_pubsub_node_unsubscribe (ta_pubsub_node_t *node, const char *jid);
+iks *ta_pubsub_node_unsubscribe (const char *from,
+                                 const char *to,
+                                 const char *node,
+                                 const char *jid);
 
 /**
- * @name: ta_pubsub_node_nodes
- * @type: method ta_pubsub_node
+ * @name: ta_pubsub_node_query_nodes
+ * @type: function
  *
  * Discover all nodes in a node instance.
  */
-iks *ta_pubsub_node_nodes (ta_pubsub_node_t *node);
+iks *ta_pubsub_node_query_nodes (const char *from,
+                                 const char *to,
+                                 const char *node);
 
 /**
  * @name: ta_pubsub_node_items
- * @type: method ta_pubsub_node
+ * @type: function
  * @param max_items: Maximum entries to be returned from the server.
  *
  * Build a stanza to get the list of entries of a node.
  */
-iks *ta_pubsub_node_items (ta_pubsub_node_t *node, int max_items);
+iks *ta_pubsub_node_items (const char *from,
+                           const char *to,
+                           const char *node,
+                           int max_items);
 
 /**
  * @name: ta_pubsub_node_publish_text
- * @type: method ta_pubsub_node
+ * @type: method function
  * @param id (nullable): The id of published entry.
  * @param body: The text body to be published.
  * @param len (optional): The length of the text body.
  *
  * Build a stanza to publish a bunch of text in the node.
  */
-iks *ta_pubsub_node_publish_text (ta_pubsub_node_t *node, const char *id,
-                                  const char *body, int len);
+iks *ta_pubsub_node_publish_text (const char *from,
+                                  const char *to,
+                                  const char *node,
+                                  const char *id,
+                                  const char *body,
+                                  int len);
 
 /**
  * @name: ta_pubsub_node_publish_iks
- * @type: method ta_pubsub_node
+ * @type: function
  * @param id (nullable): The id of published entry.
  * @param child: The iks object to be published.
  *
  * Build a stanza to publish an iks object in the node.
  */
-iks *ta_pubsub_node_publish_iks (ta_pubsub_node_t *node, const char *id,
+iks *ta_pubsub_node_publish_iks (const char *from,
+                                 const char *to,
+                                 const char *node,
+                                 const char *id,
                                  iks *child);
 
 /**
  * @name: ta_pubsub_node_delete
- * @type: method ta_pubsub_node
+ * @type: function
  * @param id: The id of the node to be deleted.
  *
  * Builds a stanza to delete a node.
  */
-iks *ta_pubsub_node_delete (ta_pubsub_node_t *node);
+iks *ta_pubsub_node_delete (const char *from,
+                            const char *to,
+                            const char *node);
 
 /**
  * @name: ta_pubsub_node_delete_item
- * @type: method ta_pubsub_node
+ * @type: function
  * @param id: The id of the object to be deleted.
  *
  * Build a stanza to delete an entry from a node.
  */
-iks *ta_pubsub_node_delete_item (ta_pubsub_node_t *node, const char *id);
+iks *ta_pubsub_node_delete_item (const char *from,
+                                 const char *to,
+                                 const char *node,
+                                 const char *id);
 
 /**
  * @name: ta_pubsub_node_create
- * @type: method ta_pubsub_node
+ * @type: function
  *
  * Build a stanza to create a node. This function allows to create
  * <strong>and</strong> configure a ndoe at once. To do it, pass the
@@ -214,10 +190,14 @@ iks *ta_pubsub_node_delete_item (ta_pubsub_node_t *node, const char *id);
  * value, like this:
  *
  * <pre>
- * ta_pubsub_node_create (mynode, "type", "leaf", NULL);
+ * ta_pubsub_node_create ("test@blah", "pubsub.blah", "/mynode",
+ *                        "type", "leaf", NULL);
  * </pre>
  */
-iks *ta_pubsub_node_create (ta_pubsub_node_t *node, ...);
+iks *ta_pubsub_node_create (const char *from,
+                            const char *to,
+                            const char *node,
+                            ...);
 
 /**
  * @name: ta_pubsub_node_createv
@@ -230,10 +210,13 @@ iks *ta_pubsub_node_create (ta_pubsub_node_t *node, ...);
  *
  * <pre>
  * const char** params = { "type", "leaf", NULL };
- * ta_pubsub_node_createv (mynode, params);
+ * ta_pubsub_node_createv ("test@blah", "pubsub.blah", "/mynode", params);
  * </pre>
  */
-iks *ta_pubsub_node_createv (ta_pubsub_node_t *node, const char **conf_params);
+iks *ta_pubsub_node_createv (const char *from,
+                             const char *to,
+                             const char *node,
+                             const char **conf_params);
 
 #ifdef __cplusplus
 }
