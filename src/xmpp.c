@@ -248,7 +248,6 @@ ta_xmpp_client_free (ta_xmpp_client_t *client)
   ta_xmpp_client_event_disconnect (client, "presence-noticed", NULL);
   if (client->events)
     hashtable_destroy (client->events);
-  free (client);
 }
 
 void

@@ -31,7 +31,6 @@ ta_error_free (ta_error_t *error)
     free (error->name);
   if (error->message)
     free (error->message);
-  free (error);
 }
 
 void

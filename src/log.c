@@ -29,7 +29,6 @@ ta_log_free (ta_log_t *log)
 {
   free (log->name);
   free (log->date_format);
-  free (log);
 }
 
 void

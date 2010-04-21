@@ -43,7 +43,6 @@ ta_iri_free (ta_iri_t *iri)
     free (iri->fragment);
   if (iri->error)
     ta_object_unref (iri->error);
-  free (iri);
 }
 
 void
@@ -510,7 +509,6 @@ ta_tag_free (ta_tag_t *tag)
     free (tag->date);
   if (tag->specific)
     free (tag->specific);
-  free (tag);
 }
 
 void

@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <stdlib.h>
 #include <taningia/object.h>
 
 void
@@ -37,7 +38,12 @@ void
 ta_object_unref (void *obj)
 {
   ta_object_t *object = (ta_object_t *) obj;
+  if (obj == NULL)
+    return;
   if (--object->refcount == 0)
-    if (object->destructor)
-      object->destructor (obj);
+    {
+      if (object->destructor)
+        object->destructor (obj);
+      free (obj);
+    }
 }

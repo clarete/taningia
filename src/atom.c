@@ -101,7 +101,6 @@ ta_atom_in_reply_to_free (ta_atom_in_reply_to_t *irt)
     ta_object_unref (irt->source);
   if (irt->type)
     free (irt->type);
-  free (irt);
 }
 
 void
@@ -109,7 +108,7 @@ ta_atom_in_reply_to_init (ta_atom_in_reply_to_t *irt, ta_iri_t *ref)
 {
   ta_object_init (TA_CAST_OBJECT (irt),
                   (ta_free_func_t) ta_atom_in_reply_to_free);
-  irt->ref = ref;
+  irt->ref = ta_object_ref (ref);
   irt->href = NULL;
   irt->source = NULL;
   irt->type = NULL;
@@ -171,7 +170,7 @@ ta_atom_in_reply_to_set_ref (ta_atom_in_reply_to_t *irt, ta_iri_t *ref)
 {
   if (irt->ref)
     ta_object_unref (irt->ref);
-  irt->ref = ref;
+  irt->ref = ta_object_ref (ref);
 }
 
 ta_iri_t *
@@ -185,7 +184,7 @@ ta_atom_in_reply_to_set_href (ta_atom_in_reply_to_t *irt, ta_iri_t *href)
 {
   if (irt->href)
     ta_object_unref (irt->href);
-  irt->href = href;
+  irt->href = ta_object_ref (href);
 }
 
 ta_iri_t *
@@ -199,7 +198,7 @@ ta_atom_in_reply_to_set_source (ta_atom_in_reply_to_t *irt, ta_iri_t *source)
 {
   if (irt->source)
     ta_object_unref (irt->source);
-  irt->source = source;
+  irt->source = ta_object_ref (source);
 }
 
 const char *
@@ -225,7 +224,6 @@ ta_atom_simple_element_free (ta_atom_simple_element_t *see)
     free (see->name);
   if (see->value)
     free (see->value);
-  free (see);
 }
 
 void
@@ -309,7 +307,6 @@ ta_atom_link_free (ta_atom_link_t *link)
     free (link->type);
   if (link->length)
     free (link->length);
-  free (link);
 }
 
 void
@@ -371,7 +368,7 @@ ta_atom_link_set_href (ta_atom_link_t *link,
 {
   if (link->href)
     ta_object_unref (link->href);
-  link->href = href;
+  link->href = ta_object_ref (href);
 }
 
 const char *
@@ -445,7 +442,6 @@ ta_atom_content_free (ta_atom_content_t *content)
     free (content->content);
   if (content->src)
     ta_object_unref (content->src);
-  free (content);
 }
 
 void
@@ -539,7 +535,7 @@ ta_atom_content_set_src (ta_atom_content_t *content,
           content->content = NULL;
         }
     }
-  content->src = src;
+  content->src = ta_object_ref (src);
 }
 
 const char *
@@ -584,7 +580,6 @@ ta_atom_person_free (ta_atom_person_t *person)
     ta_object_unref (person->iri);
   if (person->ext_elements)
     _ta_atom_free_ext_elements (person->ext_elements);
-  free (person);
 }
 
 void
@@ -597,7 +592,7 @@ ta_atom_person_init (ta_atom_person_t *person,
                   (ta_free_func_t) ta_atom_person_free);
   person->name = strdup (name);
   person->email = email ? strdup (email) : NULL;
-  person->iri = iri;
+  person->iri = iri ? ta_object_ref (iri) : NULL;
   person->ext_elements = NULL;
 }
 
@@ -689,14 +684,15 @@ ta_atom_person_set_iri (ta_atom_person_t *person,
 {
   if (person->iri)
     ta_object_unref (person->iri);
-  person->iri = iri;
+  person->iri = ta_object_ref (iri);
 }
 
 void
 ta_atom_person_add_see (ta_atom_person_t *person,
                         ta_atom_simple_element_t *element)
 {
-  person->ext_elements = ta_list_append (person->ext_elements, element);
+  person->ext_elements = ta_list_append (person->ext_elements,
+                                         ta_object_ref (element));
 }
 
 void
@@ -724,7 +720,6 @@ ta_atom_category_free (ta_atom_category_t *category)
     free (category->label);
   if (category->scheme)
     ta_object_unref (category->scheme);
-  free (category);
 }
 
 void
@@ -737,7 +732,7 @@ ta_atom_category_init (ta_atom_category_t *cat,
                   (ta_free_func_t) ta_atom_category_free);
   cat->term = strdup (term);
   cat->label = label ? strdup (label) : NULL;
-  cat->scheme = scheme ? scheme : NULL;
+  cat->scheme = scheme ? ta_object_ref (scheme) : NULL;
 }
 
 ta_atom_category_t *
@@ -820,7 +815,7 @@ ta_atom_category_set_scheme (ta_atom_category_t *category,
   if (category->scheme)
     ta_object_unref (category->scheme);
   if (scheme)
-    category->scheme = scheme;
+    category->scheme = ta_object_ref (scheme);
   else
     category->scheme = NULL;
 }
@@ -848,7 +843,6 @@ ta_atom_entry_free (ta_atom_entry_t *entry)
     ta_object_unref (entry->content);
   if (entry->error)
     ta_object_unref (entry->error);
-  free (entry);
 }
 
 void
@@ -1367,7 +1361,7 @@ ta_atom_entry_set_id (ta_atom_entry_t *entry, ta_iri_t *id)
 {
   if (entry->id)
     ta_object_unref (entry->id);
-  entry->id = id;
+  entry->id = ta_object_ref (id);
 }
 
 time_t
@@ -1421,7 +1415,8 @@ void
 ta_atom_entry_add_author (ta_atom_entry_t  *entry,
                           ta_atom_person_t *author)
 {
-  entry->authors = ta_list_append (entry->authors, author);
+  entry->authors = ta_list_append (entry->authors,
+                                   ta_object_ref (author));
 }
 
 void
@@ -1444,7 +1439,8 @@ void
 ta_atom_entry_add_category (ta_atom_entry_t    *entry,
                             ta_atom_category_t *category)
 {
-  entry->categories = ta_list_append (entry->categories, category);
+  entry->categories = ta_list_append (entry->categories,
+                                      ta_object_ref (category));
 }
 
 void
@@ -1467,7 +1463,7 @@ void
 ta_atom_entry_add_link (ta_atom_entry_t *entry,
                         ta_atom_link_t  *link)
 {
-  entry->links = ta_list_append (entry->links, link);
+  entry->links = ta_list_append (entry->links, ta_object_ref (link));
 }
 
 void
@@ -1510,14 +1506,15 @@ ta_atom_entry_set_content (ta_atom_entry_t   *entry,
 {
   if (entry->content)
     ta_object_unref (entry->content);
-  entry->content = content;
+  entry->content = ta_object_ref (content);
 }
 
 void
 ta_atom_entry_add_see (ta_atom_entry_t *entry,
                        ta_atom_simple_element_t *element)
 {
-  entry->ext_elements = ta_list_append (entry->ext_elements, element);
+  entry->ext_elements = ta_list_append (entry->ext_elements,
+                                        ta_object_ref (element));
 }
 
 void
@@ -1540,7 +1537,8 @@ void
 ta_atom_entry_add_inreplyto (ta_atom_entry_t *entry,
                              ta_atom_in_reply_to_t *irt)
 {
-  entry->in_reply_to = ta_list_append (entry->in_reply_to, irt);
+  entry->in_reply_to = ta_list_append (entry->in_reply_to,
+                                       ta_object_ref (irt));
 }
 
 void
@@ -1576,7 +1574,6 @@ ta_atom_feed_free (ta_atom_feed_t *feed)
     ta_atom_feed_del_entries (feed);
   if (feed->error)
     ta_object_unref (feed->error);
-  free (feed);
 }
 
 void
@@ -1880,7 +1877,7 @@ ta_atom_feed_set_id (ta_atom_feed_t *feed, ta_iri_t *id)
 {
   if (feed->id)
     ta_object_unref (feed->id);
-  feed->id = id;
+  feed->id = ta_object_ref (id);
 }
 
 time_t
@@ -1906,7 +1903,7 @@ void
 ta_atom_feed_add_author (ta_atom_feed_t  *feed,
                          ta_atom_person_t *author)
 {
-  feed->authors = ta_list_append (feed->authors, author);
+  feed->authors = ta_list_append (feed->authors, ta_object_ref (author));
 }
 
 void
@@ -1933,7 +1930,8 @@ void
 ta_atom_feed_add_category (ta_atom_feed_t    *feed,
                            ta_atom_category_t *category)
 {
-  feed->categories = ta_list_append (feed->categories, category);
+  feed->categories = ta_list_append (feed->categories,
+                                     ta_object_ref (category));
 }
 
 void
@@ -1955,7 +1953,7 @@ ta_atom_feed_get_links (ta_atom_feed_t *feed)
 void
 ta_atom_feed_add_link (ta_atom_feed_t *feed, ta_atom_link_t *link)
 {
-  feed->links = ta_list_append (feed->links, link);
+  feed->links = ta_list_append (feed->links, ta_object_ref (link));
 }
 
 void
@@ -1978,7 +1976,7 @@ void
 ta_atom_feed_add_entry (ta_atom_feed_t  *feed,
                         ta_atom_entry_t *entry)
 {
-  feed->entries = ta_list_append (feed->entries, entry);
+  feed->entries = ta_list_append (feed->entries, ta_object_ref (entry));
 }
 
 void
