@@ -812,8 +812,8 @@ void ta_atom_entry_add_category (ta_atom_entry_t *entry,
                                  ta_atom_category_t *category);
 
 /**
- * @name: ta_atom_entry_del_categories
- * @type: method ta_atom_entry
+ * @name: ta_atom_entry::del_categories
+ * @type: method
  *
  * Remove all categories from the entry. They will be freed too.
  */
