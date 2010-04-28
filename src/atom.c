@@ -990,17 +990,8 @@ ta_atom_entry_set_from_iks (ta_atom_entry_t *entry,
       type = iks_find_attrib (content, "type");
       src = iks_find_attrib (content, "src");
       scontent = iks_find_cdata (ik, "content");
-      if (!type)
-        {
-          if (entry->error)
-            ta_object_unref (entry->error);
-          entry->error = ta_error_new ();
-          ta_error_set_full (entry->error, TA_ATOM_PARSING_ERROR,
-                             "ParsingError",
-                             "No \"type\" attribute specified for content "
-                             "element");
-          return 0;
-        }
+      if (!type && !src)
+        type = "text";
 
       /* When content is filled, entry content should have no src
        * attribute */
