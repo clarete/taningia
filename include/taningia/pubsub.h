@@ -108,6 +108,10 @@ iks *ta_pubsub_node_unsubscribe (const char *from,
 /**
  * @name: ta_pubsub_node_query_nodes
  * @type: function
+ * @param from: The JID that is sending the stanza
+ * @param to: JID that will receive the stanza (the pubsub service)
+ * @param node (optional): Node that will have its children
+ * listed. Pass NULL to list root node childs.
  *
  * Discover all nodes in a node instance.
  */
