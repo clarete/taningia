@@ -205,7 +205,8 @@ int ta_xmpp_client_is_running (ta_xmpp_client_t *ctx);
  * @param event: Name of the event to connected the hook.
  * @param hook (callable): The hook to be
  * connected to the event.
- * @param user_data: User defined value to be passed to the hook.
+ * @param user_data (optional): User defined value to be passed to the
+ * hook.
  * @raise: XMPP_NO_SUCH_EVENT_ERROR
  *
  * Connects a hook to an already defined event in the client.  A
