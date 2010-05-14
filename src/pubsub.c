@@ -334,7 +334,7 @@ ta_pubsub_node_createv (const char *from,
   nargs = nvals = i = 0;
 
   /* Creating the dataform to hold config info */
-  while ((arg = conf_params[i]) != NULL)
+  while (conf_params && (arg = conf_params[i]) != NULL)
     {
       iks *field;
       if (form == NULL)
