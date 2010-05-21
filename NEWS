@@ -1,0 +1,28 @@
+0.2
+
+ * Some fixes and changes in the atom lib.
+
+ * Heavy change in the pubsub API. Now we don't have classes but only
+   functions that receives a bunch of params.
+
+ * Documentation improvements and some standard changes.
+
+ * Defining a reference count infrastructure based in the ta_object_t
+   `class'. All other classes in taningia (except ta_list_t) are using
+   it now.
+
+ * Some memory leak fixes.
+
+ * Adding an API to send stanzas and register callbacks to be called
+   when the server answers -- ta_xmpp_client_send_and_filter().
+
+ * Coding style changes.
+
+ * Renaming example programs, old names had no standard at all.
+
+ * Using silent rules in build scripts.
+
+ * Fixes in build system adding m4 directory and checks for some GNU
+   extensions like strndup().
+
+0.1 - First public release
