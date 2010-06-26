@@ -1,4 +1,4 @@
-noinst_PROGRAMS = xmpp-client xmpp-client-2 log iri atom list
+noinst_PROGRAMS = xmpp-client xmpp-client-2 log iri atom list srv
 
 xmpp_client_SOURCES = xmpp-client.c
 xmpp_client_CFLAGS = -I$(top_srcdir)/include $(IKSEMEL_CFLAGS)
@@ -23,3 +23,7 @@ atom_LDFLAGS = $(top_builddir)/src/libtaningia.la $(IKSEMEL_LIBS)
 list_SOURCES = list.c
 list_CFLAGS = -I$(top_srcdir)/include
 list_LDFLAGS = $(top_builddir)/src/libtaningia.la
+
+srv_SOURCES = srv.c
+srv_CFLAGS = -I$(top_srcdir)/include
+srv_LDFLAGS = $(top_builddir)/src/libtaningia.la

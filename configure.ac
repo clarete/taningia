@@ -18,6 +18,10 @@ AC_PROG_LIBTOOL
 
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_create])
+AC_CHECK_LIB([resolv], [res_querydomain],
+              enable_libresolv=yes,
+              enable_libresolv=no)
+AM_CONDITIONAL([ENABLE_LIBRESOLV], [test "$enable_libresolv" = "yes"])
 
 # Checks for header files.
 AC_CHECK_HEADERS([string.h])
