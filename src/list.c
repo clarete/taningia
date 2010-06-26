@@ -249,3 +249,101 @@ ta_list_reverse (ta_list_t *list)
     }
   return node;
 }
+
+/* Linked list merge sorting. Thanks to anakin@pobox.com for his time
+ * writing a great guide and for all wikipedia contributors for the
+ * very nice Mergesorte article.
+ *
+ * http://www.chiark.greenend.org.uk/~sgtatham/algorithms/listsort.html
+ * http://en.wikipedia.org/wiki/Mergesort
+ */
+ta_list_t *
+ta_list_sort (ta_list_t *list, ta_list_cmp_func_t cmpfunc)
+{
+  ta_list_t *p, *q, *e, *tail;
+  int split_point, nmerges, psize, qsize, i;
+
+  /* If the list is empty or res only one element, it is already
+   * sorted. */
+  if (list == NULL || list->next == NULL)
+    return NULL;
+
+  split_point = 1;
+  while (1)
+    {
+      p = list;
+      list = NULL;
+      tail = NULL;
+      nmerges = 0;
+
+      while (p)
+        {
+          /* Says that we have merges to do */
+          nmerges++;
+
+          /* This `aparentely' complicated loop just initialize the q
+           * var and increment size counters, IOW it splits the first
+           * list in two. */
+          for (i = 0, psize = 0, q = p; i < split_point; i++)
+            {
+              psize++;
+              q = q->next;
+              if (q == NULL)
+                break;
+            }
+
+          /* The q part of the list starts where the p ends */
+          qsize = split_point;
+
+          while (psize > 0 || (qsize > 0 && q))
+            {
+              if (psize == 0)
+                {
+                  /* p is empty, so, let's use q as the next
+                   * element. */
+                  e = q;
+                  q = q->next;
+                  qsize--;
+                }
+              else if (qsize == 0 || !q)
+                {
+                  /* Here, q is empty. Time to use p. */
+                  e = p;
+                  p = p->next;
+                  psize--;
+                }
+              else if (cmpfunc (p, q) <= 0)
+                {
+                  /* p is lower (or equals to) q */
+                  e = p;
+                  p = p->next;
+                  psize--;
+                }
+              else
+                {
+                  /* q is lower than p */
+                  e = q;
+                  q = q->next;
+                  qsize--;
+                }
+
+              if (tail)
+                tail->next = e;
+              else
+                list = e;
+
+              /* Preserving the chain of the double linked list */
+              e->prev = tail;
+              tail = e;
+            }
+          p = q;
+        }
+      tail->next = NULL;
+
+      if (nmerges <= 1)
+        /* No more merges, time to get out */
+        return list;
+
+      split_point *= 2;
+    }
+}

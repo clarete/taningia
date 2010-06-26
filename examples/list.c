@@ -18,8 +18,13 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <taningia/list.h>
+
+int cmp(ta_list_t *a, ta_list_t *b) {
+  return (int) a->data - (int) b->data;
+}
 
 int
 main (int argc, char **argv)
@@ -29,6 +34,7 @@ main (int argc, char **argv)
   ta_list_t *node = NULL;
   ta_list_t *extended = NULL;
   ta_list_t *newlist = NULL;
+  ta_list_t *list_to_sort = NULL;
 
   list = ta_list_append (list, "foo");
   list = ta_list_append (list, "bar");
@@ -121,5 +127,33 @@ main (int argc, char **argv)
 
   ta_list_free (list);
   ta_list_free (newlist);
+
+  /* sort */
+  printf ("Sorting the list");
+  list_to_sort = ta_list_append (list_to_sort, (void*) 42);
+  list_to_sort = ta_list_append (list_to_sort, (void*) 95);
+  list_to_sort = ta_list_append (list_to_sort, (void*) 18);
+  list_to_sort = ta_list_append (list_to_sort, (void*) 34);
+  list_to_sort = ta_list_append (list_to_sort, (void*) 5);
+
+  printf (" [");
+  for (node = list_to_sort; node; node = node->next)
+    {
+      printf ("%d", (int) node->data);
+      if (node->next)
+        printf (", ");
+    }
+  printf ("]\n");
+
+  list_to_sort = ta_list_sort (list_to_sort, cmp);
+  printf (" [");
+  for (node = list_to_sort; node; node = node->next)
+    {
+      printf ("%d", (int) node->data);
+      if (node->next)
+        printf (", ");
+    }
+  printf ("]\n");
+
   return 0;
 }

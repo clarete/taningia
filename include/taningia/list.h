@@ -39,7 +39,7 @@ struct _ta_list_t
  * and to say that values are equal, it should return `0'. Like
  * strcmp.
  */
-typedef int *(*ta_list_cmp_func_t) (void *, void *);
+typedef int (*ta_list_cmp_func_t) (ta_list_t *, ta_list_t *);
 
 /**
  * @name: ta_list_new
@@ -159,7 +159,13 @@ ta_list_t *ta_list_remove (ta_list_t *list, void *data,
  */
 ta_list_t *ta_list_reverse (ta_list_t *list);
 
-/* ta_list_t *ta_list_sort (ta_list_t *list, ta_list_cmp_func_t cmpfunc); */
+/**
+ * @name: ta_list_sort
+ * @type: method ta_list
+ *
+ * Sort elements of a list based on the return of `cmpfunc'.
+ */
+ta_list_t *ta_list_sort (ta_list_t *list, ta_list_cmp_func_t cmpfunc);
 
 #ifdef __cplusplus
 }
