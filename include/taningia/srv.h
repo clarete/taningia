@@ -25,23 +25,20 @@ extern "C" {
 #endif
 
 #include <taningia/object.h>
+#include <taningia/list.h>
 
 typedef struct {
   ta_object_t parent;
   char *name;
   char *domain;
-  char *host;
-  int port;
-} ta_srv_target_t;
+} ta_srv_resolver_t;
 
 int ta_srv_init (void);
 
-ta_srv_target_t *ta_srv_target_new (const char *name, const char *domain);
-void ta_srv_target_init (ta_srv_target_t *target, const char *name,
-                         const char *domain);
-const char *ta_srv_target_get_host (ta_srv_target_t *target);
-int ta_srv_target_get_port (ta_srv_target_t *target);
-int ta_srv_target_query_domain (ta_srv_target_t *target);
+ta_srv_resolver_t *ta_srv_resolver_new (const char *name, const char *domain);
+void ta_srv_resolver_init (ta_srv_resolver_t *resolver, const char *name,
+                           const char *domain);
+ta_list_t *ta_srv_resolver_query_domain (ta_srv_resolver_t *resolver);
 
 #ifdef __cplusplus
 }

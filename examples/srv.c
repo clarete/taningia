@@ -24,7 +24,7 @@
 int
 main (int argc, char **argv)
 {
-  ta_srv_target_t *target;
+  ta_srv_resolver_t *target;
   if (argc < 3)
     {
       fprintf (stderr, "Name and/or domain missing\n");
@@ -38,15 +38,15 @@ main (int argc, char **argv)
    * _http._tcp.comum.org is supported. The _http._tcp and
    * _xmpp-client._tcp can be passed in the first parameter and
    * jabber-br.org and comum.org in the second one. */
-  target = ta_srv_target_new (argv[1], argv[2]);
+  target = ta_srv_resolver_new (argv[1], argv[2]);
 
   /* To know if the name was already resolved or not, you can test if
-   * ta_srv_target_get_host() is null. */
-  if (ta_srv_target_query_domain (target) == 0)
+   * ta_srv_resolver_get_host() is null. */
+  if (ta_srv_resolver_query_domain (target) == 0)
     {
       printf ("Target found:\n");
-      printf (" Host: %s\n", ta_srv_target_get_host (target));
-      printf (" Port: %d\n", ta_srv_target_get_port (target));
+      printf (" Host: %s\n", ta_srv_resolver_get_host (target));
+      printf (" Port: %d\n", ta_srv_resolver_get_port (target));
     }
   ta_object_unref (target);
   return 0;

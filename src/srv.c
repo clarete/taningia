@@ -31,7 +31,7 @@ typedef struct
   u_int16_t weight;
   u_int16_t port;
   char *target;
-} srv_recorde_t;
+} target_t;
 
 int
 ta_srv_init (void)
@@ -40,61 +40,53 @@ ta_srv_init (void)
 }
 
 static void
-ta_srv_target_free (ta_srv_target_t *target)
+ta_srv_resolver_free (ta_srv_resolver_t *resolver)
 {
-  if (target->name)
-    free (target->name);
-  if (target->domain)
-    free (target->domain);
-  if (target->host)
-    free (target->host);
+  if (resolver->name)
+    free (resolver->name);
+  if (resolver->domain)
+    free (resolver->domain);
+  if (resolver->host)
+    free (resolver->host);
 }
 
 void
-ta_srv_target_init (ta_srv_target_t *target, const char *name,
-                    const char *domain)
+ta_srv_resolver_init (ta_srv_resolver_t *resolver, const char *name,
+                      const char *domain)
 {
-  ta_object_init (TA_CAST_OBJECT (target),
-                  (ta_free_func_t) ta_srv_target_free);
-  target->name = strdup (name);
-  target->domain = strdup (domain);
+  ta_object_init (TA_CAST_OBJECT (resolver),
+                  (ta_free_func_t) ta_srv_resolver_free);
+  resolver->name = strdup (name);
+  resolver->domain = strdup (domain);
 }
 
-ta_srv_target_t *
-ta_srv_target_new (const char *name, const char *domain)
+ta_srv_resolver_t *
+ta_srv_resolver_new (const char *name, const char *domain)
 {
-  ta_srv_target_t *target;
-  target = malloc (sizeof (ta_srv_target_t));
-  ta_srv_target_init (target, name, domain);
-  return target;
+  ta_srv_resolver_t *resolver;
+  resolver = malloc (sizeof (ta_srv_resolver_t));
+  ta_srv_resolver_init (resolver, name, domain);
+  return resolver;
 }
 
-const char *
-ta_srv_target_get_host (ta_srv_target_t *target)
+ta_list_t *
+ta_srv_resolver_query_domain (ta_srv_resolver_t *resolver)
 {
-  return target->host;
-}
-
-int
-ta_srv_target_get_port (ta_srv_target_t *target)
-{
-  return target->port;
-}
-
-int
-ta_srv_target_query_domain (ta_srv_target_t *target)
-{
-  ta_list_t *targets = NULL;
   HEADER *message;
   u_char answer[1024];
   u_char *p, *end;
   int len, count;
+  ta_list_t
+    *targets = NULL,
+    *result = NULL,
+    *node = NULL;
+  target_t *t;
 
   /* Values to be read for each target */
   char buf[1024];
   u_int16_t type, rdlength;
 
-  len = res_querydomain (target->name, target->domain, C_IN, T_SRV, answer,
+  len = res_querydomain (resolver->name, resolver->domain, C_IN, T_SRV, answer,
                          sizeof (answer));
   if (len <= 0)
     return -1;
@@ -119,31 +111,31 @@ ta_srv_target_query_domain (ta_srv_target_t *target)
   count = ntohs (message->ancount);
   while (count-- && p < end)
     {
-      srv_recorde_t record;
+      target_t t;
 
       p += dn_expand (answer, end, p, buf, sizeof (buf));
       GETSHORT (type, p);
-      GETSHORT (record.class, p);
-      GETLONG (record.ttl, p);
+      GETSHORT (t.class, p);
+      GETLONG (t.ttl, p);
       GETSHORT (rdlength, p);
 
       /* We're not interested in non IN SRV records */
-      if (type != T_SRV || record.class != C_IN)
+      if (type != T_SRV || t.class != C_IN)
         {
           /* skipping to the next target */
           p += rdlength;
           continue;
         }
 
-      GETSHORT (record.priority, p);
-      GETSHORT (record.weight, p);
-      GETSHORT (record.port, p);
+      GETSHORT (t.priority, p);
+      GETSHORT (t.weight, p);
+      GETSHORT (t.port, p);
       p += dn_expand (answer, end, p, buf, sizeof (buf));
-      record.target = strdup (buf);
+      t.target = strdup (buf);
 
-      printf ("%s:%d\n", buf, record.port);
+      printf ("%s:%d\n", buf, t.port);
 
-      targets = ta_list_append (targets, &record);
+      targets = ta_list_append (targets, &t);
     }
 
   return 0;
