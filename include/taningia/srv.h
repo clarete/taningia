@@ -24,21 +24,30 @@
 extern "C" {
 #endif
 
+#include <sys/types.h>
 #include <taningia/object.h>
 #include <taningia/list.h>
 
-typedef struct {
+typedef struct
+{
   ta_object_t parent;
-  char *name;
-  char *domain;
-} ta_srv_resolver_t;
+  u_int32_t ttl;
+  u_int16_t _class;        /* avoiding clash with c++ reserved word */
+  u_int16_t priority;
+  u_int16_t weight;
+  u_int16_t port;
+  char *host;
+} ta_srv_target_t;
 
 int ta_srv_init (void);
+ta_list_t *ta_srv_query_domain (const char *name, const char *domain);
 
-ta_srv_resolver_t *ta_srv_resolver_new (const char *name, const char *domain);
-void ta_srv_resolver_init (ta_srv_resolver_t *resolver, const char *name,
-                           const char *domain);
-ta_list_t *ta_srv_resolver_query_domain (ta_srv_resolver_t *resolver);
+const char *ta_srv_target_get_host (ta_srv_target_t *target);
+u_int16_t ta_srv_target_get_port (ta_srv_target_t *target);
+u_int16_t ta_srv_target_get_weight (ta_srv_target_t *target);
+u_int16_t ta_srv_target_get_class (ta_srv_target_t *target);
+u_int16_t ta_srv_target_get_priority (ta_srv_target_t *target);
+u_int32_t ta_srv_target_get_ttl (ta_srv_target_t *target);
 
 #ifdef __cplusplus
 }

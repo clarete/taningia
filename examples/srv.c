@@ -24,7 +24,10 @@
 int
 main (int argc, char **argv)
 {
-  ta_srv_resolver_t *target;
+  ta_list_t *head, *n;
+  ta_srv_target_t *t;
+
+  /* Reading command line arguments */
   if (argc < 3)
     {
       fprintf (stderr, "Name and/or domain missing\n");
@@ -36,18 +39,23 @@ main (int argc, char **argv)
 
   /* Quering something like _xmpp-client._tcp.jabber-br.org or
    * _http._tcp.comum.org is supported. The _http._tcp and
-   * _xmpp-client._tcp can be passed in the first parameter and
-   * jabber-br.org and comum.org in the second one. */
-  target = ta_srv_resolver_new (argv[1], argv[2]);
-
-  /* To know if the name was already resolved or not, you can test if
-   * ta_srv_resolver_get_host() is null. */
-  if (ta_srv_resolver_query_domain (target) == 0)
+   * _xmpp-client._tcp must be passed as the first parameter and
+   * jabber-br.org and comum.org as the second one. */
+  head = ta_srv_query_domain (argv[1], argv[2]);
+  for (n = head; n; n = n->next)
     {
+      t = (ta_srv_target_t *) n->data;
       printf ("Target found:\n");
-      printf (" Host: %s\n", ta_srv_resolver_get_host (target));
-      printf (" Port: %d\n", ta_srv_resolver_get_port (target));
+      printf (" Host: %s\n", ta_srv_target_get_host (t));
+      printf (" Port: %d\n", ta_srv_target_get_port (t));
+
+      /* The ta_srv_query_domain() function allocated all targets in
+       * the return list. We must free it. */
+      ta_object_unref (t);
     }
-  ta_object_unref (target);
+
+  /* All node->data elements were freed, now it is time to free the
+   * list itself. */
+  ta_list_free (head);
   return 0;
 }
