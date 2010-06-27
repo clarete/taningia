@@ -30,7 +30,7 @@ typedef struct
   u_int16_t priority;
   u_int16_t weight;
   u_int16_t port;
-  char *target;
+  char *name;
 } target_t;
 
 int
@@ -69,6 +69,19 @@ ta_srv_resolver_new (const char *name, const char *domain)
   return resolver;
 }
 
+static int
+cmp_targets (ta_list_t *a, ta_list_t *b)
+{
+  target_t *ta, *tb;
+  ta = (target_t *) a->data;
+  tb = (target_t *) b->data;
+
+  if (ta->priority == tb->priority)
+    return ta->weight - tb->weight;
+  else
+    return ta->priority - tb->priority;
+}
+
 ta_list_t *
 ta_srv_resolver_query_domain (ta_srv_resolver_t *resolver)
 {
@@ -89,7 +102,7 @@ ta_srv_resolver_query_domain (ta_srv_resolver_t *resolver)
   len = res_querydomain (resolver->name, resolver->domain, C_IN, T_SRV, answer,
                          sizeof (answer));
   if (len <= 0)
-    return -1;
+    return NULL;
 
   /* HEADER type defined in `arpa/nameser_compat.h'. See 4.1.1. Header
    * section format in RFC 1035. */
@@ -111,32 +124,48 @@ ta_srv_resolver_query_domain (ta_srv_resolver_t *resolver)
   count = ntohs (message->ancount);
   while (count-- && p < end)
     {
-      target_t t;
+      target_t *t = malloc (sizeof (target_t));
 
       p += dn_expand (answer, end, p, buf, sizeof (buf));
       GETSHORT (type, p);
-      GETSHORT (t.class, p);
-      GETLONG (t.ttl, p);
+      GETSHORT (t->class, p);
+      GETLONG (t->ttl, p);
       GETSHORT (rdlength, p);
 
       /* We're not interested in non IN SRV records */
-      if (type != T_SRV || t.class != C_IN)
+      if (type != T_SRV || t->class != C_IN)
         {
           /* skipping to the next target */
           p += rdlength;
           continue;
         }
 
-      GETSHORT (t.priority, p);
-      GETSHORT (t.weight, p);
-      GETSHORT (t.port, p);
+      GETSHORT (t->priority, p);
+      GETSHORT (t->weight, p);
+      GETSHORT (t->port, p);
       p += dn_expand (answer, end, p, buf, sizeof (buf));
-      t.target = strdup (buf);
-
-      printf ("%s:%d\n", buf, t.port);
-
-      targets = ta_list_append (targets, &t);
+      t->name = strdup (buf);
+      targets = ta_list_append (targets, t);
     }
 
-  return 0;
+  /* Here we start to handle what the section "The format of the SRV
+   * RR" of the RFC 2782 says about the ordering of targets. Based on
+   * the priority and weight fields.
+   *
+   * In the first step, we just sort targets list by its priority
+   * putting targets with the same priority in the right order (lowers
+   * first) except the ones that has weight equals to 0. That are
+   * placed in the first positions. */
+  targets = ta_list_sort (targets, cmp_targets);
+
+  /* Now we'll group all targets with same priority respecting their
+   * weight attribute. */
+
+  for (node = targets; node; node = node->next)
+    {
+      t = (target_t *) node->data;
+      printf ("%s:%d\n", t->name, t->port);
+    }
+
+  return NULL;
 }
