@@ -266,7 +266,7 @@ ta_list_sort (ta_list_t *list, ta_list_cmp_func_t cmpfunc)
   /* If the list is empty or res only one element, it is already
    * sorted. */
   if (list == NULL || list->next == NULL)
-    return NULL;
+    return list;
 
   split_point = 1;
   while (1)
