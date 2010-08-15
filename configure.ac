@@ -16,15 +16,6 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_LIBTOOL
 
-# Python stuff
-AM_PATH_PYTHON(2.5.0)
-PY_PREFIX=`$PYTHON -c 'import sys ; print sys.prefix'`
-PYTHON_LIBS="-lpython$PYTHON_VERSION"
-PYTHON_CFLAGS="-I$PY_PREFIX/include/python$PYTHON_VERSION"
-AC_SUBST([PYTHON])
-AC_SUBST([PYTHON_LIBS])
-AC_SUBST([PYTHON_CFLAGS])
-
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_create])
 
@@ -40,20 +31,6 @@ AC_CHECK_FUNCS([strchr strdup strndup strrchr])
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
 AC_C_INLINE
-
-# Checking for optional bindings
-
-AC_ARG_WITH([python],
-  [AS_HELP_STRING([--with-python], [Build python bindings. @<:@default=no@:>@])],
-  [with_python_bindings=yes], [with_python_bindings=no])
-AM_CONDITIONAL([PYTHON_BINDINGS], [test "x$with_python_bindings" != "xno"])
-
-AS_IF([test "x$with_python_bindings" != "xno"],
-  [PKG_CHECK_MODULES([PYIKSEMEL], [python-iksemel],
-    [with_pyiksemel=yes],
-    [AC_MSG_ERROR([coudn't find python-iksemel])])])
-AC_SUBST([PYIKSEMEL_CFLAGS])
-AC_SUBST([PYIKSEMEL_LIBS])
 
 # Checks for .pc packages
 PKG_CHECK_MODULES([IKSEMEL], [iksemel])
