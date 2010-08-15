@@ -421,7 +421,7 @@ ta_xmpp_client_send_and_filter (ta_xmpp_client_t *client, iks *node,
 
   /* Getting stanza id */
   if ((id = iks_find_attrib (node, "id")) == NULL)
-    return 0;
+    return 1;
 
   /* Now that all search fields were filled, it is time to build the
    * struct that will hold data received from params and found here
