@@ -122,7 +122,8 @@ iks *ta_pubsub_node_query_nodes (const char *from,
 /**
  * @name: ta_pubsub_node_items
  * @type: function
- * @param max_items: Maximum entries to be returned from the server.
+ * @param max_items: Maximum entries to be returned from the server,
+ * fill with 0 to avoid limit.
  *
  * Build a stanza to get the list of entries of a node.
  */
