@@ -444,7 +444,7 @@ ta_xmpp_client_send_and_filter (ta_xmpp_client_t *client, iks *node,
                          (iksFilterHook *) _ta_xmpp_client_ikshook_watcher,
                          wdata, IKS_RULE_ID, id, IKS_RULE_DONE);
   wdata->rule = rule;
-  wdata->stanza_id = strdup ("Meu pau");
+  wdata->stanza_id = strdup (id);
 
   /* Finnaly, we're trying to send the stanza. With the filter
    * properly registered. */
