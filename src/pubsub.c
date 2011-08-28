@@ -85,9 +85,9 @@ ta_pubsub_query_features (const char *from, const char *to)
 iks *
 ta_pubsub_query_affiliations (const char *from, const char *to)
 {
-  iks *iq, *sub;
+  iks *iq;
   iq = createiqps (from, to, IKS_TYPE_GET);
-  sub = iks_insert (iks_child (iq), "affiliations");
+  iks_insert (iks_child (iq), "affiliations");
   return iq;
 }
 
