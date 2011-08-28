@@ -22,6 +22,7 @@ libtool
 ltmain.sh
 missing
 stamp-h1
+/m4/*.m4
 /taningia.pc
 /app
 /conf.[ch]
