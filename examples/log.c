@@ -32,7 +32,7 @@
 int
 handler (ta_log_t *log, ta_log_level_t level, const char *msg, void *user_data)
 {
-  printf ("Calling handler callback\n");
+  printf ("Calling handler callback: %s\n", msg);
 
   /* If you want to prevent the message to be written in the error
    * output, return a true value here. */
