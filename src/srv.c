@@ -55,11 +55,13 @@ ta_srv_query_domain (const char *name, const char *domain)
   HEADER *message;
   u_char answer[1024];
   u_char *p, *end;
-  int len, count;
-  ta_list_t
-    *targets = NULL,
-    *result = NULL,
-    *node = NULL;
+  int len, count, priority;
+  ta_list_t *targets = NULL;
+
+  /* Vars to apply the sorting algorithm */
+  int sum, num, randint, weight;
+  ta_srv_target_t *target;
+  ta_list_t *t = NULL, *out = NULL, *tail = NULL;
 
   /* Values to be read for each target */
   char buf[1024];
@@ -125,8 +127,55 @@ ta_srv_query_domain (const char *name, const char *domain)
 
   /* Now we'll group all targets with same priority respecting their
    * weight attribute. */
+  while (targets)
+    {
+      priority = ((ta_srv_target_t *) targets->data)->priority;
 
-  return targets;
+      /* As specified in the algorithm, in the first step, we need to
+       * sum the weight of all targets with the same priority and count
+       * them. */
+      sum = num = 0;
+      for (t = targets; t; t = t->next)
+        {
+          target = (ta_srv_target_t *) t->data;
+
+          /* Since we have sorted the list by the priority. Higher
+           * priorities will be in the top. */
+          if (target->priority != priority)
+            break;
+
+          sum += target->weight;
+          num++;
+        }
+
+      /* Let's find a random target in this priority level giving
+       * precedence to the entries with higher weight. */
+      while (num)
+        {
+          randint = ((float) rand() / (float) RAND_MAX) * (sum+1);
+          for (t = targets; ; t = t->next)
+            {
+              weight = ((ta_srv_target_t *) t->data)->weight;
+              if (weight >= randint)
+                break;
+              randint -= weight;
+            }
+
+          /* Here's the winner! Let's just set the `out' element and go
+           * ahead setting the new sum value and decreasing the number
+           * of targets. */
+          targets = ta_list_remove (targets, t->data, NULL);
+          if (!out)
+            out = t;
+          else
+            tail->next = t;
+          tail = t;
+          sum -= weight;
+          num--;
+        }
+    }
+
+  return out;
 }
 
 /* ta_srv_target_* stuff */
