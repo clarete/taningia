@@ -141,14 +141,14 @@ ta_list_t *ta_list_insert (ta_list_t *list, void *data, int position);
  * @name: ta_list_remove
  * @type: method ta_list
  * @param data: The element data to be removed from the list.
- * @param data_free_cb: Callback to free data.
+ * @param removed: Output element that is filled out with the removed
+ * element.
  *
- * Removes the element that holds the `data' value from the list, but
- * it only frees the found element. To free data, you will have to
- * pass the `data_free_cb' parameter too.
+ * Removes the element that holds the `data' value from the list. It
+ * returns the removed element in the output param @removed. It does not
+ * free anything. If you want to do so, use the @removed param.
  */
-ta_list_t *ta_list_remove (ta_list_t *list, void *data,
-                           ta_free_func_t data_free_cb);
+ta_list_t *ta_list_remove (ta_list_t *list, void *data, ta_list_t **removed);
 
 /**
  * @name: ta_list_reverse

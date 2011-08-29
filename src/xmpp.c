@@ -629,7 +629,7 @@ ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
                                  const char *event,
                                  ta_xmpp_client_hook_t hook)
 {
-  ta_list_t *hooks = NULL, *tmp = NULL, *elm = NULL;
+  ta_list_t *hooks = NULL, *tmp = NULL, *elm = NULL, *removed = NULL;
 
   /* Looks for the hook list in event hash table. If it is found, the
    * hook is removed from the list and then the hook list is
@@ -668,7 +668,12 @@ ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
        * hook_data struct stored in the list iter. So, before removing
        * we have to find the right element. It is done by the above
        * `if' statement. */
-      hooks = ta_list_remove (hooks, elm->data, hdata_free);
+      hooks = ta_list_remove (hooks, elm->data, &removed);
+      if (removed)
+        {
+          hdata_free (removed->data);
+          free (removed);
+        }
     }
 
   /* Updating callback list in the event hashtable. */
