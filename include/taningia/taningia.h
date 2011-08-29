@@ -27,6 +27,7 @@
 #include "list.h"
 #include "log.h"
 #include "pubsub.h"
+#include "srv.h"
 #include "xmpp.h"
 
 #endif /* _TANINGIA_H_ */
