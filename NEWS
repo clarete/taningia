@@ -1,3 +1,28 @@
+0.2.2
+
+ * Improvements on the ta_list_remove() method. Now, instead of freeing
+   a node, it returns the node and let's the user do whatever he/she
+   wants. (This breaks the API and the ABI)
+
+ * Adding a way to resolve srv domains (not yet integrated with builtin
+   xmpp client)
+
+ * Improving logging system to send the time and logger name to the
+   custom handler callback
+
+0.2.1
+
+ * Fixing indirect linking problem when compiling some example programs
+
+ * Removing all references for python (and binding) stuff. It was moved
+   to a separated project.
+
+ * Small fix in ta_xmpp_client_send_and_filter() to return 1. This was
+   not a complete fix since the error handling in taningia is a complete
+   mess up :(
+
+ * Adding the _sort() method to our ta_list structure
+
 0.2
 
  * Some fixes and changes in the atom lib.
