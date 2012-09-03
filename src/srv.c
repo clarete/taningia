@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <resolv.h>
+#include <arpa/nameser_compat.h>
 #include <taningia/list.h>
 #include <taningia/srv.h>
 
