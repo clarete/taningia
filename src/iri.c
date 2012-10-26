@@ -41,8 +41,6 @@ ta_iri_free (ta_iri_t *iri)
     free (iri->query);
   if (iri->fragment)
     free (iri->fragment);
-  if (iri->error)
-    ta_object_unref (iri->error);
 }
 
 void
@@ -56,7 +54,6 @@ ta_iri_init (ta_iri_t *iri)
   iri->path = NULL;
   iri->query = NULL;
   iri->fragment = NULL;
-  iri->error = NULL;
 }
 
 ta_iri_t *
@@ -66,12 +63,6 @@ ta_iri_new (void)
   iri = malloc (sizeof (ta_iri_t));
   ta_iri_init (iri);
   return iri;
-}
-
-ta_error_t *
-ta_iri_get_error (ta_iri_t *iri)
-{
-  return iri->error;
 }
 
 const char *
@@ -311,11 +302,8 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
 
   if (!isalpha(p[0]))
     {
-      if (iri->error)
-        ta_object_unref (iri->error);
-      iri->error = ta_error_new ();
-      ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR, "ParsingError",
-                         "Schema should start with an alpha char");
+      ta_error_set (TA_IRI_PARSING_ERROR,
+                    "Schema should start with an alpha char");
       return 0;
     }
 
@@ -330,12 +318,9 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
       if (!isalnum (c) &&
           !(c == '-' || c == '+' || c == '.'))
         {
-          if (iri->error)
-            ta_object_unref (iri->error);
-          iri->error = ta_error_new ();
-          ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR, "ParsingError",
-                             "Schema should only have the following chars: "
-                             "[a-Z][0-9][-+.]");
+          ta_error_set (TA_IRI_PARSING_ERROR,
+                        "Schema should only have the following chars: "
+                        "[a-Z][0-9][-+.]");
           return 0;
         }
       c = *p++;
@@ -423,11 +408,7 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
            * is something wrong, so we can abort parsing the IRI. */
           if (port_len == 0)
             {
-              if (iri->error)
-                ta_object_unref (iri->error);
-              iri->error = ta_error_new ();
-              ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR,
-                                 "ParsingError", "Invalid port number");
+              ta_error_set (TA_IRI_PARSING_ERROR, "Invalid port number");
               return 0;
             }
 
@@ -449,12 +430,9 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
        */
       if (path && path[0] != '/')
         {
-          if (iri->error)
-            ta_object_unref (iri->error);
-          iri->error = ta_error_new ();
-          ta_error_set_full (iri->error, TA_IRI_PARSING_ERROR, "ParsingError",
-                             "Path should start with a '/' since authority "
-                             "section was filled");
+          ta_error_set (TA_IRI_PARSING_ERROR,
+                        "Path should start with a '/' since authority "
+                        "section was filled");
           return 0;
         }
       if (path)
@@ -614,13 +592,7 @@ ta_tag_set_from_string (ta_tag_t *tag, const char *tagstr)
       date = strchr (path, ',');
       if (!date)
         {
-          ta_iri_t *parent;
-          parent = TA_CAST_IRI (tag);
-          if (parent->error)
-            ta_object_unref (parent->error);
-          parent->error = ta_error_new ();
-          ta_error_set_full (parent->error, TA_TAG_PARSING_ERROR,
-                             "ParsingError", "Date field missing in tag");
+          ta_error_set (TA_TAG_PARSING_ERROR, "Date field missing in tag");
           return 0;
         }
       tag->authority = strndup (path, date - path);
@@ -629,13 +601,7 @@ ta_tag_set_from_string (ta_tag_t *tag, const char *tagstr)
       specific = strchr (date, ':');
       if (!specific)
         {
-          ta_iri_t *parent;
-          parent = TA_CAST_IRI (tag);
-          if (parent->error)
-            ta_object_unref (parent->error);
-          parent->error = ta_error_new ();
-          ta_error_set_full (parent->error, TA_TAG_PARSING_ERROR,
-                             "ParsingError", "Domain specific not provided");
+          ta_error_set (TA_TAG_PARSING_ERROR, "Domain specific not provided");
           return 0;
         }
 

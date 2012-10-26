@@ -28,7 +28,6 @@ extern "C" {
 #include <iksemel.h>
 #include <taningia/object.h>
 #include <taningia/iri.h>
-#include <taningia/error.h>
 #include <taningia/list.h>
 
 #define TA_ATOM_NS "http://www.w3.org/2005/Atom"
@@ -99,7 +98,6 @@ typedef struct
   ta_list_t *links;
   char *summary;
   ta_atom_content_t *content;
-  ta_error_t *error;
   ta_list_t *ext_elements;
   ta_list_t *in_reply_to;
 } ta_atom_entry_t;
@@ -114,14 +112,8 @@ typedef struct
   ta_list_t *categories;
   ta_list_t *entries;
   ta_list_t *links;
-  ta_error_t *error;
   ta_list_t *ext_elements;
 } ta_atom_feed_t;
-
-typedef enum {
-  TA_ATOM_LOAD_ERROR,
-  TA_ATOM_PARSING_ERROR
-} ta_atom_error_t;
 
 /* -- Atom Simple Ext Element -- */
 
@@ -673,12 +665,6 @@ char *ta_atom_entry_to_string (ta_atom_entry_t *entry);
 int ta_atom_entry_to_file (ta_atom_entry_t *entry, const char *fname);
 
 /**
- * @name: ta_atom_entry::get_error
- * @type: getter
- */
-ta_error_t *ta_atom_entry_get_error (ta_atom_entry_t *entry);
-
-/**
  * @name: ta_atom_entry::get_title
  * @type: getter
  */
@@ -968,12 +954,6 @@ char *ta_atom_feed_to_string (ta_atom_feed_t *feed);
  * Saves the xml representation of the feed instance to a file.
  */
 int ta_atom_feed_to_file (ta_atom_feed_t *feed, const char *fname);
-
-/**
- * @name: ta_atom_feed::get_error
- * @type: getter
- */
-ta_error_t *ta_atom_feed_get_error (ta_atom_feed_t *feed);
 
 /**
  * @name: ta_atom_feed::get_title

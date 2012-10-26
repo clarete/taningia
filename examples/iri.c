@@ -76,11 +76,8 @@ build_iri (const char *iristr)
     }
   else
     {
-      ta_error_t *error;
-      error = ta_iri_get_error (myiri);
-      fprintf (stderr, "%s: %s\n",
-               ta_error_get_name (error),
-               ta_error_get_message (error));
+      const ta_error_t *error = ta_error_last ();
+      fprintf (stderr, "(%d) %s\n", error->code, error->message);
     }
 }
 
@@ -116,11 +113,8 @@ test_tag (void)
     }
   else
     {
-      ta_error_t *error;
-      error = ta_iri_get_error (TA_CAST_IRI (tag));
-      fprintf (stderr, "%s: %s\n",
-               ta_error_get_name (error),
-               ta_error_get_message (error));
+      const ta_error_t *error = ta_error_last ();
+      fprintf (stderr, "(%d) %s\n", error->code, error->message);
     }
   ta_object_unref (tag);
 }

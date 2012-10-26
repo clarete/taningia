@@ -25,7 +25,6 @@ extern "C" {
 #endif
 
 #include <taningia/object.h>
-#include <taningia/error.h>
 
 #define TA_CAST_IRI(o) ((ta_iri_t *) (o))
 
@@ -48,7 +47,6 @@ typedef struct
   char *path;
   char *query;
   char *fragment;
-  ta_error_t *error;
 } ta_iri_t;
 
 /**
@@ -67,11 +65,6 @@ typedef struct
   char *date;
   char *specific;
 } ta_tag_t;
-
-typedef enum {
-  TA_IRI_PARSING_ERROR,
-  TA_TAG_PARSING_ERROR
-} ta_iri_error_t;
 
 /**
  * @name: ta_iri::new
@@ -176,12 +169,6 @@ void ta_iri_set_fragment (ta_iri_t *iri, const char *fragment);
  * Returns a string representation of an iri instance.
  */
 char *ta_iri_to_string (ta_iri_t *iri);
-
-/**
- * @name: ta_iri::get_error
- * @type: getter
- */
-ta_error_t *ta_iri_get_error (ta_iri_t *iri);
 
 /**
  * @name: ta_iri::set_from_string

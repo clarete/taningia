@@ -21,142 +21,63 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <taningia/object.h>
+
+#include <taningia/global.h>
 #include <taningia/error.h>
 
-static void
-ta_error_free (ta_error_t *error)
+
+const ta_error_t *
+ta_error_last (void)
 {
-  if (error->name)
-    free (error->name);
-  if (error->message)
-    free (error->message);
+  return TA_GLOBAL->last_error;
 }
 
 void
-ta_error_init (ta_error_t *error)
+ta_error_clear (void)
 {
-  ta_object_init (TA_CAST_OBJECT (error), (ta_free_func_t) ta_error_free);
-  error->name = NULL;
-  error->message = NULL;
-  error->code = 0;
+  if (TA_GLOBAL->last_error)
+    free (TA_GLOBAL->last_error->message);
+  TA_GLOBAL->last_error = NULL;
 }
 
-ta_error_t *
-ta_error_new (void)
-{
-  ta_error_t *error;
-  error = malloc (sizeof (ta_error_t));
-  ta_error_init (error);
-  return error;
-}
-
-int
-ta_error_get_code (ta_error_t *error)
-{
-  return error->code;
-}
 
 void
-ta_error_set_code (ta_error_t *error, int code)
-{
-  error->code = code;
-}
-
-const char *
-ta_error_get_name (ta_error_t *error)
-{
-  return error->name;
-}
-
-void
-ta_error_set_name (ta_error_t *error, const char *name)
-{
-  if (error->name)
-    free (error->name);
-  error->name = strdup (name);
-}
-
-const char *
-ta_error_get_message (ta_error_t *error)
-{
-  return error->message;
-}
-
-void
-ta_error_set_message (ta_error_t *error, const char *fmt, ...)
+ta_error_set (int errcode, const char *fmt, ...)
 {
   int n, size = 50;
-  char *msg, *np;
-  va_list argp;
+  char *msg, *tmp;
+  va_list args;
+  ta_error_t *error = &TA_GLOBAL->error_t;
 
-  if (error->message)
-    free (error->message);
-  if ((msg = malloc (size)) == NULL)
-    msg = NULL;
-  else
-    while (1)
-      {
-        va_start (argp, fmt);
-        n = vsnprintf (msg, size, fmt, argp);
-        va_end (argp);
-        if (n > -1 && n < size)
+  /* Removing the old value */
+  free (error->message);
+
+  /* Setting new values */
+  error->code = errcode;
+
+  /* Well, we don't know how many params the user will send. So, let's
+   * figure it out */
+  while (1)
+    {
+      va_start (args, fmt);
+      n = vsnprintf (msg, size, fmt, args);
+      va_end (args);
+      if (n > -1 && n < size)
+        break;
+      if (n > -1)
+        size = n + 1;
+      else
+        size *= 2;
+      if ((tmp = realloc (msg, size)) == NULL)
+        {
+          free (msg);
+          msg = NULL;
           break;
-        if (n > -1)
-          size = n+1;
-        else
-          size *= 2;
-        if ((np = realloc (msg, size)) == NULL)
-          {
-            free (msg);
-            msg = NULL;
-            break;
-          }
-        else
-          msg = np;
-      }
+        }
+      else
+        msg = tmp;
+    }
+
   error->message = msg;
-}
-
-void
-ta_error_set_full (ta_error_t *error, int code, const char *name,
-                   const char *fmt, ...)
-{
-  int n, size = 50;
-  char *msg, *np;
-  va_list argp;
-
-  ta_error_set_code (error, code);
-  ta_error_set_name (error, name);
-
-  /* This part is a duplication of error_set_message because it is
-   * hard to pass ... (varargs) arguments from a function to another
-   * that is already doing this (we use vsnprintf in vsnprintf) */
-
-  if (error->message)
-    free (error->message);
-  if ((msg = malloc (size)) == NULL)
-    msg = NULL;
-  else
-    while (1)
-      {
-        va_start (argp, fmt);
-        n = vsnprintf (msg, size, fmt, argp);
-        va_end (argp);
-        if (n > -1 && n < size)
-          break;
-        if (n > -1)
-          size = n+1;
-        else
-          size *= 2;
-        if ((np = realloc (msg, size)) == NULL)
-          {
-            free (msg);
-            msg = NULL;
-            break;
-          }
-        else
-          msg = np;
-      }
-  error->message = msg;
+  TA_GLOBAL->last_error = error;
 }

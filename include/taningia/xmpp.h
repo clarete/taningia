@@ -27,12 +27,6 @@ extern "C" {
 #include <iksemel.h>
 #include <taningia/taningia.h>
 
-typedef enum {
-  XMPP_CONNECTION_ERROR,
-  XMPP_NO_SUCH_EVENT_ERROR,
-  XMPP_SEND_ERROR
-} ta_xmpp_error_t;
-
 typedef struct _ta_xmpp_client_t ta_xmpp_client_t;
 
 typedef int (*ta_xmpp_client_hook_t) (ta_xmpp_client_t *, void *, void *);
@@ -117,12 +111,6 @@ void ta_xmpp_client_set_port (ta_xmpp_client_t *ctx, int port);
  * @type: getter
  */
 ta_log_t *ta_xmpp_client_get_logger (ta_xmpp_client_t *ctx);
-
-/**
- * @name: ta_xmpp_client::get_error
- * @type: getter
- */
-ta_error_t *ta_xmpp_client_get_error (ta_xmpp_client_t *ctx);
 
 /**
  * @name: ta_xmpp_client::get_filter

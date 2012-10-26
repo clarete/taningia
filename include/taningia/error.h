@@ -26,67 +26,34 @@ extern "C" {
 
 typedef struct
 {
-  char *name;
-  char *message;
   int code;
+  char *message;
 } ta_error_t;
 
-/**
- * @name: ta_error::new
- * @type: constructor
- */
-ta_error_t *ta_error_new (void);
+/* General return types */
+enum {
+  OP_OK = 0,
+  OP_ERROR = -1,
+};
 
-/**
- * @name: ta_error::init
- * @type: initializer
- */
-void ta_error_init (ta_error_t *error);
 
-/**
- * @name: ta_error::get_code
- * @type: getter
- */
-int ta_error_get_code (ta_error_t *error);
+/* Error codes by their respective feature */
+enum {
+  TA_ATOM_LOAD_ERROR = 100,
+  TA_ATOM_PARSING_ERROR = 101,
 
-/**
- * @name: ta_error::set_code
- * @type: setter
- */
-void ta_error_set_code (ta_error_t *error, int code);
+  TA_IRI_PARSING_ERROR = 200,
+  TA_TAG_PARSING_ERROR = 201,
 
-/**
- * @name: ta_error::get_name
- * @type: getter
- */
-const char *ta_error_get_name (ta_error_t *error);
+  XMPP_CONNECTION_ERROR = 300,
+  XMPP_NO_SUCH_EVENT_ERROR = 301,
+  XMPP_SEND_ERROR = 302,
+};
 
-/**
- * @name: ta_error::set_name
- * @type: setter
- */
-void ta_error_set_name (ta_error_t *error, const char *name);
 
-/**
- * @name: ta_error::get_message
- * @type: getter
- */
-const char *ta_error_get_message (ta_error_t *error);
-
-/**
- * @name: ta_error::set_message
- * @type: setter
- */
-void ta_error_set_message (ta_error_t *error, const char *message, ...);
-
-/**
- * @name: ta_error::set_full
- * @type: method
- *
- * A shortcut to set all error attributes at once.
- */
-void ta_error_set_full (ta_error_t *error, int code, const char *name,
-                        const char *message, ...);
+const ta_error_t *ta_error_last (void);
+void ta_error_clear (void);
+void ta_error_set (int errcode, const char *message, ...);
 
 #ifdef __cplusplus
 }

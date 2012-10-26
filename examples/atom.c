@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <taningia/error.h>
 #include <taningia/atom.h>
 #include <taningia/iri.h>
 
@@ -97,9 +98,9 @@ gen_feed (void)
   ta_atom_entry_t *entry;
   ta_atom_content_t *content;
   ta_atom_person_t *author;
-  ta_error_t *error;
   ta_iri_t *feed_id, *entry_id;
   char *feed_string;
+  const ta_error_t *error;
 
   /* This usually is the first step, create a feed instance: */
   feed = ta_atom_feed_new ("My cool atom feed");
@@ -111,15 +112,14 @@ gen_feed (void)
   /* Since this iri is hardcoded we're sure that it will be parsed
    * successfuly, but in a real example, you should validate it, like
    * this: */
-  if ((error = ta_iri_get_error (feed_id)) != NULL)
+  if ((error = ta_error_last ()) != NULL)
     {
       /* This frees the already set attributes and the feed object
        * itself. */
       ta_object_unref (feed);
 
       /* Giving some feedback to the user. */
-      fprintf (stderr, "Invalid uri: %s: %s\n", ta_error_get_name (error),
-               ta_error_get_message (error));
+      fprintf (stderr, "Invalid uri: (%d) %s\n", error->code, error->message);
 
       /* We had no time to set the iri in the feed object, so, we
        * should free it manually. But only do it when done with the

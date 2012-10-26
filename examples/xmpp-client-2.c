@@ -100,19 +100,15 @@ main (int argc, char **argv)
   ta_log_set_use_colors (logger, 1);
   if (!ta_xmpp_client_connect (xmpp))
     {
-      ta_error_t *error;
-      error = ta_xmpp_client_get_error (xmpp);
-      fprintf (stderr, "%s: %s\n", ta_error_get_name (error),
-               ta_error_get_message (error));
+      const ta_error_t *error = ta_error_last ();
+      fprintf (stderr, "(%d) %s\n", error->code, error->message);
       ta_object_unref (xmpp);
       return 1;
     }
   if (!ta_xmpp_client_run (xmpp, 0))
     {
-      ta_error_t *error;
-      error = ta_xmpp_client_get_error (xmpp);
-      fprintf (stderr, "%s: %s\n", ta_error_get_name (error),
-               ta_error_get_message (error));
+      const ta_error_t *error = ta_error_last ();
+      fprintf (stderr, "(%d) %s\n", error->code, error->message);
       ta_object_unref (xmpp);
       return 1;
     }

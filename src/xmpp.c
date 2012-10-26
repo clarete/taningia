@@ -48,7 +48,6 @@ struct _ta_xmpp_client_t {
   int running;
 
   ta_log_t *log;
-  ta_error_t *error;
 
   hashtable_t *events;
 };
@@ -236,8 +235,6 @@ ta_xmpp_client_free (ta_xmpp_client_t *client)
     iks_filter_delete (client->filter);
   if (client->log)
     ta_object_unref (client->log);
-  if (client->error)
-    ta_object_unref (client->error);
 
   /* Freeing all hooks for all events. Maybe it is better to be done
    * automatically. */
@@ -287,7 +284,6 @@ ta_xmpp_client_init (ta_xmpp_client_t *client,
 
   /* taningia stuff */
   client->log = ta_log_new ("xmpp-client");
-  client->error = NULL;
 
   /* Initializing hash table that holds event hooks and adding all
    * currently supported events. We actually don't free anything but
@@ -374,12 +370,6 @@ ta_xmpp_client_get_logger (ta_xmpp_client_t *client)
   return client->log;
 }
 
-ta_error_t *
-ta_xmpp_client_get_error (ta_xmpp_client_t *client)
-{
-  return client->error;
-}
-
 iksfilter *
 ta_xmpp_client_get_filter (ta_xmpp_client_t *client)
 {
@@ -399,12 +389,7 @@ ta_xmpp_client_send (ta_xmpp_client_t *client, iks *node)
   if ((err = iks_send (client->parser, node)) != IKS_OK)
     {
       ta_log_warn (client->log, "Fail to send the stanza");
-      if (client->error)
-        ta_object_unref (client->error);
-      client->error = ta_error_new ();
-      ta_error_set_name (client->error, "NetworkError");
-      ta_error_set_message (client->error, "Failed to send the stanza");
-      ta_error_set_code (client->error, XMPP_SEND_ERROR);
+      ta_error_set (XMPP_SEND_ERROR, "Failed to send the stanza");
     }
   return err;
 }
@@ -451,12 +436,7 @@ ta_xmpp_client_send_and_filter (ta_xmpp_client_t *client, iks *node,
   if ((err = iks_send (client->parser, node)) != IKS_OK)
     {
       ta_log_warn (client->log, "Fail to send the stanza");
-      if (client->error)
-        ta_object_unref (client->error);
-      client->error = ta_error_new ();
-      ta_error_set_name (client->error, "NetworkError");
-      ta_error_set_message (client->error, "Failed to send the stanza");
-      ta_error_set_code (client->error, XMPP_SEND_ERROR);
+      ta_error_set (XMPP_SEND_ERROR, "Failed to send the stanza");
 
       iks_filter_remove_rule (client->filter, wdata->rule);
       wdata_free (wdata);
@@ -487,27 +467,18 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
     {
       /* Something didnt't work properly here, so we need to handle
        * the error and send some useful result to the user. */
-      if (client->error)
-        {
-          ta_object_unref (client->error);
-          client->error = NULL;
-        }
-      client->error = ta_error_new ();
-      ta_error_set_name (client->error, "ConnectionError");
-      ta_error_set_code (client->error, XMPP_CONNECTION_ERROR);
-
       switch (err)
         {
         case IKS_NET_NODNS:
-          ta_error_set_message (client->error, "hostname lookup failed");
+          ta_error_set (XMPP_CONNECTION_ERROR, "hostname lookup failed");
           break;
 
         case IKS_NET_NOCONN:
-          ta_error_set_message (client->error, "connection failed");
+          ta_error_set (XMPP_CONNECTION_ERROR, "connection failed");
           break;
 
         default:
-          ta_error_set_message (client->error, "io error");
+          ta_error_set (XMPP_CONNECTION_ERROR, "io error");
           break;
         }
       return 0;
@@ -605,13 +576,9 @@ ta_xmpp_client_event_connect (ta_xmpp_client_t *client,
    * to the hash table. */
   if (!hashtable_get_test (client->events, event, (void **) &hooks))
     {
-      if (client->error)
-        ta_object_unref (client->error);
-      client->error = ta_error_new ();
-      ta_error_set_name (client->error, "NoSuchEvent");
-      ta_error_set_message (client->error,
-                            "XMPP client has no event called %s", event);
-      ta_error_set_code (client->error, XMPP_NO_SUCH_EVENT_ERROR);
+      ta_error_set (XMPP_NO_SUCH_EVENT_ERROR,
+                    "XMPP client has no event called %s",
+                    event);
       return 0;
     }
   if (hooks == NULL)
@@ -638,13 +605,9 @@ ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
    * keys. */
   if (!hashtable_get_test (client->events, event, (void **) &hooks))
     {
-      if (client->error)
-        ta_object_unref (client->error);
-      client->error = ta_error_new ();
-      ta_error_set_name (client->error, "NoSuchEvent");
-      ta_error_set_message (client->error,
-                            "XMPP client has no event called %s", event);
-      ta_error_set_code (client->error, XMPP_NO_SUCH_EVENT_ERROR);
+      ta_error_set (XMPP_NO_SUCH_EVENT_ERROR,
+                    "XMPP client has no event called %s",
+                    event);
       return 0;
     }
 
