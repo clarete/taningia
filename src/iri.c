@@ -175,10 +175,10 @@ ta_iri_to_string (ta_iri_t *iri)
   char *ret;
   int position = 0;
 
-  /* This is really necessary to continue */
-    if (!iri->scheme)
-      return NULL;
-  scheme_size = strlen (iri->scheme);
+  /* This is actually required in the RFC to continue, but meh, our
+   * modern world requires us to allow people to create iris with no
+   * scheme */
+  scheme_size = iri->scheme ? strlen (iri->scheme) : 0;
   host_size = iri->host ? strlen (iri->host) : 0;
 
     /* Calculating the size of our return var */
@@ -210,25 +210,24 @@ ta_iri_to_string (ta_iri_t *iri)
   ret = malloc (rlen);
 
   /* Copying scheme to the ret var. */
-  if (!iri->scheme)
-    goto error;
   memcpy (ret, iri->scheme, scheme_size);
-  position += scheme_size;
+  position += iri->scheme ? scheme_size : 0;
 
   /* So, if we have a host set in the uri, we add the double
    * slashes!*/
-  if (iri->host)
+  if (iri->host && iri->scheme)
     {
       memcpy ((ret+position), "://", 3);
       position += 3;
     }
-  else
+
+  if (!iri->host)
     {
       memcpy ((ret+position), ":", 1);
       position++;
     }
 
-  /* User handling*/
+  /* User handling */
   if (iri->user)
     {
       memcpy ((ret+position), iri->user, user_size);
@@ -278,10 +277,6 @@ ta_iri_to_string (ta_iri_t *iri)
 
   ret[position] = '\0';
   return ret;
-
- error:
-  free (ret);
-  return NULL;
 }
 
 int

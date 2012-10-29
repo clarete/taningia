@@ -56,11 +56,51 @@ START_TEST (test_iri_setters_getters)
 END_TEST
 
 
+START_TEST (test_iri_to_string)
+{
+  /* Given that I have some iris with some data */
+  ta_iri_t *iri1 = ta_iri_new ();
+  ta_iri_t *iri2 = ta_iri_new ();
+  ta_iri_t *iri3 = ta_iri_new ();
+  char *str1, *str2, *str3;
+
+  str1 = str2 = str3 = NULL;
+  ta_iri_set_scheme (iri1, "http");
+  ta_iri_set_host (iri1, "comum.org");
+  ta_iri_set_path (iri1, "/this/is/a/test");
+  ta_iri_set_query (iri1, "p1=v1");
+
+  ta_iri_set_scheme (iri2, "ssh");
+  ta_iri_set_user (iri2, "lincoln");
+  ta_iri_set_host (iri2, "guake.org");
+
+  ta_iri_set_host (iri3, "minaslivre.org");
+  ta_iri_set_fragment (iri3, "stuff");
+  ta_iri_set_port (iri3, 22);
+
+  /* When I get the string representatino of these iris */
+  str1 = ta_iri_to_string (iri1);
+  str2 = ta_iri_to_string (iri2);
+  str3 = ta_iri_to_string (iri3);
+
+  /* I see that we got the right values */
+  fail_unless (strcmp (str1, "http://comum.org/this/is/a/test?p1=v1") == 0,
+               "Wrong iri generated");
+  fail_unless (strcmp (str2, "ssh://lincoln@guake.org") == 0,
+               "Wrong iri generated");
+  fail_unless (strcmp (str3, "minaslivre.org:22#stuff") == 0,
+               "Wrong iri generated");
+}
+END_TEST
+
+
 Suite *
 iri_suite ()
 {
   Suite *s = suite_create ("taningia::iri");
   TCase *tc_core = tcase_create ("Core");
   tcase_add_test (tc_core, test_iri_setters_getters);
+  tcase_add_test (tc_core, test_iri_to_string);
+  suite_add_tcase (s, tc_core);
   return s;
 }
