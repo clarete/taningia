@@ -1,6 +1,7 @@
-TESTS = check_list
+TESTS = check_taningia
 
-check_PROGRAMS = check_list
-check_list_SOURCES = check_list.c $(top_builddir)/include/taningia/list.h
-check_list_CFLAGS = @CHECK_CFLAGS@
-check_list_LDADD = $(top_builddir)/src/libtaningia.la @CHECK_LIBS@
+check_PROGRAMS = check_taningia
+check_taningia_SOURCES = check.c check_list.c check_iri.c
+
+check_taningia_CFLAGS = @CHECK_CFLAGS@
+check_taningia_LDADD = $(top_builddir)/src/libtaningia.la @CHECK_LIBS@
