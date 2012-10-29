@@ -22,7 +22,9 @@
 #include <string.h>
 #include <taningia/list.h>
 
-int cmp(ta_list_t *a, ta_list_t *b) {
+int
+cmp (ta_list_t *a, ta_list_t *b)
+{
   return (int) a->data - (int) b->data;
 }
 

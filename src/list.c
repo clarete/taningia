@@ -264,7 +264,7 @@ ta_list_sort (ta_list_t *list, ta_list_cmp_func_t cmpfunc)
   ta_list_t *p, *q, *e, *tail;
   int split_point, nmerges, psize, qsize, i;
 
-  /* If the list is empty or res only one element, it is already
+  /* If the list is empty or has only one element, it is already
    * sorted. */
   if (list == NULL || list->next == NULL)
     return list;

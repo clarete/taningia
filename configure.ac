@@ -41,12 +41,17 @@ PKG_CHECK_MODULES([IKSEMEL], [iksemel])
 AC_SUBST([IKSEMEL_CFLAGS])
 AC_SUBST([IKSEMEL_LIBS])
 
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.4])
+AC_SUBST([CHECK_CFLAGS])
+AC_SUBST([CHECK_LIBS])
+
 AC_CONFIG_FILES([
   Makefile
   include/Makefile
   include/taningia/Makefile
   src/Makefile
   examples/Makefile
+  tests/Makefile
   taningia.pc
 ])
 
