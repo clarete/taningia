@@ -57,7 +57,7 @@ START_TEST (test_list_len)
   l = ta_list_append (l, "b");
   l = ta_list_append (l, "c");
   l = ta_list_append (l, "d");
-  l = ta_list_append (l, "3");
+  l = ta_list_append (l, "e");
 
   /* When I get the length of this list */
   len = ta_list_len (l);
@@ -89,6 +89,230 @@ START_TEST (test_list_count)
 END_TEST
 
 
+START_TEST (test_list_first_last)
+{
+  /* Given that I have a list of a couple of vars pointing to different
+   * positions on it */
+  ta_list_t *a, *b, *c, *d, *e, *f;
+  ta_list_t *first, *last;
+  a = ta_list_append (NULL, "first");
+  b = ta_list_append (a, "second");
+  c = ta_list_append (b, "third");
+  d = ta_list_append (c, "fourth");
+  e = ta_list_append (d, "fifth");
+  f = ta_list_append (e, "sixth");
+
+  /* When I try to find the first and the last elements */
+  first = ta_list_first (d);
+  last = ta_list_last (b);
+
+  /* Then I see that the right elements were found */
+  fail_unless (strcmp (first->data, "first") == 0,
+               "Could not find the first element");
+  fail_unless (strcmp (last->data, "sixth") == 0,
+               "Could not find the last element");
+}
+END_TEST
+
+
+START_TEST (test_list_extend)
+{
+  /* Given that I have two lists */
+  ta_list_t *one = NULL, *other = NULL;
+
+  one = ta_list_append (one, "1");
+  one = ta_list_append (one, "2");
+  one = ta_list_append (one, "3");
+  one = ta_list_append (one, "4");
+
+  other = ta_list_append (other, "5");
+  other = ta_list_append (other, "6");
+  other = ta_list_append (other, "7");
+  other = ta_list_append (other, "8");
+
+  /* When I extend the first one with the second one */
+  one = ta_list_extend (one, other);
+
+  /* Then I see that the first list was extended with the second one */
+  fail_unless (ta_list_len (one) == 8, "New list size does not match");
+  fail_unless (strcmp ((ta_list_last (one))->data, "8") == 0,
+               "The last element of the first list is wrong");
+  fail_unless (strcmp ((ta_list_first (other))->data, "1") == 0,
+               "The first element of the other list is wrong");
+}
+END_TEST
+
+
+START_TEST (test_list_index)
+{
+  /* Given I that have a list with some elements */
+  ta_list_t *l = NULL;
+  int pos1, pos2;
+  l = ta_list_append (l, "Aragorn");
+  l = ta_list_append (l, "Sam");
+  l = ta_list_append (l, "Frodo");
+  l = ta_list_append (l, "Legolas");
+  l = ta_list_append (l, "Boromir");
+
+  /* When I try to find Frodo and Gimli */
+  pos1 = ta_list_index (l, "Frodo");
+  pos2 = ta_list_index (l, "Gimli");
+
+  /* Then I see that I can find Frodo, but I cannot find Gimli */
+  fail_unless (pos1 == 2, "Frodo cannot be found");
+  fail_unless (pos2 == -1, "Gimli was found, but it was not supposed to");
+}
+END_TEST
+
+
+START_TEST (test_list_item)
+{
+  /* Given I that have a list with some elements */
+  ta_list_t *l = NULL;
+  char *narya, *vilya, *nenya;
+  l = ta_list_append (l, "Narya");
+  l = ta_list_append (l, "Vilya");
+  l = ta_list_append (l, "Nenya");
+
+  /* Then I try to get the elvish kings rings of power */
+  narya = ta_list_item (l, 0);
+  vilya = ta_list_item (l, 1);
+  nenya = ta_list_item (l, 2);
+
+  /* Then I see that all the indexes matches the expected content */
+  fail_unless (strcmp (narya, "Narya") == 0,
+               "Content does not match the index");
+  fail_unless (strcmp (vilya, "Vilya") == 0,
+               "Content does not match the index");
+  fail_unless (strcmp (nenya, "Nenya") == 0,
+               "Content does not match the index");
+}
+END_TEST
+
+
+START_TEST (test_list_insert)
+{
+  /* Given that I have a list of with some Nazgûl aliases */
+  ta_list_t *nazgul = NULL;
+  nazgul = ta_list_append (nazgul, "Ulairi");
+  nazgul = ta_list_append (nazgul, "Black Riders");
+
+  /* When I insert new elements */
+  nazgul = ta_list_insert (nazgul, "Fell Riders", 0);
+  nazgul = ta_list_insert (nazgul, "Ringwraiths", 2);
+  nazgul = ta_list_insert (nazgul, "The Nine", 1);
+
+  /* Than I see that they were added to the right positions */
+  fail_unless (strcmp (ta_list_item (nazgul, 0), "Fell Riders") == 0,
+               "Item is placed in the wrong position");
+  fail_unless (strcmp (ta_list_item (nazgul, 1), "The Nine") == 0,
+               "Item is placed in the wrong position");
+  fail_unless (strcmp (ta_list_item (nazgul, 2), "Ulairi") == 0,
+               "Item is placed in the wrong position");
+  fail_unless (strcmp (ta_list_item (nazgul, 3), "Ringwraiths") == 0,
+               "Item is placed in the wrong position");
+  fail_unless (strcmp (ta_list_item (nazgul, 4), "Black Riders") == 0,
+               "Item is placed in the wrong position");
+}
+END_TEST
+
+
+START_TEST (test_list_remove)
+{
+  /* Given that I have a list of with some important places */
+  ta_list_t *places = NULL;
+  char *removed = NULL;
+  places = ta_list_append (places, "Mordor");
+  places = ta_list_append (places, "Rhun");
+  places = ta_list_append (places, "Rohan");
+  places = ta_list_append (places, "Lindon");
+  places = ta_list_append (places, "Eriador");
+
+  /* When I remove a couple elements */
+  places = ta_list_remove (places, "Mordor", NULL);
+  places = ta_list_remove (places, "Lindon", (void *) removed);
+
+  /* Then I see that the list is now without the elements and I got the
+   * removed element using the last parameter of the _remove()
+   * function */
+  fail_unless (ta_list_len (places) == 3,
+               "List size is wrong, items were not removed");
+  fail_unless (ta_list_index (places, "Rhun") == 0,
+               "Remove failed, item is in the wrong place");
+  fail_unless (ta_list_index (places, "Rohan") == 1,
+               "Remove failed, item is in the wrong place");
+  fail_unless (ta_list_index (places, "Eriador") == 2,
+               "Remove failed, item is in the wrong place");
+}
+END_TEST
+
+
+START_TEST (test_list_reverse)
+{
+  /* Given that I have a list of elements */
+  ta_list_t *l = NULL;
+  l = ta_list_append (l, "1");
+  l = ta_list_append (l, "2");
+  l = ta_list_append (l, "3");
+  l = ta_list_append (l, "4");
+
+  /* When I reverse it */
+  l = ta_list_reverse (l);
+
+  /* Then I see the items were reversed */
+  fail_unless (ta_list_index (l, "4") == 0,
+               "Reverse failed, item is in the wrong place");
+  fail_unless (ta_list_index (l, "3") == 1,
+               "Reverse failed, item is in the wrong place");
+  fail_unless (ta_list_index (l, "2") == 2,
+               "Reverse failed, item is in the wrong place");
+  fail_unless (ta_list_index (l, "1") == 3,
+               "Reverse failed, item is in the wrong place");
+}
+END_TEST
+
+
+static int
+_strcmp_wrapper (ta_list_t *a, ta_list_t *b)
+{
+  return strcmp (a->data, b->data);
+}
+
+
+START_TEST (test_list_sort)
+{
+  /* Given that I have a list of unsorted elements */
+  ta_list_t *names = NULL;
+  names = ta_list_append (names, "Yavanna");
+  names = ta_list_append (names, "Olwe");
+  names = ta_list_append (names, "Melkor");
+  names = ta_list_append (names, "Tulkas");
+  names = ta_list_append (names, "Aule");
+  names = ta_list_append (names, "Mandos");
+  names = ta_list_append (names, "Nienna");
+
+  /* When I sort this list */
+  names = ta_list_sort (names, (ta_list_cmp_func_t) _strcmp_wrapper);
+
+  /* Then I see that the results were ordered correctly */
+  fail_unless (ta_list_index (names, "Aule") == 0,
+               "Sort failed, item is in the wrong place");
+  fail_unless (ta_list_index (names, "Mandos") == 1,
+               "Sort failed, item is in the wrong place");
+  fail_unless (ta_list_index (names, "Melkor") == 2,
+               "Sort failed, item is in the wrong place");
+  fail_unless (ta_list_index (names, "Nienna") == 3,
+               "Sort failed, item is in the wrong place");
+  fail_unless (ta_list_index (names, "Olwe") == 4,
+               "Sort failed, item is in the wrong place");
+  fail_unless (ta_list_index (names, "Tulkas") == 5,
+               "Sort failed, item is in the wrong place");
+  fail_unless (ta_list_index (names, "Yavanna") == 6,
+               "Sort failed, item is in the wrong place");
+}
+END_TEST
+
+
 Suite *
 list_suite ()
 {
@@ -97,6 +321,14 @@ list_suite ()
   tcase_add_test (tc_core, test_list_append);
   tcase_add_test (tc_core, test_list_len);
   tcase_add_test (tc_core, test_list_count);
+  tcase_add_test (tc_core, test_list_first_last);
+  tcase_add_test (tc_core, test_list_extend);
+  tcase_add_test (tc_core, test_list_index);
+  tcase_add_test (tc_core, test_list_item);
+  tcase_add_test (tc_core, test_list_insert);
+  tcase_add_test (tc_core, test_list_remove);
+  tcase_add_test (tc_core, test_list_reverse);
+  tcase_add_test (tc_core, test_list_sort);
   suite_add_tcase (s, tc_core);
   return s;
 }
