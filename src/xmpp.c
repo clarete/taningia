@@ -222,19 +222,40 @@ static void
 ta_xmpp_client_free (ta_xmpp_client_t *client)
 {
   if (client->jid)
-    free (client->jid);
+    {
+      free (client->jid);
+      client->jid = NULL;
+    }
   if (client->password)
-    free (client->password);
+    {
+      free (client->password);
+      client->password = NULL;
+    }
   if (client->host)
-    free (client->host);
+    {
+      free (client->host);
+      client->host = NULL;
+    }
   if (client->idstack)
-    iks_stack_delete (client->idstack);
+    {
+      iks_stack_delete (client->idstack);
+      client->idstack = NULL;
+    }
   if (client->parser)
-    iks_parser_delete (client->parser);
+    {
+      iks_parser_delete (client->parser);
+      client->parser = NULL;
+    }
   if (client->filter)
-    iks_filter_delete (client->filter);
+    {
+      iks_filter_delete (client->filter);
+      client->filter = NULL;
+    }
   if (client->log)
-    ta_object_unref (client->log);
+    {
+      ta_object_unref (client->log);
+      client->log = NULL;
+    }
 
   /* Freeing all hooks for all events. Maybe it is better to be done
    * automatically. */
@@ -244,7 +265,10 @@ ta_xmpp_client_free (ta_xmpp_client_t *client)
   ta_xmpp_client_event_disconnect (client, "message-received", NULL);
   ta_xmpp_client_event_disconnect (client, "presence-noticed", NULL);
   if (client->events)
-    hashtable_destroy (client->events);
+    {
+      hashtable_destroy (client->events);
+      client->events = NULL;
+    }
 }
 
 void
