@@ -32,8 +32,8 @@ typedef struct
 
 /* General return types */
 enum {
-  OP_OK = 0,
-  OP_ERROR = -1,
+  TA_OK = 0,
+  TA_ERROR = -1,
 };
 
 
