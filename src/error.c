@@ -40,20 +40,22 @@ ta_error_clear (void)
   TA_GLOBAL->last_error = NULL;
 }
 
+static void
+set_err (int code, char *msg)
+{
+  ta_error_t *error = &TA_GLOBAL->error_t;
+  free (error->message);
+  error->code = code;
+  error->message = msg;
+  TA_GLOBAL->last_error = error;
+}
 
 void
 ta_error_set (int errcode, const char *fmt, ...)
 {
-  int n, size = 50;
+  int n, size = 32;
   char *msg, *tmp;
   va_list args;
-  ta_error_t *error = &TA_GLOBAL->error_t;
-
-  /* Removing the old value */
-  free (error->message);
-
-  /* Setting new values */
-  error->code = errcode;
 
   /* Well, we don't know how many params the user will send. So, let's
    * figure it out */
@@ -62,22 +64,25 @@ ta_error_set (int errcode, const char *fmt, ...)
       va_start (args, fmt);
       n = vsnprintf (msg, size, fmt, args);
       va_end (args);
+
+      /* Ok, we're done! gtfo */
       if (n > -1 && n < size)
         break;
+
+      /* Need more memory */
       if (n > -1)
-        size = n + 1;
+        size = n + 1;           /* glibc 1.2 */
       else
-        size *= 2;
+        size *= 2;              /* glibc 2.0 */
       if ((tmp = realloc (msg, size)) == NULL)
         {
           free (msg);
-          msg = NULL;
-          break;
+          return;
         }
       else
         msg = tmp;
     }
 
-  error->message = msg;
-  TA_GLOBAL->last_error = error;
+  /* Setting the error */
+  set_err (errcode, msg);
 }
