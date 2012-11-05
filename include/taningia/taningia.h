@@ -29,5 +29,6 @@
 #include "pubsub.h"
 #include "srv.h"
 #include "xmpp.h"
+#include "global.h"
 
 #endif /* _TANINGIA_H_ */
