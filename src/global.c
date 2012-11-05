@@ -16,21 +16,71 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.*
  */
 
+#include <config.h>
+#include <stdlib.h>
+#include <string.h>
 #include <taningia/global.h>
 
-/* Dummy implementation of a thread-safe global context
- *
- * It's inspired in the libgit2 global error reporting api. Currently,
- * this file is nothing but a good place to implement the real
- * protection of the global state.
+/* Thread Local Storage based context. Inspired in the libgit2 global
+ * error reporting api.
  */
 
 
+#ifdef HAVE_LIBPTHREAD
+
+#include <pthread.h>
+
+static pthread_key_t _tls_key;
+static int _tls_init = 0;
+
+void
+ta_global_state_setup (void)
+{
+  pthread_key_create (&_tls_key, free);
+  _tls_init = 1;
+}
+
+void
+ta_global_state_teardown (void)
+{
+  pthread_key_delete (_tls_key);
+  _tls_init = 0;
+}
+
+ta_global_state_t *
+ta_global_state_get (void)
+{
+  void *state;
+  if ((state = pthread_getspecific (_tls_key)) != NULL)
+    return state;
+
+  state = malloc (sizeof (ta_global_state_t));
+  if (!state)
+    return NULL;
+
+  memset (state, 0x0, sizeof (ta_global_state_t));
+  pthread_setspecific (_tls_key, state);
+  return (ta_global_state_t *) state;
+}
+
+#else
+
 static ta_global_state_t __ta_state;
 
+void
+ta_global_state_setup (void)
+{
+}
+
+void
+ta_global_state_teardown (void)
+{
+}
 
 ta_global_state_t *
 ta_global_state_get (void)
 {
   return &__ta_state;
 }
+
+#endif  /* HAVE_PTHREADS */

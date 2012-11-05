@@ -57,6 +57,9 @@ ta_error_set (int errcode, const char *fmt, ...)
   char *msg, *tmp;
   va_list args;
 
+  /* Allocating some bytes to the first try of vsnprintf */
+  msg = calloc (size, sizeof (char *));
+
   /* Well, we don't know how many params the user will send. So, let's
    * figure it out */
   while (1)

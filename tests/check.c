@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <check.h>
+#include <taningia/global.h>
 
 Suite *list_suite (void);
 Suite *iri_suite (void);
@@ -32,6 +33,9 @@ main (void)
   int number_failed;
   SRunner *sr;
 
+  /* initializing global state */
+  ta_global_state_setup ();
+
   sr = srunner_create (list_suite ());
   srunner_add_suite(sr, iri_suite ());
   srunner_add_suite(sr, error_suite ());
@@ -39,6 +43,9 @@ main (void)
   srunner_run_all (sr, CK_NORMAL);
   number_failed = srunner_ntests_failed (sr);
   srunner_free (sr);
+
+  /* Setting global state down */
+  ta_global_state_teardown ();
 
   return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

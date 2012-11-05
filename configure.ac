@@ -23,6 +23,15 @@ AC_CHECK_LIB([resolv], [res_querydomain],
               enable_libresolv=no)
 AM_CONDITIONAL([ENABLE_LIBRESOLV], [test "$enable_libresolv" = "yes"])
 
+# Checking for pthread
+ACX_PTHREAD([
+        AC_SUBST([PTHREAD_CFLAGS])
+        AC_SUBST([PTHREAD_LIBS])
+	CC="$PTHREAD_CC"
+],[
+	AC_MSG_WARN([Compiling without threads support])
+])
+
 # Checks for header files.
 AC_CHECK_HEADERS([string.h])
 

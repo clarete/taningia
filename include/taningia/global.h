@@ -28,6 +28,8 @@ typedef struct {
 } ta_global_state_t;
 
 
+void ta_global_state_setup (void);
+void ta_global_state_teardown (void);
 ta_global_state_t *ta_global_state_get (void);
 
 #define TA_GLOBAL (ta_global_state_get ())
