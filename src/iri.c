@@ -181,8 +181,8 @@ ta_iri_to_string (ta_iri_t *iri)
   scheme_size = iri->scheme ? strlen (iri->scheme) : 0;
   host_size = iri->host ? strlen (iri->host) : 0;
 
-    /* Calculating the size of our return var */
-    static_part = 3 + 4;          /* ://, portnumber */
+  /* Calculating the size of our return var */
+  static_part = 3 + 4;          /* ://, portnumber */
   if (iri->user)
     {
       user_size = strlen (iri->user);
