@@ -56,7 +56,7 @@ build_iri (const char *iristr)
   ta_iri_t *myiri;
   char *mystr;
   myiri = ta_iri_new ();
-  if (ta_iri_set_from_string (myiri, iristr))
+  if (ta_iri_set_from_string (myiri, iristr) == TA_OK)
     {
       printf ("scheme:     %s\n", ta_iri_get_scheme (myiri));
       printf ("user:       %s\n", ta_iri_get_user (myiri));
@@ -92,7 +92,7 @@ test_tag (void)
   ta_tag_t *tag;
   tag = ta_tag_new ();
   printf ("Parsing tag uri: %s\n", "tag:minaslivre.org,2009-10:/web/blah?a=1#blah=2");
-  if (ta_tag_set_from_string (tag, "tag:minaslivre.org,2009-10:/web/blah?a=1#blah=2"))
+  if (ta_tag_set_from_string (tag, "tag:minaslivre.org,2009-10:/web/blah?a=1#blah=2") == TA_OK)
     {
       char *res = NULL;
       printf ("scheme:     %s\n", ta_iri_get_scheme (TA_CAST_IRI (tag)));

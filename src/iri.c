@@ -299,7 +299,7 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
     {
       ta_error_set (TA_IRI_PARSING_ERROR,
                     "Schema should start with an alpha char");
-      return 0;
+      return TA_ERROR;
     }
 
   /* Getting "scheme" part */
@@ -316,7 +316,7 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
           ta_error_set (TA_IRI_PARSING_ERROR,
                         "Schema should only have the following chars: "
                         "[a-Z][0-9][-+.]");
-          return 0;
+          return TA_ERROR;
         }
       c = *p++;
     }
@@ -404,7 +404,7 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
           if (port_len == 0)
             {
               ta_error_set (TA_IRI_PARSING_ERROR, "Invalid port number");
-              return 0;
+              return TA_ERROR;
             }
 
           port_str = strndup (port+1, port_len);
@@ -428,7 +428,7 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
           ta_error_set (TA_IRI_PARSING_ERROR,
                         "Path should start with a '/' since authority "
                         "section was filled");
-          return 0;
+          return TA_ERROR;
         }
       if (path)
         {
@@ -470,7 +470,7 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
         iri->path = strdup (ihier_part);
     }
 
-  return 1;
+  return TA_OK;
 }
 
 static void
