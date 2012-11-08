@@ -38,6 +38,9 @@ struct _ta_xmpp_client_t {
   char *host;
   int port;
 
+  int use_sasl;
+  int use_tls;
+
   iksparser *parser;
   ikstack *idstack;
   iksid *id;
@@ -202,8 +205,8 @@ _ta_xmpp_client_ikshook_watcher (void *data, ikspak *pak)
 #ifdef DEBUG
 
 static void
-_xmpp_clienta_log_hook (ta_xmpp_client_t *client, const char *data,
-                        size_t size, int is_incoming)
+_xmpp_client_log_hook (ta_xmpp_client_t *client, const char *data,
+                       size_t size, int is_incoming)
 {
   if (iks_is_secure (client->parser))
     fprintf (stderr, "[SEC:");
@@ -286,15 +289,19 @@ ta_xmpp_client_init (ta_xmpp_client_t *client,
   jid_len = strlen (jid);
 
   /* Control flags */
-  client->features = 0;
   client->authenticated = 0;
   client->running = 0;
+
+  /* Security and auth configuration */
+  client->use_sasl = 1;
+  client->use_tls = 0;
 
   /* iksemel stuff */
   client->parser = NULL;
   client->filter = NULL;
   client->idstack = iks_stack_new (jid_len, jid_len);
   client->id = iks_id_new (client->idstack, client->jid);
+  client->features = 0;
 
   /* Handling optional parameters */
   if (host == NULL)
@@ -479,7 +486,7 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
   client->filter = iks_filter_new ();
 
 #ifdef DEBUG
-  iks_set_log_hook (client->parser, (iksLogHook *) _xmpp_clienta_log_hook);
+  iks_set_log_hook (client->parser, (iksLogHook *) _xmpp_client_log_hook);
 #endif
 
   if (client->host)
@@ -670,56 +677,107 @@ ta_xmpp_client_event_disconnect (ta_xmpp_client_t *client,
 
 /* ---- End of public API ---- */
 
+static void
+_make_bind (ta_xmpp_client_t *client)
+{
+  iks *x, *y, *z;
+  x = iks_new("iq");
+  iks_insert_attrib(x, "type", "set");
+  y = iks_insert(x, "bind");
+  iks_insert_attrib(y, "xmlns", IKS_NS_XMPP_BIND);
+  if (client->id->resource != NULL)
+    {
+      z = iks_insert(y, "resource");
+      iks_insert_cdata(z, client->id->resource, 0);
+    }
+
+  iks_send (client->parser, x);
+  iks_delete(x);
+}
+
+static void
+_on_features (ta_xmpp_client_t *client, iks *node)
+{
+  client->features = iks_stream_features (node);
+  if (client->use_sasl)
+    {
+      if (client->use_tls && !iks_is_secure (client->parser))
+        return;
+      if (client->authenticated)
+        {
+          if (client->features & IKS_STREAM_BIND)
+            _make_bind (client);
+          if (client->features & IKS_STREAM_SESSION)
+            {
+              iks *x;
+              x = iks_make_session ();
+              iks_insert_attrib (x, "id", "auth");
+              iks_send (client->parser, x);
+              iks_delete (x);
+            }
+        }
+      else
+        {
+          if (client->features & IKS_STREAM_SASL_MD5)
+            iks_start_sasl (client->parser, IKS_SASL_DIGEST_MD5,
+                            client->id->user, client->password);
+          else if (client->features & IKS_STREAM_SASL_PLAIN)
+            iks_start_sasl (client->parser, IKS_SASL_PLAIN,
+                            client->id->user, client->password);
+        }
+    }
+}
+
+static void
+_make_presence (ta_xmpp_client_t *client)
+{
+  iks *x = iks_make_pres (IKS_SHOW_AVAILABLE, "bitU");
+  iks_send (client->parser, x);
+  iks_delete (x);
+}
+
+static void
+_on_success (ta_xmpp_client_t *client)
+{
+  iks_send_header (client->parser, client->id->server);
+  client->authenticated = 1;
+  ta_log_info (client->log, "authentication successful");
+}
+
 static int
 _ta_xmpp_client_hook (void *data, int type, iks *node)
 {
   ta_xmpp_client_t *client;
-  char *name;
+  char *name, *stype = NULL, *id = NULL;
   client = (ta_xmpp_client_t *) data;
   name = iks_name (node);
+  stype = iks_find_attrib (node, "type");
+  id = iks_find_attrib (node, "id");
 
   switch (type)
     {
     case IKS_NODE_START:
-      if (!iks_is_secure (client->parser))
+      if (client->use_tls && !iks_is_secure(client->parser))
+        iks_start_tls (client->parser);
+      if (!client->use_sasl)
         {
-          iks_start_tls (client->parser);
-          break;
+          iks *x;
+          x = iks_make_auth (client->id, client->password, NULL);
+          iks_insert_attrib (x, "id", "auth");
+          iks_send (client->parser, x);
+          iks_delete (x);
         }
+      break;
+
     case IKS_NODE_NORMAL:
       if (strcmp (name, "stream:features") == 0)
-        {
-          client->features = iks_stream_features (node);
-          if (!iks_is_secure (client->parser))
-            break;
-          if (client->authenticated)
-            {
-              if (client->features & IKS_STREAM_BIND)
-                {
-                  iks *bind;
-                  bind = iks_make_resource_bind (client->id);
-                  iks_send (client->parser, bind);
-                  iks_delete (bind);
-                }
-              if (client->features & IKS_STREAM_SESSION)
-                {
-                  iks *session;
-                  session = iks_make_session ();
-                  iks_insert_attrib (session, "id", "auth");
-                  iks_send (client->parser, session);
-                  iks_delete (session);
-                }
-            }
-          else
-            {
-              if (client->features & IKS_STREAM_SASL_MD5)
-                iks_start_sasl (client->parser, IKS_SASL_DIGEST_MD5,
-                                client->id->user, client->password);
-              else if (client->features & IKS_STREAM_SASL_PLAIN)
-                iks_start_sasl (client->parser, IKS_SASL_PLAIN,
-                                client->id->user, client->password);
-            }
-        }
+        _on_features (client, node);
+      else if (strcmp (name, "success") == 0)
+        _on_success (client);
+      else if (strcmp (name, "iq") == 0 &&
+               (stype != NULL && strcmp (stype, "result") == 0) &&
+               (id != NULL && strcmp (id, "auth") == 0))
+        _make_presence (client);
       else if (strcmp (name, "failure") == 0)
         {
           ikspak *pak;
@@ -729,12 +787,6 @@ _ta_xmpp_client_hook (void *data, int type, iks *node)
           pak = iks_packet (node);
           _ta_xmpp_client_call_event_hooks (client, "authentication-failed",
                                             pak);
-        }
-      else if (strcmp (name, "success") == 0)
-        {
-          client->authenticated = 1;
-          iks_send_header (client->parser, client->id->server);
-          ta_log_info (client->log, "authentication successful");
         }
       else if (client->filter != NULL)
         {
