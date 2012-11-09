@@ -512,7 +512,7 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
           ta_error_set (XMPP_CONNECTION_ERROR, "io error");
           break;
         }
-      return 0;
+      return TA_ERROR;
     }
   else
     {
@@ -549,7 +549,7 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
                            client,
                            IKS_RULE_TYPE, IKS_PAK_PRESENCE,
                            IKS_RULE_DONE);
-      return 1;
+      return TA_OK;
     }
 }
 
