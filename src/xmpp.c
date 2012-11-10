@@ -731,7 +731,8 @@ _on_features (ta_xmpp_client_t *client, iks *node)
 static void
 _make_presence (ta_xmpp_client_t *client)
 {
-  iks *x = iks_make_pres (IKS_SHOW_AVAILABLE, "bitU");
+  char *resource = client->id->resource;
+  iks *x = iks_make_pres (IKS_SHOW_AVAILABLE, resource ? resource : "");
   iks_send (client->parser, x);
   iks_delete (x);
 }
