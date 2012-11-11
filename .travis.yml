@@ -1,0 +1,9 @@
+language: c
+install: sudo aptitude -y install check libiksemel-dev
+compiler:
+  - gcc
+  - clang
+before_script:
+  - ./autogen.sh
+script:
+  - make check
