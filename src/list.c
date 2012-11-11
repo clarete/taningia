@@ -238,6 +238,33 @@ ta_list_remove (ta_list_t *list, void *data, ta_list_t **removed)
 }
 
 ta_list_t *
+ta_list_pop (ta_list_t *list, ta_list_t **popped_out)
+{
+  ta_list_t *node = NULL, *prev = NULL;
+
+  /* Popping from an empty list should return NULL */
+  if ((node = list) == NULL)
+    return NULL;
+
+  /* Getting the last element (the first one which ->next is NULL) */
+  node = ta_list_last (list);
+
+  /* If the list has more than one element */
+  if (node->prev)
+    {
+      /* Unbind the prev element from the last one */
+      prev = node->prev;
+      prev->next = NULL;
+
+      /* Unbind the removed one from the previous one */
+      node->prev = NULL;
+    }
+
+  *popped_out = node;
+  return list;
+}
+
+ta_list_t *
 ta_list_reverse (ta_list_t *list)
 {
   ta_list_t *node = NULL;

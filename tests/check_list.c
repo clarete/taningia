@@ -114,6 +114,44 @@ START_TEST (test_list_first_last)
 END_TEST
 
 
+START_TEST (test_list_pop)
+{
+  /* Given that I have a list of a couple elements */
+  ta_list_t *mylist = NULL;
+  ta_list_t *popped_element = NULL;
+  mylist = ta_list_append (mylist, "a");
+  mylist = ta_list_append (mylist, "b");
+  mylist = ta_list_append (mylist, "c");
+
+  /* When I pop an item from the list */
+  mylist = ta_list_pop (mylist, &popped_element);
+
+  /* Then I see that the first added element was removed and returned
+   * and that the list head was changed, as well as it's size */
+  fail_unless (strcmp (popped_element->data, "c") == 0,
+               "Wrong element popped out");
+  fail_unless (strcmp((ta_list_last (mylist))->data, "b") == 0,
+               "Wrong tail set after pop()");
+  fail_unless (ta_list_len (mylist) == 2, "Element not removed on pop");
+}
+END_TEST
+
+
+START_TEST (test_list_pop_from_empty_list)
+{
+  /* Given that I have na empty list */
+  ta_list_t *mylist = NULL;
+  ta_list_t *popped_element = NULL;
+
+  /* When I pop an item from the list */
+  mylist = ta_list_pop (mylist, &popped_element);
+
+  /* Then I see that the popped element is NULL */
+  fail_unless (popped_element == NULL, "Popping from an empty list failed");
+}
+END_TEST
+
+
 START_TEST (test_list_extend)
 {
   /* Given that I have two lists */
@@ -321,6 +359,8 @@ list_suite ()
   tcase_add_test (tc_core, test_list_len);
   tcase_add_test (tc_core, test_list_count);
   tcase_add_test (tc_core, test_list_first_last);
+  tcase_add_test (tc_core, test_list_pop);
+  tcase_add_test (tc_core, test_list_pop_from_empty_list);
   tcase_add_test (tc_core, test_list_extend);
   tcase_add_test (tc_core, test_list_index);
   tcase_add_test (tc_core, test_list_item);

@@ -151,6 +151,18 @@ ta_list_t *ta_list_insert (ta_list_t *list, void *data, int position);
 ta_list_t *ta_list_remove (ta_list_t *list, void *data, ta_list_t **removed);
 
 /**
+ * @name: ta_list_pop
+ * @type: method ta_list
+ * @param popped_out: Output param for the element popped out from the
+ *  list
+ *
+ * Removes the first element from the list returning it through the
+ * @popped_out parameter. It does not free anything, it's up to the
+ * caller to free the output parameter and its data.
+ */
+ta_list_t *ta_list_pop (ta_list_t *list, ta_list_t **popped_out);
+
+/**
  * @name: ta_list_reverse
  * @type: method ta_list
  *
