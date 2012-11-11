@@ -46,6 +46,31 @@ START_TEST (test_list_append)
 END_TEST
 
 
+START_TEST (test_list_prepend)
+{
+  /* Given that I have a list with two elements */
+  ta_list_t *elves = NULL;
+  elves = ta_list_append (elves, "Galadriel");
+  elves = ta_list_append (elves, "Legolas");
+
+  /* When I prepend new elements to the list */
+  elves = ta_list_prepend (elves, "Turgon");
+  elves = ta_list_prepend (elves, "Fëanor");
+
+  /* Then I see that my items prepended later appear in the first
+   * positions */
+  fail_unless (strcmp (ta_list_item (elves, 0), "Fëanor") == 0,
+               "First element mismatch");
+  fail_unless (strcmp (ta_list_item (elves, 1), "Turgon") == 0,
+               "Second element mismatch");
+  fail_unless (strcmp (ta_list_item (elves, 2), "Galadriel") == 0,
+               "Third element mismatch");
+  fail_unless (strcmp (ta_list_item (elves, 3), "Legolas") == 0,
+               "Fourth element mismatch");
+}
+END_TEST
+
+
 START_TEST (test_list_len)
 {
   /* Given that I have a list with a couple elements */
@@ -356,6 +381,7 @@ list_suite ()
   Suite *s = suite_create ("taningia::list");
   TCase *tc_core = tcase_create ("Core");
   tcase_add_test (tc_core, test_list_append);
+  tcase_add_test (tc_core, test_list_prepend);
   tcase_add_test (tc_core, test_list_len);
   tcase_add_test (tc_core, test_list_count);
   tcase_add_test (tc_core, test_list_first_last);

@@ -87,6 +87,15 @@ int ta_list_len (ta_list_t *list);
 ta_list_t *ta_list_append (ta_list_t *list, void *data);
 
 /**
+ * @name: ta_list_prepend
+ * @type: method ta_list
+ * @param data: The element to be prepended.
+ *
+ * Prepends a new element to a list instance.
+ */
+ta_list_t *ta_list_prepend (ta_list_t *list, void *data);
+
+/**
  * @name: ta_list_count
  * @type: method ta_list
  * @param data: The element to be counted.

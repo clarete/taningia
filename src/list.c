@@ -107,6 +107,12 @@ ta_list_append (ta_list_t *list, void *data)
   return list;
 }
 
+ta_list_t *
+ta_list_prepend (ta_list_t *list, void *data)
+{
+  return ta_list_insert (list, data, 0);
+}
+
 int
 ta_list_count (ta_list_t *list, void *data, ta_list_cmp_func_t cmpfunc)
 {
