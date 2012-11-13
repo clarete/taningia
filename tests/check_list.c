@@ -279,6 +279,23 @@ START_TEST (test_list_insert)
 END_TEST
 
 
+START_TEST (test_list_insert_in_an_empty_list)
+{
+  /* Given that I have an empty list */
+  ta_list_t *mystuff = NULL;
+
+  /* When I try to insert to the 0th position of an empty list */
+  mystuff = ta_list_insert (mystuff, "The One Ring", 0);
+
+  /* Then I see that it was added as the first and only element */
+  fail_unless (ta_list_len (mystuff) == 1, "Insert in 0th pos didn't work");
+
+  /* Deallocating */
+  ta_list_free (mystuff);
+}
+END_TEST
+
+
 START_TEST (test_list_remove)
 {
   /* Given that I have a list of with some important places */
@@ -391,6 +408,7 @@ list_suite ()
   tcase_add_test (tc_core, test_list_index);
   tcase_add_test (tc_core, test_list_item);
   tcase_add_test (tc_core, test_list_insert);
+  tcase_add_test (tc_core, test_list_insert_in_an_empty_list);
   tcase_add_test (tc_core, test_list_remove);
   tcase_add_test (tc_core, test_list_reverse);
   tcase_add_test (tc_core, test_list_sort);

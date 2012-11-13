@@ -173,6 +173,10 @@ ta_list_insert (ta_list_t *list, void *data, int position)
   newnode = ta_list_new ();
   newnode->data = data;
 
+  /* The list is empty, let's make it the first element */
+  if (list == NULL)
+    return newnode;
+
   /* inserting an element at the first position */
   if (position == 0)
     {
