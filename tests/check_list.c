@@ -67,6 +67,9 @@ START_TEST (test_list_prepend)
                "Third element mismatch");
   fail_unless (strcmp (ta_list_item (elves, 3), "Legolas") == 0,
                "Fourth element mismatch");
+
+  /* Cleanup */
+  ta_list_free (elves);
 }
 END_TEST
 
@@ -88,6 +91,9 @@ START_TEST (test_list_len)
 
   /* Than I see that everything is correct */
   fail_unless (len == 5, "The list length does not match");
+
+  /* Cleanup */
+  ta_list_free (l);
 }
 END_TEST
 
@@ -109,6 +115,9 @@ START_TEST (test_list_count)
 
   /* Then I see the right count number */
   fail_unless (count == 2, "Element count number does not match");
+
+  /* Cleanup */
+  ta_list_free (l);
 }
 END_TEST
 
@@ -135,6 +144,9 @@ START_TEST (test_list_first_last)
                "Could not find the first element");
   fail_unless (strcmp (last->data, "sixth") == 0,
                "Could not find the last element");
+
+  /* Cleanup */
+  ta_list_free (a);
 }
 END_TEST
 
@@ -158,6 +170,10 @@ START_TEST (test_list_pop)
   fail_unless (strcmp((ta_list_last (mylist))->data, "b") == 0,
                "Wrong tail set after pop()");
   fail_unless (ta_list_len (mylist) == 2, "Element not removed on pop");
+
+  /* Cleanup */
+  ta_list_free (mylist);
+  ta_list_free (popped_element);
 }
 END_TEST
 
@@ -174,6 +190,10 @@ START_TEST (test_list_pop_from_empty_list)
   /* Then I see that the popped element is NULL */
   fail_unless (popped_element == NULL, "Popping from an empty list failed");
   fail_unless (mylist == NULL, "Popping from an empty list failed");
+
+  /* Cleanup */
+  ta_list_free (mylist);
+  ta_list_free (popped_element);
 }
 END_TEST
 
@@ -197,6 +217,11 @@ START_TEST (test_list_pop_until_the_list_is_empty)
                "Wrong element popped from the list");
   fail_unless (mylist == NULL,
                "The list is not empty after popping everything from it");
+
+  /* Cleanup */
+  ta_list_free (mylist);
+  ta_list_free (p1);
+  ta_list_free (p2);
 }
 END_TEST
 
@@ -225,6 +250,9 @@ START_TEST (test_list_extend)
                "The last element of the first list is wrong");
   fail_unless (strcmp ((ta_list_first (other))->data, "1") == 0,
                "The first element of the other list is wrong");
+
+  /* Cleanup */
+  ta_list_free (one);
 }
 END_TEST
 
@@ -247,6 +275,9 @@ START_TEST (test_list_index)
   /* Then I see that I can find Frodo, but I cannot find Gimli */
   fail_unless (pos1 == 2, "Frodo cannot be found");
   fail_unless (pos2 == -1, "Gimli was found, but it was not supposed to");
+
+  /* Cleanup */
+  ta_list_free (l);
 }
 END_TEST
 
@@ -272,6 +303,9 @@ START_TEST (test_list_item)
                "Content does not match the index");
   fail_unless (strcmp (nenya, "Nenya") == 0,
                "Content does not match the index");
+
+  /* Cleanup */
+  ta_list_free (l);
 }
 END_TEST
 
@@ -299,6 +333,9 @@ START_TEST (test_list_insert)
                "Item is placed in the wrong position");
   fail_unless (strcmp (ta_list_item (nazgul, 4), "Black Riders") == 0,
                "Item is placed in the wrong position");
+
+  /* Cleanup */
+  ta_list_free (nazgul);
 }
 END_TEST
 
@@ -346,6 +383,9 @@ START_TEST (test_list_remove)
                "Remove failed, item is in the wrong place");
   fail_unless (ta_list_index (places, "Eriador") == 2,
                "Remove failed, item is in the wrong place");
+
+  /* Cleanup */
+  ta_list_free (places);
 }
 END_TEST
 
@@ -371,6 +411,9 @@ START_TEST (test_list_reverse)
                "Reverse failed, item is in the wrong place");
   fail_unless (ta_list_index (l, "1") == 3,
                "Reverse failed, item is in the wrong place");
+
+  /* Cleanup */
+  ta_list_free (l);
 }
 END_TEST
 
@@ -412,6 +455,9 @@ START_TEST (test_list_sort)
                "Sort failed, item is in the wrong place");
   fail_unless (ta_list_index (names, "Yavanna") == 6,
                "Sort failed, item is in the wrong place");
+
+  /* Cleanup */
+  ta_list_free (names);
 }
 END_TEST
 
