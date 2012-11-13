@@ -270,6 +270,10 @@ ta_list_pop (ta_list_t *list, ta_list_t **popped_out)
       node->prev = NULL;
     }
 
+  /* The list must be set to NULL if there are no more elements */
+  if (node == list)
+    list = NULL;
+
   *popped_out = node;
   return list;
 }

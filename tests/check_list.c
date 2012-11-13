@@ -164,7 +164,7 @@ END_TEST
 
 START_TEST (test_list_pop_from_empty_list)
 {
-  /* Given that I have na empty list */
+  /* Given that I have an empty list */
   ta_list_t *mylist = NULL;
   ta_list_t *popped_element = NULL;
 
@@ -173,6 +173,30 @@ START_TEST (test_list_pop_from_empty_list)
 
   /* Then I see that the popped element is NULL */
   fail_unless (popped_element == NULL, "Popping from an empty list failed");
+  fail_unless (mylist == NULL, "Popping from an empty list failed");
+}
+END_TEST
+
+
+START_TEST (test_list_pop_until_the_list_is_empty)
+{
+  /* Given that I have a list with two elements */
+  ta_list_t *mylist = NULL;
+  ta_list_t *p1 = NULL, *p2 = NULL;
+  mylist = ta_list_prepend (mylist, "1");
+  mylist = ta_list_prepend (mylist, "2");
+
+  /* When I pop two elements */
+  mylist = ta_list_pop (mylist, &p1);
+  mylist = ta_list_pop (mylist, &p2);
+
+  /* Then I see the right values popped out and the list empty */
+  fail_unless (strcmp (p1->data, "1") == 0,
+               "Wrong element popped from the list");
+  fail_unless (strcmp (p2->data, "2") == 0,
+               "Wrong element popped from the list");
+  fail_unless (mylist == NULL,
+               "The list is not empty after popping everything from it");
 }
 END_TEST
 
@@ -404,6 +428,7 @@ list_suite ()
   tcase_add_test (tc_core, test_list_first_last);
   tcase_add_test (tc_core, test_list_pop);
   tcase_add_test (tc_core, test_list_pop_from_empty_list);
+  tcase_add_test (tc_core, test_list_pop_until_the_list_is_empty);
   tcase_add_test (tc_core, test_list_extend);
   tcase_add_test (tc_core, test_list_index);
   tcase_add_test (tc_core, test_list_item);
