@@ -33,14 +33,13 @@ connected_cb (ta_xmpp_client_t *client, void *data)
 static int
 auth_cb (ta_xmpp_client_t *client, void *data)
 {
-  iks *node;
-  printf ("connected: =)\n");
-  printf ("Sending presence and sleeping some time\n");
+  fprintf (stderr, "connected: =)\n");
+  fprintf (stderr, "Sending presence and sleeping some time\n");
 
   /* Sending presence info */
-  node = iks_make_pres (IKS_SHOW_AVAILABLE, "Client connected!");
-  ta_xmpp_client_send (client, node);
-  iks_delete (node);
+  ta_xmpp_client_send_presence (client,
+                                IKS_SHOW_AVAILABLE,
+                                "Client connected!");
 
   /* Sleeping some time before disconnection */
   sleep (3);
@@ -107,7 +106,7 @@ main (int argc, char **argv)
   ta_log_set_use_colors (logger, 1);
 
   /* Connecting to the host */
-  if (!ta_xmpp_client_connect (xmpp))
+  if (ta_xmpp_client_connect (xmpp) != TA_OK)
     {
       const ta_error_t *error = ta_error_last ();
       fprintf (stderr, "(%d) %s\n", error->code, error->message);
@@ -117,7 +116,7 @@ main (int argc, char **argv)
 
   /* Starting client main loop. Requesting to do not detach the loop
    * to another thread. Authentication will be done here too. */
-  if (!ta_xmpp_client_run (xmpp, 0))
+  if (ta_xmpp_client_run (xmpp, 0) != TA_OK)
     {
       const ta_error_t *error = ta_error_last ();
       fprintf (stderr, "(%d) %s\n", error->code, error->message);

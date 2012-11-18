@@ -31,6 +31,7 @@
 #include "hashtable.h"
 #include "hashtable-utils.h"
 
+
 struct _ta_xmpp_client_t {
   ta_object_t parent;
   char *jid;
@@ -143,18 +144,6 @@ _ta_xmpp_client_call_event_hooks (ta_xmpp_client_t *client,
       if ((*hdata->hook) (client, data, hdata->data))
         return;
     }
-}
-
-/* Definition of the callback that is called when our client
- * successfully authenticates in an XMPP server.  This callback just
- * call any declared hook against `authenticated' event. */
-static int
-_ta_xmpp_client_ikshook_authenticated (void *data, ikspak *pak)
-{
-  ta_xmpp_client_t *client;
-  client = (ta_xmpp_client_t *) data;
-  _ta_xmpp_client_call_event_hooks (client, "authenticated", pak);
-  return IKS_FILTER_EAT;
 }
 
 /* Callback fired when a <message /> is received by the xmpp
@@ -421,8 +410,26 @@ ta_xmpp_client_send (ta_xmpp_client_t *client, iks *node)
     {
       ta_log_warn (client->log, "Fail to send the stanza");
       ta_error_set (XMPP_SEND_ERROR, "Failed to send the stanza");
+      return err;
     }
-  return err;
+  return TA_OK;
+}
+
+int
+ta_xmpp_client_send_presence (ta_xmpp_client_t *client,
+                              enum ikshowtype type,
+                              const char *msg)
+{
+  int err;
+  iks *node = iks_make_pres (type, msg);
+  if ((err = iks_send (client->parser, node)) != IKS_OK)
+    {
+      ta_log_warn (client->log, "Fail to send the presence stanza");
+      ta_error_set (XMPP_SEND_ERROR, "Failed to send the presence stanza");
+      return err;
+    }
+  iks_delete (node);
+  return TA_OK;
 }
 
 int
@@ -526,15 +533,6 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
       /* Adding authentication handling rules to iksemel filter. This
        * stuff will be integrated with our simple event system. The
        * delcared callbacks only calls the user defined hook list. */
-
-      iks_filter_add_rule (client->filter,
-                           (iksFilterHook *)
-                             _ta_xmpp_client_ikshook_authenticated,
-                           client,
-                           IKS_RULE_TYPE, IKS_PAK_IQ,
-                           IKS_RULE_SUBTYPE, IKS_TYPE_RESULT,
-                           IKS_RULE_ID, "auth",
-                           IKS_RULE_DONE);
 
       iks_filter_add_rule (client->filter,
                            (iksFilterHook *)
@@ -729,15 +727,6 @@ _on_features (ta_xmpp_client_t *client, iks *node)
 }
 
 static void
-_make_presence (ta_xmpp_client_t *client)
-{
-  char *resource = client->id->resource;
-  iks *x = iks_make_pres (IKS_SHOW_AVAILABLE, resource ? resource : "");
-  iks_send (client->parser, x);
-  iks_delete (x);
-}
-
-static void
 _on_success (ta_xmpp_client_t *client)
 {
   iks_send_header (client->parser, client->id->server);
@@ -778,7 +767,7 @@ _ta_xmpp_client_hook (void *data, int type, iks *node)
       else if (strcmp (name, "iq") == 0 &&
                (stype != NULL && strcmp (stype, "result") == 0) &&
                (id != NULL && strcmp (id, "auth") == 0))
-        _make_presence (client);
+        _ta_xmpp_client_call_event_hooks (client, "authenticated", NULL);
       else if (strcmp (name, "failure") == 0)
         {
           ikspak *pak;
@@ -811,11 +800,12 @@ _ta_xmpp_client_hook (void *data, int type, iks *node)
   return IKS_OK;
 }
 
+
 static int
 _ta_xmpp_client_do_run (void *user_data)
 {
   ta_xmpp_client_t *client;
-  int ret = 1;
+  int ret = TA_OK;
 
   client = (ta_xmpp_client_t *) user_data;
 
@@ -835,17 +825,23 @@ _ta_xmpp_client_do_run (void *user_data)
 
         case IKS_NET_RWERR:
           ta_log_error (client->log, "Network error");
+          ta_error_set (TA_XMPP_NETWORK_ERROR, "Network Error");
           client->running = 0;
+          ret = TA_ERROR;
           break;
 
         case IKS_NET_TLSFAIL:
           ta_log_error (client->log, "TLS handshake failed");
+          ta_error_set (TA_XMPP_TLS_ERROR, "TLS handshake failed");
           client->running = 0;
+          ret = TA_ERROR;
           break;
 
         default:
           ta_log_error (client->log, "IO error");
+          ta_error_set (TA_XMPP_IO_ERROR, "IO Error");
           client->running = 0;
+          ret = TA_ERROR;
           break;
         }
     }

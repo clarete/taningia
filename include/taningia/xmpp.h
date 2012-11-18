@@ -148,6 +148,21 @@ void ta_xmpp_client_disconnect (ta_xmpp_client_t *ctx);
 int ta_xmpp_client_send (ta_xmpp_client_t *ctx, iks *node);
 
 /**
+ * @name: ta_xmpp_client::send_presence
+ * @type: method
+ * @param type: The type of the presence. Refer to the `ikshowtype` to
+ * see all the available values. Eg.: IKS_SHOW_AVAILABLE
+ * @param msg: The message that should be set as the client presence.
+ *
+ * Sends iks nodes to the XMPP server. Only call this function after
+ * making sure that client is running properly. To do it, use the
+ * `ta_xmpp_client_is_running' function.
+ */
+int ta_xmpp_client_send_presence (ta_xmpp_client_t *ctx,
+                                  enum ikshowtype type,
+                                  const char *msg);
+
+/**
  * @name: ta_xmpp_client::send_and_filter
  * @type: method
  * @param node: The iks node to be sent to the XMPP server.

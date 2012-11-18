@@ -98,14 +98,14 @@ main (int argc, char **argv)
   logger = ta_xmpp_client_get_logger (xmpp);
   ta_log_set_level (logger, TA_LOG_DEBUG);
   ta_log_set_use_colors (logger, 1);
-  if (!ta_xmpp_client_connect (xmpp))
+  if (ta_xmpp_client_connect (xmpp) != TA_OK)
     {
       const ta_error_t *error = ta_error_last ();
       fprintf (stderr, "(%d) %s\n", error->code, error->message);
       ta_object_unref (xmpp);
       return 1;
     }
-  if (!ta_xmpp_client_run (xmpp, 0))
+  if (ta_xmpp_client_run (xmpp, 0) != TA_OK)
     {
       const ta_error_t *error = ta_error_last ();
       fprintf (stderr, "(%d) %s\n", error->code, error->message);
