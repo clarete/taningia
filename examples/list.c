@@ -25,7 +25,7 @@
 int
 cmp (ta_list_t *a, ta_list_t *b)
 {
-  return (int) a->data - (int) b->data;
+  return atoi (a->data) - atoi (b->data);
 }
 
 int
@@ -132,16 +132,16 @@ main (int argc, char **argv)
 
   /* sort */
   printf ("Sorting the list");
-  list_to_sort = ta_list_append (list_to_sort, (void*) 42);
-  list_to_sort = ta_list_append (list_to_sort, (void*) 95);
-  list_to_sort = ta_list_append (list_to_sort, (void*) 18);
-  list_to_sort = ta_list_append (list_to_sort, (void*) 34);
-  list_to_sort = ta_list_append (list_to_sort, (void*) 5);
+  unsigned int i;
+  char *num[] = { "42", "95", "18", "34", "5" };
+
+  for (i = 0; i < sizeof (num) / sizeof (num[0]); i++)
+    list_to_sort = ta_list_append (list_to_sort, num[i]);
 
   printf (" [");
   for (node = list_to_sort; node; node = node->next)
     {
-      printf ("%d", (int) node->data);
+      printf ("%s", (char *) node->data);
       if (node->next)
         printf (", ");
     }
@@ -151,7 +151,7 @@ main (int argc, char **argv)
   printf (" [");
   for (node = list_to_sort; node; node = node->next)
     {
-      printf ("%d", (int) node->data);
+      printf ("%s", (char *) node->data);
       if (node->next)
         printf (", ");
     }
