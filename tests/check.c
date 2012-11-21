@@ -26,6 +26,7 @@
 Suite *list_suite (void);
 Suite *iri_suite (void);
 Suite *error_suite (void);
+Suite *buf_suite (void);
 
 int
 main (void)
@@ -39,6 +40,7 @@ main (void)
   sr = srunner_create (list_suite ());
   srunner_add_suite(sr, iri_suite ());
   srunner_add_suite(sr, error_suite ());
+  srunner_add_suite(sr, buf_suite ());
 
   srunner_run_all (sr, CK_NORMAL);
   number_failed = srunner_ntests_failed (sr);

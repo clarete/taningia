@@ -30,5 +30,6 @@
 #include "srv.h"
 #include "xmpp.h"
 #include "global.h"
+#include "buf.h"
 
 #endif /* _TANINGIA_H_ */
