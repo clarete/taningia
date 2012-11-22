@@ -399,7 +399,7 @@ ta_xmpp_client_get_filter (ta_xmpp_client_t *client)
 int
 ta_xmpp_client_is_running (ta_xmpp_client_t *client)
 {
-  return client->running;
+  return client->running ? TA_OK : TA_ERROR;
 }
 
 int
