@@ -32,7 +32,7 @@
  * message being sent in `auth_cb()' function is answered by the
  * server. */
 static void
-stanza_answered (ta_xmpp_client_t *client, iks *node, void *data)
+stanza_answered (ta_xmpp_client_t *client, iks *node, void *TA_UNUSED(data))
 {
   printf ("Answer received from the server: %s\n",
           iks_string (iks_stack (node), node));
@@ -43,7 +43,7 @@ stanza_answered (ta_xmpp_client_t *client, iks *node, void *data)
 /* This function registers the `stanza_answered' callback when sending
  * the presence message. */
 static int
-auth_cb (ta_xmpp_client_t *client, void *data)
+auth_cb (ta_xmpp_client_t *client, void *TA_UNUSED(data))
 {
   iks *node;
   /* Sending presence info */

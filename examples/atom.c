@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <taningia/common.h>
 #include <taningia/error.h>
 #include <taningia/atom.h>
 #include <taningia/iri.h>
@@ -227,7 +228,7 @@ simple_extension_example (void)
 }
 
 int
-main (int argc, char **argv)
+main ()
 {
   printf ("Generating an atom feed:\n");
   gen_feed ();

@@ -20,18 +20,19 @@
 #include <stdio.h>
 #include <unistd.h>             /* sleep() */
 #include <iksemel.h>
+#include <taningia/common.h>
 #include <taningia/xmpp.h>
 #include <taningia/log.h>
 
 static int
-connected_cb (ta_xmpp_client_t *client, void *data)
+connected_cb (ta_xmpp_client_t *TA_UNUSED(client), void *TA_UNUSED(data))
 {
   fprintf (stderr, "We're connected!\n");
   return 0;
 }
 
 static int
-auth_cb (ta_xmpp_client_t *client, void *data)
+auth_cb (ta_xmpp_client_t *client, void *TA_UNUSED(data))
 {
   fprintf (stderr, "connected: =)\n");
   fprintf (stderr, "Sending presence and sleeping some time\n");

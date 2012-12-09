@@ -29,7 +29,7 @@ cmp (ta_list_t *a, ta_list_t *b)
 }
 
 int
-main (int argc, char **argv)
+main ()
 {
   ta_list_t *list = NULL;
   ta_list_t *otherlist = NULL;

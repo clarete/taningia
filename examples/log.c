@@ -18,6 +18,7 @@
  */
 
 #include <stdio.h>
+#include <taningia/common.h>
 #include <taningia/log.h>
 
 /* You can attach an arbitrary code to the log system by setting a
@@ -30,7 +31,8 @@
  * *NOT* be called.
  */
 int
-handler (ta_log_t *log, ta_log_level_t level, const char *msg, void *user_data)
+handler (ta_log_t *TA_UNUSED(log), ta_log_level_t TA_UNUSED(level),
+         const char *msg, void *TA_UNUSED(user_data))
 {
   printf ("Calling handler callback: %s\n", msg);
 
@@ -40,7 +42,7 @@ handler (ta_log_t *log, ta_log_level_t level, const char *msg, void *user_data)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, char **TA_UNUSED(argv))
 {
   ta_log_t *log;
 

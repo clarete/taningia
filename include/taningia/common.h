@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Lincoln de Sousa <lincoln@minaslivre.org>
+ * Copyright (C) 2012  Lincoln de Sousa <lincoln@comum.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -17,20 +17,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef _TANINGIA_H_
-#define _TANINGIA_H_
+#ifndef _TANINGIA_COMMON_H_
+#define _TANINGIA_COMMON_H_
 
-#include "common.h"
-#include "object.h"
-#include "atom.h"
-#include "error.h"
-#include "iri.h"
-#include "list.h"
-#include "log.h"
-#include "pubsub.h"
-#include "srv.h"
-#include "xmpp.h"
-#include "global.h"
-#include "buf.h"
+#ifdef TA_UNUSED
+#elif defined(__GNUC__)
+# define TA_UNUSED(x) UNUSED_ ## x __attribute__((unused))
+#elif defined(__LCLINT__)
+# define TA_UNUSED(x) /*@unused@*/ x
+#else
+# define TA_UNUSED(x) x
+#endif
 
-#endif /* _TANINGIA_H_ */
+#endif /* _TANINGIA_COMMON_H_ */
