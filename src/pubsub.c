@@ -278,7 +278,7 @@ ta_pubsub_node_create (const char *from,
   /* Creating the dataform to hold config info */
   while ((arg = va_arg (args, char *)) != NULL)
     {
-      iks *field;
+      iks *field = NULL;
       if (form == NULL)
         {
           iks *f;
@@ -336,7 +336,7 @@ ta_pubsub_node_createv (const char *from,
   /* Creating the dataform to hold config info */
   while (conf_params && (arg = conf_params[i]) != NULL)
     {
-      iks *field;
+      iks *field = NULL;
       if (form == NULL)
         {
           iks *f;
