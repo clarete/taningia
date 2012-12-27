@@ -361,7 +361,7 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
   if (ihier_part[0] == '/' &&
       ihier_part[1] == '/')
     {
-      const char *userinfo, *port, *path;
+      const char *userinfo, *port, *path, *host_end;
       const char *port_start;
       char *port_str;
       size_t port_len = 0;
@@ -450,10 +450,16 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
       /* Host */
 
       /* If a user is found, start host from it, otherwise, start from
-       * the ihier_part. If a port is found, end host on it,
-       * otherwise, end in the start of path */
+       * the ihier_part. The host end will be determined by either the
+       * port, the path, the query, or the fragment start. */
+      host_end =
+        (port) ? port :
+        (query) ? query - 1 :
+        (fragment) ? fragment :
+        path;
+
       iri->host = strndup ((userinfo ? userinfo + 1 : ihier_part),
-                           (port ? port : path) -
+                           host_end -
                            (userinfo ? userinfo : ihier_part - 1) -
                            1);
     }
