@@ -117,7 +117,7 @@ main (int argc, char **argv)
 
   /* Starting client main loop. Requesting to do not detach the loop
    * to another thread. Authentication will be done here too. */
-  if (ta_xmpp_client_run (xmpp, 0) != TA_OK)
+  if (ta_xmpp_client_run (xmpp) != TA_OK)
     {
       const ta_error_t *error = ta_error_last ();
       fprintf (stderr, "(%d) %s\n", error->code, error->message);

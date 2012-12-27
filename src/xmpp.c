@@ -552,22 +552,10 @@ ta_xmpp_client_connect (ta_xmpp_client_t *client)
 }
 
 int
-ta_xmpp_client_run (ta_xmpp_client_t *client, int detach)
+ta_xmpp_client_run (ta_xmpp_client_t *client)
 {
   client->running = 1;
-
-  /* Detaching our main loop thread if requested */
-  if (detach)
-    {
-      pthread_t th;
-      pthread_create (&th, NULL, (void *) _ta_xmpp_client_do_run,
-                      (void *) client);
-      pthread_detach (th);
-      ta_log_info (client->log, "Detaching xmpp client main loop thread");
-      return -1;
-    }
-  else
-    return (_ta_xmpp_client_do_run ((void *) client));
+  return (_ta_xmpp_client_do_run ((void *) client));
 }
 
 void

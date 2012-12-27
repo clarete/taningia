@@ -185,13 +185,11 @@ ta_xmpp_client_send_and_filter (ta_xmpp_client_t *client, iks *node,
 /**
  * @name: ta_xmpp_client::run
  * @type: method
- * @param detach: Define if client's main loop will run in a separated
- * thread.
  *
- * Starts the client main loop. If `detach' is true, returns
- * -1. Otherwise returns the error code of the package read function.
+ * Starts the client main loop and returns the error code of the package
+ * read function.
  */
-int ta_xmpp_client_run (ta_xmpp_client_t *ctx, int detach);
+int ta_xmpp_client_run (ta_xmpp_client_t *ctx);
 
 /**
  * @name: ta_xmpp_client::is_running

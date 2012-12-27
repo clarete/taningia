@@ -105,7 +105,7 @@ main (int argc, char **argv)
       ta_object_unref (xmpp);
       return 1;
     }
-  if (ta_xmpp_client_run (xmpp, 0) != TA_OK)
+  if (ta_xmpp_client_run (xmpp) != TA_OK)
     {
       const ta_error_t *error = ta_error_last ();
       fprintf (stderr, "(%d) %s\n", error->code, error->message);
