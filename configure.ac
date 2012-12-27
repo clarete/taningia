@@ -12,8 +12,8 @@ LT_INIT
 
 AM_SILENT_RULES([yes])
 
-# Being as picky as possible
-WARNING_FLAGS="-Wall -Wextra -Werror -pedantic -std=c99"
+# Helps to detect some dumb mistakes
+WARNING_FLAGS="-Wall -Wextra -Werror"
 AC_SUBST([WARNING_FLAGS])
 
 # Checks for programs.
