@@ -126,14 +126,14 @@ START_TEST (test_list_first_last)
 {
   /* Given that I have a list of a couple of vars pointing to different
    * positions on it */
-  ta_list_t *a, *b, *c, *d, *e, *f;
+  ta_list_t *a, *b, *c, *d, *e;
   ta_list_t *first, *last;
   a = ta_list_append (NULL, "first");
   b = ta_list_append (a, "second");
   c = ta_list_append (b, "third");
   d = ta_list_append (c, "fourth");
   e = ta_list_append (d, "fifth");
-  f = ta_list_append (e, "sixth");
+  ta_list_append (e, "sixth");
 
   /* When I try to find the first and the last elements */
   first = ta_list_first (d);
