@@ -7,9 +7,14 @@ AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE(foreign)
+AC_PROG_RANLIB
 LT_INIT
 
 AM_SILENT_RULES([yes])
+
+# Being as picky as possible
+WARNING_FLAGS="-Wall -Wextra -Werror -pedantic -ansi"
+AC_SUBST([WARNING_FLAGS])
 
 # Checks for programs.
 AC_PROG_CC
@@ -34,16 +39,22 @@ ACX_PTHREAD([
 
 # Checks for header files.
 AC_CHECK_HEADERS([string.h])
+AC_HEADER_RESOLV
 
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_FUNC_MKTIME
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([strchr strdup strndup strrchr])
+AC_CHECK_FUNCS([strchr strdup strndup strrchr memmove memset])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
 AC_C_INLINE
+
+if test "$ac_cv_c_inline" != no ; then
+   AC_DEFINE([HAVE_INLINE], [1], [The compiler has support for inline functions])
+   AC_SUBST([HAVE_INLINE])
+fi
 
 # Checks for .pc packages
 PKG_CHECK_MODULES([IKSEMEL], [iksemel])

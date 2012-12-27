@@ -29,4 +29,10 @@
 # define TA_UNUSED(x) x
 #endif
 
+#ifdef HAVE_INLINE
+# define TA_INLINE inline
+#else
+# define TA_INLINE
+#endif
+
 #endif /* _TANINGIA_COMMON_H_ */

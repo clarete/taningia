@@ -19,10 +19,15 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 #include <taningia/error.h>
 #include <taningia/buf.h>
 
+/* http://gcc.gnu.org/bugzilla/show_bug.cgi?id=40880 */
+#ifndef va_copy
+#define va_copy __va_copy
+#endif
 
 /* Forward declarations */
 

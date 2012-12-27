@@ -38,6 +38,9 @@ main ()
   ta_list_t *newlist = NULL;
   ta_list_t *list_to_sort = NULL;
 
+  unsigned int i;
+  char *num[] = { "42", "95", "18", "34", "5" };
+
   list = ta_list_append (list, "foo");
   list = ta_list_append (list, "bar");
   list = ta_list_append (list, "foo");
@@ -132,8 +135,6 @@ main ()
 
   /* sort */
   printf ("Sorting the list");
-  unsigned int i;
-  char *num[] = { "42", "95", "18", "34", "5" };
 
   for (i = 0; i < sizeof (num) / sizeof (num[0]); i++)
     list_to_sort = ta_list_append (list_to_sort, num[i]);

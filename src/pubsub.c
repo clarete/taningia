@@ -29,6 +29,7 @@
 #define NS_ITEM              "http://jabber.org/protocol/disco#items"
 #define NS_PS_CONFIG         "http://jabber.org/protocol/pubsub#node_config"
 #define NS_PS_OWNER          "http://jabber.org/protocol/pubsub#owner"
+#define NODE_SIZE_MAX        256 /* Max size of a node name */
 
 /* Generic help functions */
 
@@ -291,9 +292,8 @@ ta_pubsub_node_create (const char *from,
         }
       if (i % 2 == 0)           /* Handling args */
         {
-          size_t ssize = strlen (arg)+7+1;
-          char fname[ssize];
-          snprintf (fname, ssize, "pubsub#%s", arg);
+          char fname[NODE_SIZE_MAX];
+          snprintf (fname, NODE_SIZE_MAX, "pubsub#%s", arg);
           field = iks_insert (form, "field");
           iks_insert_attrib (field, "var", fname);
           nargs++;
@@ -350,9 +350,8 @@ ta_pubsub_node_createv (const char *from,
         }
       if (i % 2 == 0)           /* Handling args */
         {
-          size_t ssize = strlen (arg)+7+1;
-          char fname[ssize];
-          snprintf (fname, ssize, "pubsub#%s", arg);
+          char fname[NODE_SIZE_MAX];
+          snprintf (fname, NODE_SIZE_MAX, "pubsub#%s", arg);
           field = iks_insert (form, "field");
           iks_insert_attrib (field, "var", fname);
           nargs++;

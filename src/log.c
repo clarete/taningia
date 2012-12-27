@@ -100,10 +100,12 @@ ta_log_get_date_format (ta_log_t *log)
 
 /* I had problems to make it as a simple static function because of
  * the varargs stuff. I'll try to implement it better soon */
-#define get_message(fmt, argp)                  \
-  int n, size = 50;                             \
-  char *msg, *np;                               \
+#define get_message(fmt, argp) {                \
+  int n, size;                                  \
+  char *np;                                     \
   va_list argp;                                 \
+                                                \
+  size = 64;                                    \
                                                 \
   if ((msg = malloc (size)) == NULL)            \
     msg = NULL;                                 \
@@ -127,7 +129,8 @@ ta_log_get_date_format (ta_log_t *log)
           }                                     \
         else                                    \
           msg = np;                             \
-      }
+      }                                         \
+  }
 
 static char *
 _ta_log_localtime (ta_log_t * log)
@@ -185,6 +188,7 @@ void
 ta_log_info (ta_log_t *log, const char *fmt, ...)
 {
   char *ta_log_time;
+  char *msg;                    /* Filled by get_message() */
 
   if (!(log->level <= TA_LOG_INFO))
     return;
@@ -213,6 +217,7 @@ void
 ta_log_warn (ta_log_t *log, const char *fmt, ...)
 {
   char *ta_log_time;
+  char *msg;                    /* Filled by get_message() */
 
   if (!(log->level <= TA_LOG_WARN))
     return;
@@ -241,6 +246,7 @@ void
 ta_log_debug (ta_log_t *log, const char *fmt, ...)
 {
   char *ta_log_time;
+  char *msg;                    /* Filled by get_message() */
 
   if (!(log->level <= TA_LOG_DEBUG))
     return;
@@ -269,6 +275,8 @@ void
 ta_log_critical (ta_log_t *log, const char *fmt, ...)
 {
   char *ta_log_time;
+  char *msg;                    /* Filled by get_message() */
+
   if (!(log->level <= TA_LOG_CRITICAL))
     return;
   get_message (fmt, argp);
@@ -296,6 +304,7 @@ void
 ta_log_error (ta_log_t *log, const char *fmt, ...)
 {
   char *ta_log_time;
+  char *msg;                    /* Filled by get_message() */
 
   if (!(log->level <= TA_LOG_ERROR))
     return;

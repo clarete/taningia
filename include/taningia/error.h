@@ -33,7 +33,7 @@ typedef struct
 /* General return types */
 enum {
   TA_OK = 0,
-  TA_ERROR = -1,
+  TA_ERROR = -1
 };
 
 
@@ -50,7 +50,7 @@ enum {
   XMPP_SEND_ERROR = 302,
   TA_XMPP_NETWORK_ERROR = 303,
   TA_XMPP_TLS_ERROR = 304,
-  TA_XMPP_IO_ERROR = 305,
+  TA_XMPP_IO_ERROR = 305
 };
 
 
