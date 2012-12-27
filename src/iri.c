@@ -371,7 +371,7 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
       ihier_part += 2;
 
       /* iuserinfo */
-      userinfo = strrchr (ihier_part, '@');
+      userinfo = strchr (ihier_part, '@');
       if (userinfo)
         {
           iri->user = strndup (ihier_part, userinfo - ihier_part);
