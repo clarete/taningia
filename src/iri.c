@@ -364,6 +364,7 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
       const char *userinfo, *port, *path, *host_end;
       const char *port_start;
       char *port_str;
+      char port_iter;
       size_t port_len = 0;
 
       /* Removing slashes */
@@ -380,7 +381,23 @@ ta_iri_set_from_string (ta_iri_t *iri, const char *string)
         port_start = ihier_part;
 
       /* Port */
-      port = strchr (port_start, ':');
+      port = NULL;
+      while ((port_iter = *port_start++))
+        {
+          /* We just found the port, time to get out */
+          if (port_iter == ':')
+            {
+              port = port_start - 1;
+              break;
+            }
+
+          /* we Couldn't find the port and we reached either the query
+           * or the fragment */
+          if (port_iter == '?' || port_iter == '#')
+            break;
+        }
+
+      /* port = strchr (port_start, ':'); */
       if (port)
         {
           const char *pp;

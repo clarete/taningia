@@ -236,6 +236,42 @@ START_TEST (test_iri_from_string_without_port_n_query)
 END_TEST
 
 
+START_TEST (test_iri_from_string_with_colon_in_query)
+{
+  /* Given that I have an iri */
+  ta_iri_t *iri = ta_iri_new ();
+
+  /* When I set its data from a string without port and query but with a
+     fragment */
+  ta_iri_set_from_string (iri, "bleh://lincoln@comum.org?q=a:1");
+
+  /* Then I see that all the params were set properly */
+  fail_unless (strcmp (ta_iri_get_scheme (iri), "bleh") == 0, "Wrong scheme");
+  fail_unless (strcmp (ta_iri_get_user (iri), "lincoln") == 0, "Wrong user");
+  fail_unless (strcmp (ta_iri_get_host (iri), "comum.org") == 0, "Wrong host");
+  fail_unless (strcmp (ta_iri_get_query (iri), "q=a:1") == 0, "Wrong query");
+}
+END_TEST
+
+
+START_TEST (test_iri_from_string_with_colon_in_fragment)
+{
+  /* Given that I have an iri */
+  ta_iri_t *iri = ta_iri_new ();
+
+  /* When I set its data from a string without port and query but with a
+     fragment */
+  ta_iri_set_from_string (iri, "bleh://lincoln@comum.org#frag:1");
+
+  /* Then I see that all the params were set properly */
+  fail_unless (strcmp (ta_iri_get_scheme (iri), "bleh") == 0, "Wrong scheme");
+  fail_unless (strcmp (ta_iri_get_user (iri), "lincoln") == 0, "Wrong user");
+  fail_unless (strcmp (ta_iri_get_host (iri), "comum.org") == 0, "Wrong host");
+  fail_unless (strcmp (ta_iri_get_fragment (iri), "frag:1") == 0, "Wrong fragment");
+}
+END_TEST
+
+
 Suite *
 iri_suite ()
 {
@@ -251,6 +287,8 @@ iri_suite ()
   tcase_add_test (tc_core, test_iri_from_string_with_port_path_n_fragment);
   tcase_add_test (tc_core, test_iri_from_string_without_port);
   tcase_add_test (tc_core, test_iri_from_string_without_port_n_query);
+  tcase_add_test (tc_core, test_iri_from_string_with_colon_in_query);
+  tcase_add_test (tc_core, test_iri_from_string_with_colon_in_fragment);
   suite_add_tcase (s, tc_core);
   return s;
 }
