@@ -22,6 +22,7 @@ libtool
 ltmain.sh
 missing
 stamp-h1
+/compile
 /m4/*.m4
 /taningia.pc
 /app
@@ -36,3 +37,4 @@ stamp-h1
 /examples/list
 /examples/srv
 /tests/check_taningia
+/taningia-*\.tar.gz
