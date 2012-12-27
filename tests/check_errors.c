@@ -36,7 +36,7 @@ START_TEST (test_error_last_first_call_must_be_null)
   /* Then I get a NULL value */
   fail_unless (error == NULL, "The last error must be NULL if no error is set");
 }
-END_TEST;
+END_TEST
 
 
 START_TEST (test_error_set)
@@ -54,7 +54,7 @@ START_TEST (test_error_set)
   fail_unless (strcmp (error->message, "This is my msg: 'string', 26") == 0,
                "Wrong error message after ta_error_set()");
 }
-END_TEST;
+END_TEST
 
 
 START_TEST (test_error_set_twice)
@@ -73,7 +73,7 @@ START_TEST (test_error_set_twice)
   fail_unless (strcmp (error->message, "Another stuff") == 0,
                "Wrong error message after ta_error_set()");
 }
-END_TEST;
+END_TEST
 
 
 START_TEST (test_error_clear)
@@ -88,7 +88,7 @@ START_TEST (test_error_clear)
   fail_unless (ta_error_last () == NULL,
                "The last error must be NULL after _clear()");
 }
-END_TEST;
+END_TEST
 
 
 Suite *

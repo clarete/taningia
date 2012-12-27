@@ -38,7 +38,7 @@ START_TEST (test_buf_initial_values)
 
   /* Then I see that all the values of my buffer structure were filled
    * properly */
-  fail_if (b.ptr != NULL, "Internal ptr should be initialized with NULL");
+  fail_if (b.ptr != NULL, "Internal ptr should be initialized with NULL", 0);
   fail_if (b.string_length != 0, "The internal ptr is NULL, string_length should be 0");
   fail_if (b.allocated_size != 0, "The required size is 0, so allocated_size should be 0");
 }
@@ -55,14 +55,14 @@ START_TEST (test_buf_reallocation)
 
   /* Then I see that the internal allocated size should be multiplied
    * for 1.5 and aligned to be multiple of 8 */
-  fail_if (b.allocated_size != 8);
+  fail_if (b.allocated_size != 8, 0);
 
   /* When I realloc it again */
   _buf_realloc (&b, 35);
 
   /* Then I see that the allocated size was both multiplied and
    * aligned */
-  fail_if (b.allocated_size != 48);
+  fail_if (b.allocated_size != 48, "The allocated size is wrong", 0);
 }
 END_TEST
 
@@ -78,7 +78,7 @@ START_TEST (test_buf_cat)
   ta_buf_cat (&b, " some other stuff");
 
   /* Then I see that the buffer has everything that I appended */
-  fail_if (ta_buf_cstr (&b) == NULL);
+  fail_if (ta_buf_cstr (&b) == NULL, "The buffer should not be NULL", 0);
   fail_unless (strcmp (ta_buf_cstr (&b), "some stuff some other stuff") == 0,
                "Error while concatenating strings");
 
@@ -166,6 +166,7 @@ buf_suite ()
   tcase_add_test (tc_core, test_buf_cat);
   tcase_add_test (tc_core, test_buf_vcatf);
   tcase_add_test (tc_core, test_buf_catf);
+  tcase_add_test (tc_core, test_buf_dealloc);
   suite_add_tcase (s, tc_core);
   return s;
 }

@@ -6,14 +6,14 @@ AC_INIT([taningia], [0.2.2], [http://projects.comum.org/taningia])
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE(foreign)
+AM_INIT_AUTOMAKE
 AC_PROG_RANLIB
 LT_INIT
 
 AM_SILENT_RULES([yes])
 
 # Being as picky as possible
-WARNING_FLAGS="-Wall -Wextra -Werror -pedantic -ansi"
+WARNING_FLAGS="-Wall -Wextra -Werror -pedantic -std=c99"
 AC_SUBST([WARNING_FLAGS])
 
 # Checks for programs.
