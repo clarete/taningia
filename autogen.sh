@@ -34,6 +34,4 @@ autoreconf -vi
 
 echo "Running ./configure $@"
 
-./configure $@
-
-echo "Now type \`make' to compile taningia"
+./configure $@ && echo "Now type \`make' to compile taningia"
