@@ -30,6 +30,14 @@ which autoreconf || {
     exit 1
 }
 
+# Cleaning up everything that is not in git
+if [ -d .git ]; then
+    > .gitignore
+    git clean -df
+    git checkout .gitignore
+fi
+
+# Finally, running autoreconf
 autoreconf -vi
 
 echo "Running ./configure $@"
