@@ -1,4 +1,4 @@
-# Taningia README file
+# Taningia
 
 ## Intro
 
@@ -6,6 +6,10 @@ Taningia aims to be a toolkit for writting programs that focus in a
 certain type of comunication: The _near_ realtime one. This library has
 the XMPP protocol as its base for things we call _comunication_ and the
 Atom standard (XML) for describing content.
+
+It also has some other cool stuff if you want to save time but still
+write some C code. You can check our linked list implementation and some
+other cool stuff like our string buffer.
 
 ## How it works
 
@@ -27,7 +31,7 @@ If you need more details, please read the INSTALL file.
 
 ## Dependencies
 
- * libiksemel (1.2, 1.2+ seems to be broken)
+ * libiksemel (1.2 to 1.4 seems to work pretty well)
 
 ## Language support
 
@@ -35,9 +39,3 @@ All code is written in C. There are two main reasons for this::
 
  * It is fast and portable
  * I like C
-
-I've also started to work in a python binding for taningia. It is far to
-be considered minimally good but it is already possible to taste some
-nice things of our lib through python =D
-
-Feel free to send me a new port to any language you like!
