@@ -228,7 +228,7 @@ ta_log_warn (ta_log_t *log, const char *fmt, ...)
   if (_call_handler (log, msg, ta_log_time, TA_LOG_WARN))
     return;
   if (!log->use_colors)
-    fprintf (stderr, "[  WARN ] [ %s ] [ %s ]  %s\n", ta_log_time,
+    fprintf (stderr, "[  WARN ] [ %s ] [ %s ] %s\n", ta_log_time,
              log->name, msg);
   else
     /* Yellow */
