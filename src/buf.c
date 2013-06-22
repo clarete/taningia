@@ -134,10 +134,14 @@ ta_buf_cstr (ta_buf_t *b)
 char *
 ta_buf_dump (ta_buf_t *b)
 {
-  char *tmp = strdup (b->ptr);
-  tmp[b->string_length] = '\0';
-  ta_buf_dealloc (b);
-  return tmp;
+  if (b->string_length > 0)
+    {
+      char *tmp = strdup (b->ptr);
+      ta_buf_dealloc (b);
+      return tmp;
+    }
+  else
+    return NULL;
 }
 
 /* Private API */

@@ -177,6 +177,23 @@ START_TEST (test_buf_dump)
 END_TEST
 
 
+START_TEST (test_buf_dump_empty)
+{
+  /* Given that I have a new buffer with some stuff inside */
+  char *res;
+  ta_buf_t b = TA_BUF_INIT;
+  ta_buf_alloc (&b, 32);
+
+  /* When I retrieve the dump of the string */
+  res = ta_buf_dump (&b);
+
+  /* Then I see that the buffer has everything that I appended */
+  fail_unless (res == NULL, "The result should be none");
+  fail_unless (b.string_length == 0, "The dump method didn't reset the str size");
+}
+END_TEST
+
+
 Suite *
 buf_suite ()
 {
@@ -189,6 +206,7 @@ buf_suite ()
   tcase_add_test (tc_core, test_buf_catf);
   tcase_add_test (tc_core, test_buf_dealloc);
   tcase_add_test (tc_core, test_buf_dump);
+  tcase_add_test (tc_core, test_buf_dump_empty);
   suite_add_tcase (s, tc_core);
   return s;
 }
