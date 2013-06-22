@@ -36,6 +36,7 @@ int ta_buf_cat (ta_buf_t *b, const char *s);
 int ta_buf_catf (ta_buf_t *b, const char *s, ...);
 int ta_buf_vcatf (ta_buf_t *b, const char *s, va_list args);
 const char *ta_buf_cstr (ta_buf_t *b);
+char *ta_buf_dump (ta_buf_t *b);
 
 
 #endif  /* _TANINGIA_BUF_H_ */

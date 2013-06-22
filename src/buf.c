@@ -128,8 +128,16 @@ ta_buf_vcatf (ta_buf_t *b, const char *s, va_list args)
 const char *
 ta_buf_cstr (ta_buf_t *b)
 {
-  b->ptr[b->string_length] = '\0';
   return b->ptr;
+}
+
+char *
+ta_buf_dump (ta_buf_t *b)
+{
+  char *tmp = strdup (b->ptr);
+  tmp[b->string_length] = '\0';
+  ta_buf_dealloc (b);
+  return tmp;
 }
 
 /* Private API */
