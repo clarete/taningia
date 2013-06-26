@@ -1,5 +1,5 @@
 language: c
-install: sudo aptitude -y install check libiksemel-dev
+install: sudo apt-get -y install check libiksemel-dev
 compiler:
   - gcc
   - clang
