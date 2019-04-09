@@ -25,14 +25,14 @@
 #include <taningia/log.h>
 
 static int
-connected_cb (ta_xmpp_client_t *TA_UNUSED(client), void *TA_UNUSED(data))
+connected_cb (ta_xmpp_client_t *TA_UNUSED(client), void *TA_UNUSED(data), void *TA_UNUSED(hdata))
 {
   fprintf (stderr, "We're connected!\n");
   return 0;
 }
 
 static int
-auth_cb (ta_xmpp_client_t *client, void *TA_UNUSED(data))
+auth_cb (ta_xmpp_client_t *client, void *TA_UNUSED(data), void *TA_UNUSED(hdata))
 {
   fprintf (stderr, "connected: =)\n");
   fprintf (stderr, "Sending presence and sleeping some time\n");
@@ -49,7 +49,7 @@ auth_cb (ta_xmpp_client_t *client, void *TA_UNUSED(data))
 }
 
 static int
-auth_failed_cb (ta_xmpp_client_t *client, void *data)
+auth_failed_cb (ta_xmpp_client_t *client, void *data, void *TA_UNUSED(hdata))
 {
   ikspak *pak = (ikspak *) data;
   char *node_str = iks_string (iks_stack (pak->x), pak->x);

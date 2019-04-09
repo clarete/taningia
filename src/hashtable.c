@@ -70,7 +70,7 @@ static unsigned int primes[] = {
     12582917, 25165843, 50331653, 100663319, 201326611, 402653189,
     805306457, 1610612741
 };
-static const unsigned int num_primes = sizeof(primes) / sizeof(unsigned int);
+//static const unsigned int num_primes = sizeof(primes) / sizeof(unsigned int);
 
 static TA_INLINE unsigned int num_buckets(hashtable_t *hashtable)
 {

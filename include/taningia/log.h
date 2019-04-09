@@ -40,8 +40,8 @@ typedef enum {
   TA_LOG_CRITICAL
 } ta_log_level_t;
 
-typedef int *(*ta_log_handler_func_t) (ta_log_t *, ta_log_level_t,
-                                       const char *, void *);
+typedef int (*ta_log_handler_func_t) (ta_log_t *, ta_log_level_t,
+                                      const char *, void *);
 struct _ta_log
 {
   ta_object_t parent;

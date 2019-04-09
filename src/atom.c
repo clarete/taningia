@@ -882,8 +882,10 @@ ta_atom_entry_set_from_file (ta_atom_entry_t *entry,
         case IKS_NOMEM:
           /* TODO: raise mem error instead of atom error here */
           ta_error_set (TA_ATOM_LOAD_ERROR, "Not enough memory to load file");
+          break;
         case IKS_BADXML:
           ta_error_set (TA_ATOM_LOAD_ERROR, "Unable to parse xml file");
+          break;
         default:
           ta_error_set (TA_ATOM_LOAD_ERROR, "Unknown error");
         }
@@ -1147,7 +1149,7 @@ static char *
 time_to_iso8601 (time_t t)
 {
   struct tm *tm;
-  size_t bufsize = 20;
+  size_t bufsize = 80;
   char *date_iso;
 
   tm = gmtime (&t);
@@ -1525,8 +1527,10 @@ ta_atom_feed_set_from_file (ta_atom_feed_t *feed, const char *fname)
         case IKS_NOMEM:
           /* TODO: raise mem error instead of atom error here */
           ta_error_set (TA_ATOM_LOAD_ERROR, "Not enough memory to load file");
+          break;
         case IKS_BADXML:
           ta_error_set (TA_ATOM_LOAD_ERROR, "Unable to parse xml file");
+          break;
         default:
           ta_error_set (TA_ATOM_LOAD_ERROR, "Unknown error");
         }

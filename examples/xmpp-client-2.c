@@ -43,7 +43,7 @@ stanza_answered (ta_xmpp_client_t *client, iks *node, void *TA_UNUSED(data))
 /* This function registers the `stanza_answered' callback when sending
  * the presence message. */
 static int
-auth_cb (ta_xmpp_client_t *client, void *TA_UNUSED(data))
+auth_cb (ta_xmpp_client_t *client, void *TA_UNUSED(data), void *TA_UNUSED(hdata))
 {
   iks *node;
   /* Sending presence info */
@@ -59,7 +59,7 @@ auth_cb (ta_xmpp_client_t *client, void *TA_UNUSED(data))
 
 /* Just to say the user that its authentication has failed. */
 static int
-auth_failed_cb (ta_xmpp_client_t *client, void *data)
+auth_failed_cb (ta_xmpp_client_t *client, void *data, void *TA_UNUSED(hdata))
 {
   ikspak *pak = (ikspak *) data;
   char *node_str = iks_string (iks_stack (pak->x), pak->x);
